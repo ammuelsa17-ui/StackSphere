@@ -18,15 +18,15 @@ StackSphere is a Full Stack Web Development project built for the ElevanceSkills
 
 ### Phase 1: Project Setup & Architecture
 * **Day 1**: Create project folder. Initialize Next.js project with TypeScript and Tailwind CSS. Configure basic development environment. *(Completed)*
-* **Day 2**: Setup Git repository. Create professional folder structure. Configure environment variables. *(Completed)*
-* **Day 3**: Install required dependencies. Setup MongoDB connection. Create database configuration files.
-* **Day 4**: Design database architecture. Create User, Post, Comment, Subscription models.
-* **Day 5**: Setup reusable UI components. Create Navbar, Sidebar, Layout components.
-* **Day 6**: Configure authentication structure. Create login and registration pages.
-* **Day 7**: Implement user registration API. Add password encryption and validation.
-* **Day 8**: Implement login functionality. Setup user sessions.
-* **Day 9**: Create user profile page. Add profile information display.
-* **Day 10**: Test authentication flow. Fix setup-related issues.
+* **Day 2**: Configure project dependencies, `.env.example`, and MongoDB connection structure in `src/lib/`. *(Completed)*
+* **Day 3**: Design database schemas and create User, Post, Comment, and Subscription models in `/models`.
+* **Day 4**: Setup reusable UI layout components (Navbar, Sidebar, Layout).
+* **Day 5**: Configure auth structure and build Login/Registration UI pages.
+* **Day 6**: Implement user registration API with validation and password encryption.
+* **Day 7**: Implement login API and set up user session handling.
+* **Day 8**: Create the User Profile page and render user information.
+* **Day 9**: Perform end-to-end testing on the authentication flow and resolve setup issues.
+* **Day 10**: Complete Phase 1 Review & prepare for Social Feed.
 
 ### Phase 2: Social Space Development
 * **Day 11**: Design social feed UI. Create post card components.

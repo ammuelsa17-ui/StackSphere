@@ -15,15 +15,15 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 
 ### Phase 1: Project Setup & Architecture
 - [x] **Day 1**: Create project folder, initialize Next.js with TS/Tailwind CSS, and set up basic environment.
-- [x] **Day 2**: Setup Git repository, create folder structure, and add project roadmap/documentation.
-- [ ] **Day 3**: Install backend dependencies and set up MongoDB connection.
-- [ ] **Day 4**: Design database schemas and create User, Post, Comment, and Subscription models.
-- [ ] **Day 5**: Setup reusable UI layout components (Navbar, Sidebar, Layout).
-- [ ] **Day 6**: Configure auth structure and build Login/Registration UI pages.
-- [ ] **Day 7**: Implement user registration API with validation and password encryption.
-- [ ] **Day 8**: Implement login API and set up user session handling.
-- [ ] **Day 9**: Create the User Profile page and render user information.
-- [ ] **Day 10**: Perform end-to-end testing on the authentication flow and resolve setup issues.
+- [x] **Day 2**: Configure project dependencies, `.env.example`, and MongoDB connection structure in `src/lib/`.
+- [ ] **Day 3**: Design database schemas and create User, Post, Comment, and Subscription models in `/models`.
+- [ ] **Day 4**: Setup reusable UI layout components (Navbar, Sidebar, Layout).
+- [ ] **Day 5**: Configure auth structure and build Login/Registration UI pages.
+- [ ] **Day 6**: Implement user registration API with validation and password encryption.
+- [ ] **Day 7**: Implement login API and set up user session handling.
+- [ ] **Day 8**: Create the User Profile page and render user information.
+- [ ] **Day 9**: Perform end-to-end testing on the authentication flow and resolve setup issues.
+- [ ] **Day 10**: Complete Phase 1 Review & prepare for Social Feed.
 
 ### Phase 2: Social Space Development
 - [ ] **Day 11**: Design social feed UI and create post card components.
@@ -99,3 +99,24 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 
 ### Phase 8: Final Testing & Deployment
 - [ ] **Day 60**: Run full end-to-end testing, clear bugs, write final documentation, deploy, and submit.
+
+---
+
+## 📖 Daily Development Logs
+
+### Day 1
+* **Date:** June 11, 2026
+* **Completed:** Created the project folder, initialized Next.js with TS/Tailwind CSS, and set up Git tracking.
+* **Files Changed:** Entire Next.js project scaffold.
+* **Problems:** None.
+* **Solutions:** N/A.
+* **Next Task:** Setup developer dependencies and MongoDB connection structure.
+
+### Day 2
+* **Date:** June 12, 2026
+* **Completed:** Configured required development dependencies, created `.env.example`, and set up the MongoDB Mongoose connection singleton in `src/lib/mongodb.ts`.
+* **Files Changed:** `src/lib/mongodb.ts`, `task.md`, `package.json`, `.env.example`
+* **Problems:** Preventing duplicate connection limits in serverless Next.js development hot-reloads.
+* **Solutions:** Implemented a cached global connection singleton structure.
+* **Next Task:** Design database schemas and create User, Post, Comment, and Subscription models.
+
