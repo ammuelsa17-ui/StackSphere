@@ -16,7 +16,7 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 ### Phase 1: Project Setup & Architecture
 - [x] **Day 1**: Create project folder, initialize Next.js with TS/Tailwind CSS, and set up basic environment.
 - [x] **Day 2**: Configure project dependencies, `.env.example`, and MongoDB connection structure in `src/lib/`.
-- [ ] **Day 3**: Design database schemas and create User, Post, Comment, and Subscription models in `/models`.
+- [x] **Day 3**: Design database schemas and create User, Post, Comment, and Subscription models in `/models`.
 - [ ] **Day 4**: Setup reusable UI layout components (Navbar, Sidebar, Layout).
 - [ ] **Day 5**: Configure auth structure and build Login/Registration UI pages.
 - [ ] **Day 6**: Implement user registration API with validation and password encryption.
@@ -119,4 +119,13 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 * **Problems:** Preventing duplicate connection limits in serverless Next.js development hot-reloads.
 * **Solutions:** Implemented a cached global connection singleton structure.
 * **Next Task:** Design database schemas and create User, Post, Comment, and Subscription models.
+
+### Day 3
+* **Date:** June 14, 2026
+* **Completed:** Designed database schemas and created Mongoose models (User, Post, Comment, Subscription, Transaction, Reward) under `src/models/` for full-stack data integrity.
+* **Files Changed:** `src/models/User.ts`, `src/models/Post.ts`, `src/models/Comment.ts`, `src/models/Subscription.ts`, `src/models/Transaction.ts`, `src/models/Reward.ts`, `task.md`
+* **Problems:** Preventing model overwrite compiling errors in development mode (Next.js Hot Module Replacement re-evaluates files).
+* **Solutions:** Used `mongoose.models.ModelName || mongoose.model('ModelName', Schema)` pattern to reuse cached schemas.
+* **Next Task:** Setup reusable UI layout components (Navbar, Sidebar, Layout) on Day 4.
+
 
