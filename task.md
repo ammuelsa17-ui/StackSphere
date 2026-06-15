@@ -17,7 +17,7 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 - [x] **Day 1**: Create project folder, initialize Next.js with TS/Tailwind CSS, and set up basic environment.
 - [x] **Day 2**: Configure project dependencies, `.env.example`, and MongoDB connection structure in `src/lib/`.
 - [x] **Day 3**: Design database schemas and create User, Post, Comment, and Subscription models in `/models`.
-- [ ] **Day 4**: Setup reusable UI layout components (Navbar, Sidebar, Layout).
+- [x] **Day 4**: Setup reusable UI layout components (Navbar, Sidebar, Layout).
 - [ ] **Day 5**: Configure auth structure and build Login/Registration UI pages.
 - [ ] **Day 6**: Implement user registration API with validation and password encryption.
 - [ ] **Day 7**: Implement login API and set up user session handling.
@@ -127,5 +127,14 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 * **Problems:** Preventing model overwrite compiling errors in development mode (Next.js Hot Module Replacement re-evaluates files).
 * **Solutions:** Used `mongoose.models.ModelName || mongoose.model('ModelName', Schema)` pattern to reuse cached schemas.
 * **Next Task:** Setup reusable UI layout components (Navbar, Sidebar, Layout) on Day 4.
+
+### Day 4
+* **Date:** June 15, 2026
+* **Completed:** Set up reusable layout UI components (Navbar, Sidebar, Footer) in `src/components/common/` and integrated them globally in `src/app/layout.tsx`.
+* **Files Changed:** `src/components/common/Navbar.tsx`, `src/components/common/Sidebar.tsx`, `src/components/common/Footer.tsx`, `src/app/layout.tsx`, `task.md`
+* **Problems:** Designing responsive layouts where sidebars collapse cleanly on mobile devices without overlapping elements.
+* **Solutions:** Employed Tailwind CSS responsive utility classes (e.g. `hidden md:block` and `md:pl-64`) to automatically adapt layouts to varying viewport widths.
+* **Next Task:** Configure auth structure and build Login/Registration UI pages on Day 5.
+
 
 
