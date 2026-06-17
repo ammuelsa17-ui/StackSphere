@@ -18,8 +18,8 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 - [x] **Day 2**: Configure project dependencies, `.env.example`, and MongoDB connection structure in `src/lib/`.
 - [x] **Day 3**: Design database schemas and create User, Post, Comment, and Subscription models in `/models`.
 - [x] **Day 4**: Setup reusable UI layout components (Navbar, Sidebar, Layout).
-- [ ] **Day 5**: Configure auth structure and build Login/Registration UI pages.
-- [ ] **Day 6**: Implement user registration API with validation and password encryption.
+- [x] **Day 5**: Configure auth structure and build Login/Registration UI pages.
+- [x] **Day 6**: Implement user registration API with validation and password encryption.
 - [ ] **Day 7**: Implement login API and set up user session handling.
 - [ ] **Day 8**: Create the User Profile page and render user information.
 - [ ] **Day 9**: Perform end-to-end testing on the authentication flow and resolve setup issues.
@@ -135,6 +135,23 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 * **Problems:** Designing responsive layouts where sidebars collapse cleanly on mobile devices without overlapping elements.
 * **Solutions:** Employed Tailwind CSS responsive utility classes (e.g. `hidden md:block` and `md:pl-64`) to automatically adapt layouts to varying viewport widths.
 * **Next Task:** Configure auth structure and build Login/Registration UI pages on Day 5.
+
+### Day 5
+* **Date:** June 16, 2026
+* **Completed:** Configured authentication options and built user login/registration UI pages and route security wrappers.
+* **Files Changed:** `src/lib/auth.ts`, `src/app/api/auth/[...nextauth]/route.ts`, `src/app/login/page.tsx`, `src/app/register/page.tsx`, `src/components/auth/LoginForm.tsx`, `src/components/auth/RegisterForm.tsx`, `src/components/providers/SessionProvider.tsx`, `src/middleware.ts`, `src/app/layout.tsx`, `src/components/common/Navbar.tsx`
+* **Problems:** Managing global session states securely across Next.js Server Components.
+* **Solutions:** Wrapped layout contexts in a dedicated client-side SessionProvider context wrapper.
+* **Next Task:** Implement user registration API with validation and password encryption on Day 6.
+
+### Day 6
+* **Date:** June 17, 2026
+* **Completed:** Implemented and refined user registration backend API (`register/route.ts`) with validations, duplicate checks, and bcrypt password hashing.
+* **Files Changed:** `src/app/api/auth/register/route.ts`, `task.md`
+* **Problems:** Backend API returned generic 500 server error instead of 400 Bad Request when database schema constraints failed (like invalid email address format).
+* **Solutions:** Intercepted Mongoose validation errors (`error.name === "ValidationError"`) and returned specific validation alerts as clean HTTP 400 responses.
+* **Next Task:** Implement login API and set up user session handling on Day 7.
+
 
 
 

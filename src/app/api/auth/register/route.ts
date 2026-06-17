@@ -65,6 +65,16 @@ export async function POST(req: Request) {
     );
   } catch (error: any) {
     console.error("Registration error:", error);
+    
+    // Catch Mongoose validation errors (like invalid email structure)
+    if (error.name === "ValidationError") {
+      const messages = Object.values(error.errors).map((err: any) => err.message);
+      return NextResponse.json(
+        { error: messages[0] || "Validation failed" },
+        { status: 400 }
+      );
+    }
+
     return NextResponse.json(
       { error: "An unexpected error occurred during registration" },
       { status: 500 }
