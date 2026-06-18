@@ -5,8 +5,8 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 ---
 
 ## 📊 Summary
-* **Current Day**: Day 7
-* **Overall Progress**: 11.7% (7/60 Days Completed)
+* **Current Day**: Day 8
+* **Overall Progress**: 13.3% (8/60 Days Completed)
 * **Status**: In Progress
 
 ---
@@ -21,7 +21,7 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 - [x] **Day 5**: Configure auth structure and build Login/Registration UI pages.
 - [x] **Day 6**: Implement user registration API with validation and password encryption.
 - [x] **Day 7**: Implement login API and set up user session handling.
-- [ ] **Day 8**: Create the User Profile page and render user information.
+- [x] **Day 8**: Create the User Profile page and render user information.
 - [ ] **Day 9**: Perform end-to-end testing on the authentication flow and resolve setup issues.
 - [ ] **Day 10**: Complete Phase 1 Review & prepare for Social Feed.
 
@@ -159,6 +159,14 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 * **Problems:** TypeScript compiled errors on `session.user` as NextAuth default type lacks the `id` field.
 * **Solutions:** Cast `session.user` to `any` inside page components query parameters.
 * **Next Task:** Create the User Profile page and render user information on Day 8.
+
+### Day 8
+* **Date:** June 19, 2026
+* **Completed:** Implemented User Profile page and update API. Added `avatarUrl` to Mongoose schema, built `ProfileCard` (Server Component), `EditProfileForm` (Client Component), update profile API route, and profile page view with activity overview sections.
+* **Files Changed:** `src/models/User.ts`, `src/utils/userAgent.ts`, `src/app/api/user/update/route.ts`, `src/components/profile/ProfileCard.tsx`, `src/components/profile/EditProfileForm.tsx`, `src/app/profile/page.tsx`, `progress/day-08.md`, `progress/development-log.md`, `task.md`
+* **Problems:** TypeScript errors accessing custom properties (like ID) from NextAuth user session interface.
+* **Solutions:** Safely cast session user fields to `any` in page controllers.
+* **Next Task:** Perform end-to-end testing on the authentication flow and resolve setup issues on Day 9.
 
 
 

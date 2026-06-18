@@ -9,6 +9,7 @@ This index lists all our daily progress files for easy navigation during evaluat
 * [Day 5: Configured authentication UI and routing wrappers](./day-05.md)
 * [Day 6: Refined user registration API and validation error handling](./day-06.md)
 * [Day 7: Implemented login tracking and session configuration](./day-07.md)
+* [Day 8: Implemented User Profile page and update API](./day-08.md)
 
 
 

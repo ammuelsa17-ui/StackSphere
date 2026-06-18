@@ -53,6 +53,11 @@ const UserSchema = new Schema(
       trim: true,
       default: "",
     },
+    avatarUrl: {
+      type: String,
+      trim: true,
+      default: "",
+    },
     // Array of ObjectIds pointing to other User documents (friends list)
     friends: [
       {
