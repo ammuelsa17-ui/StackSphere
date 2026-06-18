@@ -1,8 +1,14 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
-import { Search, Globe, LogIn, UserPlus } from "lucide-react";
+import { useSession, signOut } from "next-auth/react";
+import { Search, Globe, LogIn, UserPlus, LogOut, LayoutDashboard, User } from "lucide-react";
 
 export default function Navbar() {
+  const { data: session, status } = useSession();
+  const isLoading = status === "loading";
+
   return (
     <header className="fixed top-0 left-0 right-0 h-16 border-b border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-950/80 backdrop-blur-md z-50">
       <div className="h-full max-w-7xl mx-auto px-4 flex items-center justify-between gap-4">
@@ -47,21 +53,52 @@ export default function Navbar() {
 
           {/* Authentication Links */}
           <div className="flex items-center gap-2">
-            <Link
-              href="/login"
-              className="flex items-center gap-1.5 px-3 h-9 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-900 rounded-lg transition-all"
-            >
-              <LogIn className="h-4 w-4" />
-              <span>Login</span>
-            </Link>
-            
-            <Link
-              href="/register"
-              className="flex items-center gap-1.5 px-3 h-9 text-sm font-medium bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg shadow-sm transition-all"
-            >
-              <UserPlus className="h-4 w-4" />
-              <span>Sign Up</span>
-            </Link>
+            {isLoading ? (
+              <div className="w-20 h-9 bg-neutral-200 dark:bg-neutral-800 animate-pulse rounded-lg" />
+            ) : session ? (
+              <div className="flex items-center gap-2 md:gap-3">
+                <Link
+                  href="/dashboard"
+                  className="flex items-center gap-1.5 px-3 h-9 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-900 rounded-lg transition-all"
+                >
+                  <LayoutDashboard className="h-4 w-4 text-indigo-600" />
+                  <span className="hidden md:inline">Dashboard</span>
+                </Link>
+                
+                <div className="flex items-center gap-2 px-3 h-9 rounded-lg bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-sm font-medium">
+                  <User className="h-4 w-4 text-neutral-500" />
+                  <span className="text-neutral-800 dark:text-neutral-200 max-w-[100px] truncate hidden sm:inline">
+                    {session.user?.name}
+                  </span>
+                </div>
+
+                <button
+                  onClick={() => signOut({ callbackUrl: "/login" })}
+                  className="flex items-center gap-1.5 px-3 h-9 text-sm font-medium text-red-650 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg transition-all border border-transparent hover:border-red-200 dark:hover:border-red-900/30"
+                >
+                  <LogOut className="h-4 w-4 text-red-600" />
+                  <span className="hidden sm:inline text-red-600">Logout</span>
+                </button>
+              </div>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="flex items-center gap-1.5 px-3 h-9 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-900 rounded-lg transition-all"
+                >
+                  <LogIn className="h-4 w-4" />
+                  <span>Login</span>
+                </Link>
+                
+                <Link
+                  href="/register"
+                  className="flex items-center gap-1.5 px-3 h-9 text-sm font-medium bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg shadow-sm transition-all"
+                >
+                  <UserPlus className="h-4 w-4" />
+                  <span>Sign Up</span>
+                </Link>
+              </>
+            )}
           </div>
         </div>
 

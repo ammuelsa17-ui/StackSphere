@@ -5,8 +5,8 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 ---
 
 ## 📊 Summary
-* **Current Day**: Day 2
-* **Overall Progress**: 3.3% (2/60 Days Completed)
+* **Current Day**: Day 7
+* **Overall Progress**: 11.7% (7/60 Days Completed)
 * **Status**: In Progress
 
 ---
@@ -20,7 +20,7 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 - [x] **Day 4**: Setup reusable UI layout components (Navbar, Sidebar, Layout).
 - [x] **Day 5**: Configure auth structure and build Login/Registration UI pages.
 - [x] **Day 6**: Implement user registration API with validation and password encryption.
-- [ ] **Day 7**: Implement login API and set up user session handling.
+- [x] **Day 7**: Implement login API and set up user session handling.
 - [ ] **Day 8**: Create the User Profile page and render user information.
 - [ ] **Day 9**: Perform end-to-end testing on the authentication flow and resolve setup issues.
 - [ ] **Day 10**: Complete Phase 1 Review & prepare for Social Feed.
@@ -151,6 +151,14 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 * **Problems:** Backend API returned generic 500 server error instead of 400 Bad Request when database schema constraints failed (like invalid email address format).
 * **Solutions:** Intercepted Mongoose validation errors (`error.name === "ValidationError"`) and returned specific validation alerts as clean HTTP 400 responses.
 * **Next Task:** Implement login API and set up user session handling on Day 7.
+
+### Day 7
+* **Date:** June 18, 2026
+* **Completed:** Implemented login API and set up user session handling. Created LoginHistory model and User-Agent parsing utilities, configured NextAuth callbacks to log user metadata (browser, OS, device, IP) upon login, and built dynamic Navbar, Dashboard, and Login History UI views.
+* **Files Changed:** `src/models/LoginHistory.ts`, `src/utils/userAgent.ts`, `src/lib/auth.ts`, `src/app/layout.tsx`, `src/components/common/Navbar.tsx`, `src/app/dashboard/page.tsx`, `src/app/login-history/page.tsx`, `progress/day-07.md`, `progress/development-log.md`, `task.md`
+* **Problems:** TypeScript compiled errors on `session.user` as NextAuth default type lacks the `id` field.
+* **Solutions:** Cast `session.user` to `any` inside page components query parameters.
+* **Next Task:** Create the User Profile page and render user information on Day 8.
 
 
 
