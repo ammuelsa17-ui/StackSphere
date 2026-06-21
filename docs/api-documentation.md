@@ -51,6 +51,53 @@ This document logs the endpoints, requests, and response models of the StackSphe
 * **Error Cases:**
   * `401 Unauthorized`: Invalid credentials.
 
+### 1.3 Update User Profile
+* **Endpoint:** `POST /api/user/update`
+* **Purpose:** Update the authenticated user's profile details (Name and Phone Number).
+* **Headers:** Required NextAuth session cookies.
+* **Request Body:**
+  ```json
+  {
+    "name": "Jane Updated",
+    "phoneNumber": "+91 98765 43210"
+  }
+  ```
+* **Success Response (200 OK):**
+  ```json
+  {
+    "message": "Profile updated successfully.",
+    "user": {
+      "id": "userId",
+      "name": "Jane Updated",
+      "email": "jane@example.com",
+      "phoneNumber": "+91 98765 43210",
+      "avatarUrl": ""
+    }
+  }
+  ```
+* **Error Cases:**
+  * `401 Unauthorized`: Session missing or expired.
+  * `400 Bad Request`: Empty name validation failed.
+
+### 1.4 E2E Authentication Test Suite
+* **Endpoint:** `GET /api/test-auth`
+* **Purpose:** Programmatically runs 12 authentication integration and validation assertions against the MongoDB test database.
+* **Success Response (200 OK):**
+  ```json
+  {
+    "status": "success",
+    "timestamp": "2026-06-20T15:25:20.117Z",
+    "results": [
+      {
+        "name": "Database Connection",
+        "status": "PASS",
+        "message": "Successfully connected to MongoDB."
+      },
+      ...
+    ]
+  }
+  ```
+
 ---
 
 ## 2. Social APIs

@@ -13,6 +13,7 @@ Tracks profiles, auth data, subscription tier, and reward points.
 * `email`: String (Required, Unique)
 * `password`: String (Required, Hashed)
 * `phoneNumber`: String
+* `avatarUrl`: String (Optional profile image reference)
 * `friends`: [ObjectId] (Ref: `users` - list of accepted friend IDs)
 * `points`: Number (Default: 0)
 * `subscription`: {
@@ -58,11 +59,13 @@ Stores transaction and invoice details for payments.
 Logs access information for security transparency.
 * `_id`: ObjectId
 * `userId`: ObjectId (Ref: `users`, Required)
+* `email`: String (Required)
+* `ipAddress`: String (Required)
+* `userAgent`: String (Raw browser details)
 * `browser`: String (Required)
 * `os`: String (Required)
-* `device`: String (Required - "mobile" | "tablet" | "desktop")
-* `ipAddress`: String (Required)
-* `loginAt`: Date (Default: Date.now)
+* `deviceType`: String (Required - "Mobile" | "Tablet" | "Desktop")
+* `loginTime`: Date (Default: Date.now)
 
 ---
 
