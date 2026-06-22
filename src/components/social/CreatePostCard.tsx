@@ -1,0 +1,234 @@
+"use client";
+
+import React, { useState, useRef } from "react";
+import { useSession } from "next-auth/react";
+import { Image, Video, Send, X, Star } from "lucide-react";
+
+interface CreatePostCardProps {
+  onPostCreated?: (post: {
+    content: string;
+    mediaUrl?: string;
+    mediaType: "image" | "video" | "none";
+  }) => void;
+}
+
+export default function CreatePostCard({ onPostCreated }: CreatePostCardProps) {
+  const { data: session } = useSession();
+  const [content, setContent] = useState("");
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [mediaUrl, setMediaUrl] = useState<string | null>(null);
+  const [mediaType, setMediaType] = useState<"image" | "video" | "none">("none");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
+
+  const getInitials = (name: string) => {
+    if (!name) return "?";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .substring(0, 2);
+  };
+
+  const getAvatarColor = (name: string) => {
+    const charSum = name.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const colors = [
+      "from-indigo-500 to-purple-600",
+      "from-blue-500 to-indigo-600",
+      "from-violet-500 to-fuchsia-600",
+      "from-teal-500 to-emerald-600",
+      "from-rose-500 to-pink-600",
+    ];
+    return colors[charSum % colors.length];
+  };
+
+  const handleTextareaFocus = () => {
+    setIsExpanded(true);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: "image" | "video") => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setMediaUrl(url);
+      setMediaType(type);
+    }
+  };
+
+  const handleAddMockImage = () => {
+    const mockImages = [
+      "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&auto=format&fit=crop&q=60",
+      "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop&q=60",
+      "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&auto=format&fit=crop&q=60",
+    ];
+    const randomImg = mockImages[Math.floor(Math.random() * mockImages.length)];
+    setMediaUrl(randomImg);
+    setMediaType("image");
+  };
+
+  const removeMedia = () => {
+    setMediaUrl(null);
+    setMediaType("none");
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    if (videoInputRef.current) videoInputRef.current.value = "";
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!content.trim() && mediaType === "none") return;
+
+    setIsSubmitting(true);
+    
+    // Simulate API call delay
+    setTimeout(() => {
+      if (onPostCreated) {
+        onPostCreated({
+          content,
+          mediaUrl: mediaUrl || undefined,
+          mediaType,
+        });
+      }
+      // Reset state
+      setContent("");
+      removeMedia();
+      setIsExpanded(false);
+      setIsSubmitting(false);
+    }, 800);
+  };
+
+  const userName = session?.user?.name || "StackSphere Member";
+  const userPlan = (session?.user as any)?.subscription?.plan || "Bronze";
+
+  return (
+    <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-5 shadow-sm transition-all duration-200">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Input Area */}
+        <div className="flex gap-4">
+          {session?.user?.image ? (
+            <img
+              src={session.user.image}
+              alt={userName}
+              className="w-10 h-10 rounded-full object-cover shrink-0"
+            />
+          ) : (
+            <div className={`w-10 h-10 rounded-full bg-gradient-to-tr ${getAvatarColor(userName)} flex items-center justify-center text-white font-bold text-sm shadow-sm shrink-0`}>
+              {getInitials(userName)}
+            </div>
+          )}
+
+          <div className="flex-1 space-y-2">
+            <textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              onFocus={handleTextareaFocus}
+              placeholder="Share your thoughts, tech insights, or ask a question..."
+              rows={isExpanded ? 3 : 1}
+              className="w-full bg-transparent text-neutral-800 dark:text-neutral-100 placeholder-neutral-400 focus:outline-none resize-none text-sm py-2 leading-relaxed"
+            />
+          </div>
+        </div>
+
+        {/* Media Preview Box */}
+        {mediaUrl && (
+          <div className="relative rounded-xl overflow-hidden border border-neutral-150 dark:border-neutral-700/60 max-h-[250px] bg-neutral-50 dark:bg-neutral-900/20 ml-14">
+            <button
+              type="button"
+              onClick={removeMedia}
+              className="absolute top-2.5 right-2.5 z-10 bg-neutral-900/80 hover:bg-neutral-900 text-white p-1 rounded-full backdrop-blur-sm transition-all"
+            >
+              <X className="h-4 w-4" />
+            </button>
+            {mediaType === "video" ? (
+              <video src={mediaUrl} controls className="w-full h-full object-cover max-h-[250px]" />
+            ) : (
+              <img src={mediaUrl} alt="Attached preview" className="w-full h-full object-cover max-h-[250px]" />
+            )}
+          </div>
+        )}
+
+        {/* Action Toolbar */}
+        {isExpanded && (
+          <div className="flex items-center justify-between pt-3 border-t border-neutral-100 dark:border-neutral-700/60 ml-14">
+            <div className="flex items-center gap-1">
+              {/* Hidden file inputs */}
+              <input
+                type="file"
+                ref={fileInputRef}
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => handleFileChange(e, "image")}
+              />
+              <input
+                type="file"
+                ref={videoInputRef}
+                accept="video/*"
+                className="hidden"
+                onChange={(e) => handleFileChange(e, "video")}
+              />
+
+              {/* Photo Upload Trigger */}
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="p-2 rounded-lg text-neutral-500 hover:text-indigo-650 hover:bg-indigo-50 dark:hover:bg-indigo-950/20 transition-all"
+                title="Upload Image"
+              >
+                <Image className="h-4.5 w-4.5" />
+              </button>
+
+              {/* Video Upload Trigger */}
+              <button
+                type="button"
+                onClick={() => videoInputRef.current?.click()}
+                className="p-2 rounded-lg text-neutral-500 hover:text-indigo-650 hover:bg-indigo-50 dark:hover:bg-indigo-950/20 transition-all"
+                title="Upload Video"
+              >
+                <Video className="h-4.5 w-4.5" />
+              </button>
+
+              {/* Quick Mock Image Button */}
+              <button
+                type="button"
+                onClick={handleAddMockImage}
+                className="px-2 py-1 text-[10px] font-bold text-neutral-400 hover:text-indigo-600 dark:hover:text-indigo-400 border border-neutral-200 dark:border-neutral-700 hover:border-indigo-300 dark:hover:border-indigo-800 rounded-md transition-all ml-1.5"
+                title="Attach premium mock image"
+              >
+                + Premium Photo
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setIsExpanded(false)}
+                className="px-3 py-1.5 text-xs font-semibold text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-all"
+              >
+                Cancel
+              </button>
+              
+              <button
+                type="submit"
+                disabled={isSubmitting || (!content.trim() && mediaType === "none")}
+                className={`flex items-center gap-1.5 px-4.5 py-1.5 rounded-lg text-xs font-semibold text-white shadow-sm transition-all duration-200 ${
+                  content.trim() || mediaType !== "none"
+                    ? "bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98]"
+                    : "bg-indigo-455 text-indigo-200/80 cursor-not-allowed"
+                }`}
+              >
+                {isSubmitting ? (
+                  <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <Send className="h-3.5 w-3.5" />
+                )}
+                <span>{isSubmitting ? "Posting..." : "Post"}</span>
+              </button>
+            </div>
+          </div>
+        )}
+      </form>
+    </div>
+  );
+}
