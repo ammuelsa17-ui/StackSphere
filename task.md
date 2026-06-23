@@ -5,8 +5,8 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 ---
 
 ## 📊 Summary
-* **Current Day**: Day 11
-* **Overall Progress**: 18.3% (11/60 Days Completed)
+* **Current Day**: Day 12
+* **Overall Progress**: 20.0% (12/60 Days Completed)
 * **Status**: In Progress
 
 ---
@@ -27,7 +27,7 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 
 ### Phase 2: Social Space Development
 - [x] **Day 11**: Design social feed UI and create post card components.
-- [ ] **Day 12**: Implement text-based post creation backend and frontend.
+- [x] **Day 12**: Implement text-based post creation backend and frontend.
 - [ ] **Day 13**: Create image and video upload UI and handling.
 - [ ] **Day 14**: Connect media upload storage handling with the backend database.
 - [ ] **Day 15**: Implement post feed retrieval API (retrieve posts in chronological order).
@@ -191,6 +191,14 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 * **Problems:** Managing frontend client updates before backend creation.
 * **Solutions:** Used temporary in-memory updates driven by client callbacks.
 * **Next Task:** Implement text-based post creation backend and frontend on Day 12.
+
+### Day 12
+* **Date:** June 23, 2026
+* **Completed:** Implemented backend `POST /api/posts/create` endpoint, updated social page to fetch posts on load from MongoDB, integrated post creation state to save posts to database, and ran Next.js build verification checks.
+* **Files Changed:** `src/app/api/posts/create/route.ts`, `src/app/social/page.tsx`, `src/components/social/SocialFeed.tsx`, `progress/day-12.md`, `progress/development-log.md`, `task.md`
+* **Problems:** Managing MongoDB ObjectIds serialization over Server-to-Client React boundaries.
+* **Solutions:** Cast database object structures to clean string-based JSON primitives.
+* **Next Task:** Create image and video upload UI and handling on Day 13.
 
 
 

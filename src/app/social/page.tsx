@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import connectToDatabase from "@/lib/mongodb";
 import User from "@/models/User";
+import Post from "@/models/Post";
 import SocialFeed from "@/components/social/SocialFeed";
 
 export const metadata = {
@@ -30,12 +31,39 @@ export default async function SocialPage() {
     redirect("/login");
   }
 
+  // Fetch posts from database, sorting by creation date descending
+  const dbPosts = await Post.find()
+    .populate("author", "name image avatarUrl subscription")
+    .sort({ createdAt: -1 })
+    .lean();
+
+  // Map database posts into a clean serializable structure
+  const initialPosts = dbPosts.map((post: any) => ({
+    id: post._id.toString(),
+    content: post.content,
+    mediaUrl: post.mediaUrl || "",
+    mediaType: post.mediaType || "none",
+    author: {
+      name: post.author?.name || "Deleted User",
+      email: post.author?.email || "",
+      avatarUrl: post.author?.avatarUrl || post.author?.image || "",
+      subscription: {
+        plan: post.author?.subscription?.plan || "Free",
+      },
+    },
+    likes: (post.likes || []).map((likeId: any) => likeId.toString()),
+    commentsCount: post.commentsCount || 0,
+    sharesCount: post.sharesCount || 0,
+    createdAt: post.createdAt ? post.createdAt.toISOString() : new Date().toISOString(),
+  }));
+
   // Extract a clean serializable user object for client component props
   const currentUser = {
     id: dbUser._id.toString(),
     name: dbUser.name,
     email: dbUser.email,
-    image: dbUser.image || "",
+    image: dbUser.avatarUrl || dbUser.image || "",
+    plan: dbUser.subscription?.plan || "Free",
   };
 
   return (
@@ -51,7 +79,7 @@ export default async function SocialPage() {
       </div>
 
       {/* Main Feed Container */}
-      <SocialFeed currentUser={currentUser} />
+      <SocialFeed currentUser={currentUser} initialPosts={initialPosts} />
     </div>
   );
 }

@@ -11,7 +11,9 @@ interface SocialFeedProps {
     name: string;
     email?: string;
     image?: string;
+    plan?: string;
   };
+  initialPosts?: PostType[];
 }
 
 interface PostType {
@@ -97,34 +99,58 @@ const TRENDING_TAGS = [
   { tag: "webdev", count: "310 posts" },
 ];
 
-export default function SocialFeed({ currentUser }: SocialFeedProps) {
-  const [posts, setPosts] = useState<PostType[]>(INITIAL_POSTS);
+export default function SocialFeed({ currentUser, initialPosts = [] }: SocialFeedProps) {
+  // Use database posts if available, fallback to mock posts if DB is empty
+  const [posts, setPosts] = useState<PostType[]>(
+    initialPosts.length > 0 ? initialPosts : INITIAL_POSTS
+  );
   const [followingStates, setFollowingStates] = useState<Record<string, boolean>>({});
 
-  const handlePostCreated = (newPostData: {
+  const handlePostCreated = async (newPostData: {
     content: string;
     mediaUrl?: string;
     mediaType: "image" | "video" | "none";
   }) => {
-    const newPost: PostType = {
-      id: `post-${Date.now()}`,
-      content: newPostData.content,
-      mediaUrl: newPostData.mediaUrl,
-      mediaType: newPostData.mediaType,
-      author: {
-        name: currentUser.name,
-        avatarUrl: currentUser.image,
-        subscription: {
-          plan: "Bronze", // Default plan for visual demo
+    try {
+      const response = await fetch("/api/posts/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      },
-      likes: [],
-      commentsCount: 0,
-      sharesCount: 0,
-      createdAt: new Date().toISOString(),
-    };
+        body: JSON.stringify(newPostData),
+      });
 
-    setPosts([newPost, ...posts]);
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.error || "Failed to create post");
+      }
+
+      const resData = await response.json();
+      if (resData.success && resData.post) {
+        const createdPost: PostType = {
+          id: resData.post.id,
+          content: resData.post.content,
+          mediaUrl: resData.post.mediaUrl || undefined,
+          mediaType: resData.post.mediaType,
+          author: {
+            name: currentUser.name,
+            avatarUrl: currentUser.image || undefined,
+            subscription: {
+              plan: currentUser.plan || "Free",
+            },
+          },
+          likes: resData.post.likes || [],
+          commentsCount: resData.post.commentsCount || 0,
+          sharesCount: resData.post.sharesCount || 0,
+          createdAt: resData.post.createdAt,
+        };
+
+        setPosts((prevPosts) => [createdPost, ...prevPosts]);
+      }
+    } catch (err: any) {
+      console.error("Failed to submit post:", err);
+      alert(err.message || "Something went wrong while posting.");
+    }
   };
 
   const toggleFollow = (friendId: string) => {
