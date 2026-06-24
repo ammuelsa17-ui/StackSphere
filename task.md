@@ -5,8 +5,8 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 ---
 
 ## 📊 Summary
-* **Current Day**: Day 12
-* **Overall Progress**: 20.0% (12/60 Days Completed)
+* **Current Day**: Day 13
+* **Overall Progress**: 21.7% (13/60 Days Completed)
 * **Status**: In Progress
 
 ---
@@ -28,7 +28,7 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 ### Phase 2: Social Space Development
 - [x] **Day 11**: Design social feed UI and create post card components.
 - [x] **Day 12**: Implement text-based post creation backend and frontend.
-- [ ] **Day 13**: Create image and video upload UI and handling.
+- [x] **Day 13**: Create image and video upload UI and handling.
 - [ ] **Day 14**: Connect media upload storage handling with the backend database.
 - [ ] **Day 15**: Implement post feed retrieval API (retrieve posts in chronological order).
 - [ ] **Day 16**: Add like and unlike functionality to posts.
@@ -199,6 +199,14 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 * **Problems:** Managing MongoDB ObjectIds serialization over Server-to-Client React boundaries.
 * **Solutions:** Cast database object structures to clean string-based JSON primitives.
 * **Next Task:** Create image and video upload UI and handling on Day 13.
+
+### Day 13
+* **Date:** June 24, 2026
+* **Completed:** Created local uploads folder `/public/uploads/` and backend API route `POST /api/uploads` supporting type validations (image/video) and size limits (5MB/20MB). Integrated `CreatePostCard` frontend client with actual file inputs, loading state overlays, and preview render wrappers.
+* **Files Changed:** `src/app/api/uploads/route.ts`, `src/components/social/CreatePostCard.tsx`, `public/uploads/.gitkeep`, `progress/day-13.md`, `progress/development-log.md`, `task.md`
+* **Problems:** Preventing invalid file formats from breaking post-creation forms on the client.
+* **Solutions:** Conducted validation checks client-side and server-side, returning explicit validation errors and resetting state.
+* **Next Task:** Connect media upload storage handling with the backend database on Day 14.
 
 
 

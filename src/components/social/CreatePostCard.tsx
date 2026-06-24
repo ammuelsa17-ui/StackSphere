@@ -19,6 +19,8 @@ export default function CreatePostCard({ onPostCreated }: CreatePostCardProps) {
   const [mediaUrl, setMediaUrl] = useState<string | null>(null);
   const [mediaType, setMediaType] = useState<"image" | "video" | "none">("none");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
@@ -49,12 +51,39 @@ export default function CreatePostCard({ onPostCreated }: CreatePostCardProps) {
     setIsExpanded(true);
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: "image" | "video") => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: "image" | "video") => {
     const file = e.target.files?.[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setMediaUrl(url);
-      setMediaType(type);
+    if (!file) return;
+
+    setIsUploading(true);
+    setUploadStatus(`Uploading ${type}...`);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/api/uploads", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to upload file");
+      }
+
+      const resData = await response.json();
+      if (resData.success && resData.url) {
+        setMediaUrl(resData.url);
+        setMediaType(resData.type);
+      }
+    } catch (err: any) {
+      console.error("Upload error:", err);
+      alert(err.message || "An error occurred during file upload.");
+      removeMedia();
+    } finally {
+      setIsUploading(false);
+      setUploadStatus(null);
     }
   };
 
@@ -76,16 +105,15 @@ export default function CreatePostCard({ onPostCreated }: CreatePostCardProps) {
     if (videoInputRef.current) videoInputRef.current.value = "";
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!content.trim() && mediaType === "none") return;
 
     setIsSubmitting(true);
     
-    // Simulate API call delay
-    setTimeout(() => {
+    try {
       if (onPostCreated) {
-        onPostCreated({
+        await onPostCreated({
           content,
           mediaUrl: mediaUrl || undefined,
           mediaType,
@@ -95,8 +123,11 @@ export default function CreatePostCard({ onPostCreated }: CreatePostCardProps) {
       setContent("");
       removeMedia();
       setIsExpanded(false);
+    } catch (err) {
+      console.error("Submission failed:", err);
+    } finally {
       setIsSubmitting(false);
-    }, 800);
+    }
   };
 
   const userName = session?.user?.name || "StackSphere Member";
@@ -131,20 +162,31 @@ export default function CreatePostCard({ onPostCreated }: CreatePostCardProps) {
           </div>
         </div>
 
-        {/* Media Preview Box */}
-        {mediaUrl && (
-          <div className="relative rounded-xl overflow-hidden border border-neutral-150 dark:border-neutral-700/60 max-h-[250px] bg-neutral-50 dark:bg-neutral-900/20 ml-14">
-            <button
-              type="button"
-              onClick={removeMedia}
-              className="absolute top-2.5 right-2.5 z-10 bg-neutral-900/80 hover:bg-neutral-900 text-white p-1 rounded-full backdrop-blur-sm transition-all"
-            >
-              <X className="h-4 w-4" />
-            </button>
-            {mediaType === "video" ? (
-              <video src={mediaUrl} controls className="w-full h-full object-cover max-h-[250px]" />
+        {/* Media Preview Box or Uploading State */}
+        {(mediaUrl || isUploading) && (
+          <div className="relative rounded-xl overflow-hidden border border-neutral-150 dark:border-neutral-700/60 min-h-[150px] max-h-[250px] bg-neutral-50 dark:bg-neutral-900/20 ml-14 flex items-center justify-center">
+            {isUploading ? (
+              <div className="flex flex-col items-center gap-2 py-8">
+                <span className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+                <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+                  {uploadStatus}
+                </span>
+              </div>
             ) : (
-              <img src={mediaUrl} alt="Attached preview" className="w-full h-full object-cover max-h-[250px]" />
+              <>
+                <button
+                  type="button"
+                  onClick={removeMedia}
+                  className="absolute top-2.5 right-2.5 z-10 bg-neutral-900/80 hover:bg-neutral-900 text-white p-1 rounded-full backdrop-blur-sm transition-all"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+                {mediaType === "video" ? (
+                  <video src={mediaUrl!} controls className="w-full h-full object-cover max-h-[250px]" />
+                ) : (
+                  <img src={mediaUrl!} alt="Attached preview" className="w-full h-full object-cover max-h-[250px]" />
+                )}
+              </>
             )}
           </div>
         )}
@@ -211,11 +253,11 @@ export default function CreatePostCard({ onPostCreated }: CreatePostCardProps) {
               
               <button
                 type="submit"
-                disabled={isSubmitting || (!content.trim() && mediaType === "none")}
+                disabled={isSubmitting || isUploading || (!content.trim() && mediaType === "none")}
                 className={`flex items-center gap-1.5 px-4.5 py-1.5 rounded-lg text-xs font-semibold text-white shadow-sm transition-all duration-200 ${
-                  content.trim() || mediaType !== "none"
+                  (content.trim() || mediaType !== "none") && !isUploading && !isSubmitting
                     ? "bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98]"
-                    : "bg-indigo-455 text-indigo-200/80 cursor-not-allowed"
+                    : "bg-indigo-400 text-indigo-200/80 cursor-not-allowed"
                 }`}
               >
                 {isSubmitting ? (

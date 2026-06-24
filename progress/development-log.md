@@ -14,6 +14,7 @@ This index lists all our daily progress files for easy navigation during evaluat
 * [Day 10: Completed Phase 1 review and updated documentation](./day-10.md)
 * [Day 11: Designed social feed UI and post card components](./day-11.md)
 * [Day 12: Implemented text-based post creation backend and frontend](./day-12.md)
+* [Day 13: Created image and video upload UI and handling](./day-13.md)
 
 
 
