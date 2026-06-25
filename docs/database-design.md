@@ -67,20 +67,33 @@ Logs access information for security transparency.
 * `deviceType`: String (Required - "Mobile" | "Tablet" | "Desktop")
 * `loginTime`: Date (Default: Date.now)
 
+### 1.6 Upload Collection (`uploads`)
+Logs media files uploaded by users for posts.
+* `_id`: ObjectId
+* `uploader`: ObjectId (Ref: `users`, Required)
+* `filename`: String (Required)
+* `originalName`: String (Required)
+* `mimeType`: String (Required)
+* `size`: Number (Required)
+* `url`: String (Required, Unique)
+* `associatedPost`: ObjectId (Ref: `posts`, Default: null)
+* `createdAt`: Date (Default: Date.now)
+
 ---
 
 ## 2. Key Database Relationships
 
 ```text
-  ┌───────┐             ┌───────┐
-  │ User  │ 1 ────────* │ Post  │
-  └───────┘             └───────┘
-    1   1                 1   *
-    │   │                 │   │
-    │   └────*            │   └────*
-    │        │            │        │
-    ▼        ▼            ▼        ▼
-┌───────┐ ┌────────┐  ┌───────┐┌─────────┐
-│History│ │Transact│  │Comment││  Likes  │
-└───────┘ └────────┘  └───────┘└─────────┘
+  ┌────────┐               ┌───────┐
+  │ Upload │ * ──────────1 │ User  │ 1 ────────* ┌───────┐
+  └────────┘               └───────┘             │ Post  │
+      *                        1   1             └───────┘
+      │                        │   │               1   *
+      │                        │   └────*          │   │
+      └────────────────────────┼────*   │          │   └────*
+                               │    │   │          │        │
+                               ▼    ▼   ▼          ▼        ▼
+                           ┌───────┐ ┌────────┐ ┌───────┐┌─────────┐
+                           │History│ │Transact│ │Comment││  Likes  │
+                           └───────┘ └────────┘ └───────┘└─────────┘
 ```

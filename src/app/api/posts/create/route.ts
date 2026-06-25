@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import connectToDatabase from "@/lib/mongodb";
 import Post from "@/models/Post";
+import Upload from "@/models/Upload";
 
 export async function POST(req: Request) {
   try {
@@ -52,6 +53,24 @@ export async function POST(req: Request) {
       commentsCount: 0,
       sharesCount: 0,
     });
+
+    // 8. If post includes media, link the upload record to this post
+    if (mediaUrl && mediaUrl.trim() !== "") {
+      try {
+        await Upload.findOneAndUpdate(
+          {
+            url: mediaUrl,
+            uploader: (session.user as any).id,
+          },
+          {
+            associatedPost: newPost._id,
+          }
+        );
+      } catch (err) {
+        console.error("Failed to link upload metadata to post:", err);
+        // Do not fail the request if database link fails, just log it.
+      }
+    }
 
     // 8. Respond with the created post
     return NextResponse.json(

@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { writeFile } from "fs/promises";
 import { join } from "path";
+import connectToDatabase from "@/lib/mongodb";
+import Upload from "@/models/Upload";
 
 export async function POST(req: Request) {
   try {
@@ -74,7 +76,19 @@ export async function POST(req: Request) {
     
     await writeFile(filePath, buffer);
 
-    // 9. Respond with the saved URL path
+    // 9. Connect to database and save media upload metadata log
+    await connectToDatabase();
+    await Upload.create({
+      uploader: (session.user as any).id,
+      filename: uniqueFilename,
+      originalName,
+      mimeType: file.type,
+      size: file.size,
+      url: `/uploads/${uniqueFilename}`,
+      associatedPost: null,
+    });
+
+    // 10. Respond with the saved URL path
     return NextResponse.json(
       {
         success: true,

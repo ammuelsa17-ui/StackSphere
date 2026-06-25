@@ -5,8 +5,8 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 ---
 
 ## 📊 Summary
-* **Current Day**: Day 13
-* **Overall Progress**: 21.7% (13/60 Days Completed)
+* **Current Day**: Day 14
+* **Overall Progress**: 23.3% (14/60 Days Completed)
 * **Status**: In Progress
 
 ---
@@ -29,7 +29,7 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 - [x] **Day 11**: Design social feed UI and create post card components.
 - [x] **Day 12**: Implement text-based post creation backend and frontend.
 - [x] **Day 13**: Create image and video upload UI and handling.
-- [ ] **Day 14**: Connect media upload storage handling with the backend database.
+- [x] **Day 14**: Connect media upload storage handling with the backend database.
 - [ ] **Day 15**: Implement post feed retrieval API (retrieve posts in chronological order).
 - [ ] **Day 16**: Add like and unlike functionality to posts.
 - [ ] **Day 17**: Add commenting system (post comments, display comment lists).
@@ -207,6 +207,14 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 * **Problems:** Preventing invalid file formats from breaking post-creation forms on the client.
 * **Solutions:** Conducted validation checks client-side and server-side, returning explicit validation errors and resetting state.
 * **Next Task:** Connect media upload storage handling with the backend database on Day 14.
+
+### Day 14
+* **Date:** June 25, 2026
+* **Completed:** Created `Upload` database collection model to log uploaded file details. Integrated the upload logic in `POST /api/uploads` and `POST /api/posts/create` endpoints to log uploads in MongoDB and associate uploads directly with their respective posts, validating file ownership. Documented collection design in `docs/database-design.md`.
+* **Files Changed:** `src/models/Upload.ts`, `src/app/api/uploads/route.ts`, `src/app/api/posts/create/route.ts`, `docs/database-design.md`, `progress/day-14.md`, `progress/development-log.md`, `task.md`
+* **Problems:** Gracefully handling post creation when matching upload records don't exist (e.g. for external URLs).
+* **Solutions:** Implemented try-catch wrapping in post creation lookup so that non-local URL posts succeed without throwing errors.
+* **Next Task:** Implement post feed retrieval API (retrieve posts in chronological order) on Day 15.
 
 
 
