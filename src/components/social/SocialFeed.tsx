@@ -105,6 +105,38 @@ export default function SocialFeed({ currentUser, initialPosts = [] }: SocialFee
     initialPosts.length > 0 ? initialPosts : INITIAL_POSTS
   );
   const [followingStates, setFollowingStates] = useState<Record<string, boolean>>({});
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(initialPosts.length >= 10);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+
+  const loadMorePosts = async () => {
+    if (isLoadingMore) return;
+    setIsLoadingMore(true);
+
+    try {
+      const nextPage = page + 1;
+      const response = await fetch(`/api/posts?page=${nextPage}&limit=10`);
+      
+      if (!response.ok) {
+        throw new Error("Failed to load more posts");
+      }
+
+      const resData = await response.json();
+      if (resData.success && resData.posts) {
+        const newPosts: PostType[] = resData.posts;
+        if (newPosts.length < 10) {
+          setHasMore(false);
+        }
+        setPosts((prevPosts) => [...prevPosts, ...newPosts]);
+        setPage(nextPage);
+      }
+    } catch (err: any) {
+      console.error("Failed to load more posts:", err);
+      alert(err.message || "An error occurred while loading more posts.");
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
 
   const handlePostCreated = async (newPostData: {
     content: string;
@@ -195,6 +227,26 @@ export default function SocialFeed({ currentUser, initialPosts = [] }: SocialFee
           {posts.map((post) => (
             <PostCard key={post.id} post={post} currentUserId={currentUser.id} />
           ))}
+
+          {/* Load More Button */}
+          {hasMore && (
+            <div className="flex justify-center pt-2">
+              <button
+                onClick={loadMorePosts}
+                disabled={isLoadingMore}
+                className="px-6 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-900 text-xs font-semibold text-neutral-600 dark:text-neutral-300 transition-all duration-200 shadow-sm flex items-center gap-2 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50"
+              >
+                {isLoadingMore ? (
+                  <>
+                    <span className="w-3.5 h-3.5 border-2 border-indigo-650/30 border-t-indigo-600 rounded-full animate-spin" />
+                    <span>Loading...</span>
+                  </>
+                ) : (
+                  <span>Load More Posts</span>
+                )}
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

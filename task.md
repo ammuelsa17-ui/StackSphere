@@ -5,8 +5,8 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 ---
 
 ## 📊 Summary
-* **Current Day**: Day 14
-* **Overall Progress**: 23.3% (14/60 Days Completed)
+* **Current Day**: Day 15
+* **Overall Progress**: 25.0% (15/60 Days Completed)
 * **Status**: In Progress
 
 ---
@@ -30,7 +30,7 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 - [x] **Day 12**: Implement text-based post creation backend and frontend.
 - [x] **Day 13**: Create image and video upload UI and handling.
 - [x] **Day 14**: Connect media upload storage handling with the backend database.
-- [ ] **Day 15**: Implement post feed retrieval API (retrieve posts in chronological order).
+- [x] **Day 15**: Implement post feed retrieval API (retrieve posts in chronological order).
 - [ ] **Day 16**: Add like and unlike functionality to posts.
 - [ ] **Day 17**: Add commenting system (post comments, display comment lists).
 - [ ] **Day 18**: Add sharing functionality for posts.
@@ -215,6 +215,14 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 * **Problems:** Gracefully handling post creation when matching upload records don't exist (e.g. for external URLs).
 * **Solutions:** Implemented try-catch wrapping in post creation lookup so that non-local URL posts succeed without throwing errors.
 * **Next Task:** Implement post feed retrieval API (retrieve posts in chronological order) on Day 15.
+
+### Day 15
+* **Date:** June 26, 2026
+* **Completed:** Created chronological feed retrieval API endpoint `GET /api/posts` supporting pagination, updated `SocialFeed` frontend component to track pagination state, integrated **Load More** button, and updated API documentation in `docs/api-documentation.md`.
+* **Files Changed:** `src/app/api/posts/route.ts`, `src/components/social/SocialFeed.tsx`, `docs/api-documentation.md`, `progress/day-15.md`, `progress/development-log.md`, `task.md`
+* **Problems:** Managing pagination limits and disabling button when feed ends.
+* **Solutions:** Evaluated feed array sizes returned from backend; if the result is smaller than the limit (10), disabled page loading triggers.
+* **Next Task:** Add like and unlike functionality to posts on Day 16.
 
 
 

@@ -127,3 +127,40 @@ This document logs the endpoints, requests, and response models of the StackSphe
   ```
 * **Error Cases:**
   * `403 Forbidden`: Friend-based post limit exceeded.
+
+### 2.2 Retrieve Social Posts Feed
+* **Endpoint:** `GET /api/posts`
+* **Purpose:** Retrieve chronological feed posts with support for pagination.
+* **Headers:** Required NextAuth session cookies.
+* **Query Parameters:**
+  - `page`: Page index (default: `1`)
+  - `limit`: Number of posts per page (default: `10`, maximum: `50`)
+* **Success Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "posts": [
+      {
+        "id": "postId",
+        "content": "This is a text post!",
+        "mediaUrl": "https://url.com/image.png",
+        "mediaType": "image",
+        "author": {
+          "name": "Sarah Connor",
+          "email": "sarah@example.com",
+          "avatarUrl": "",
+          "subscription": {
+            "plan": "Gold"
+          }
+        },
+        "likes": [],
+        "commentsCount": 0,
+        "sharesCount": 0,
+        "createdAt": "2026-06-25T12:00:00.000Z"
+      }
+    ]
+  }
+  ```
+* **Error Cases:**
+  * `401 Unauthorized`: Session missing or expired.
+
