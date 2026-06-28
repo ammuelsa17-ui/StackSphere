@@ -30,14 +30,46 @@ export default function PostCard({ post, currentUserId = "" }: PostCardProps) {
   const [liked, setLiked] = useState(post.likes.includes(currentUserId));
   const [likesCount, setLikesCount] = useState(post.likes.length);
   const [sharesCount, setSharesCount] = useState(post.sharesCount);
+  const [isTogglingLike, setIsTogglingLike] = useState(false);
 
-  const handleLike = () => {
-    if (liked) {
-      setLiked(false);
-      setLikesCount((prev) => prev - 1);
-    } else {
-      setLiked(true);
-      setLikesCount((prev) => prev + 1);
+  const handleLike = async () => {
+    if (isTogglingLike) return;
+    setIsTogglingLike(true);
+
+    // Optimistically update states
+    const wasLiked = liked;
+    const initialCount = likesCount;
+
+    setLiked(!wasLiked);
+    setLikesCount(wasLiked ? initialCount - 1 : initialCount + 1);
+
+    try {
+      const response = await fetch("/api/posts/like", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ postId: post.id }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to update like status");
+      }
+
+      const resData = await response.json();
+      if (resData.success) {
+        setLiked(resData.liked);
+        setLikesCount(resData.likesCount);
+      }
+    } catch (err: any) {
+      console.error("Like toggle error:", err);
+      // Rollback on failure
+      setLiked(wasLiked);
+      setLikesCount(initialCount);
+      alert(err.message || "An error occurred while updating the like count.");
+    } finally {
+      setIsTogglingLike(false);
     }
   };
 

@@ -5,8 +5,8 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 ---
 
 ## 📊 Summary
-* **Current Day**: Day 15
-* **Overall Progress**: 25.0% (15/60 Days Completed)
+* **Current Day**: Day 16
+* **Overall Progress**: 26.7% (16/60 Days Completed)
 * **Status**: In Progress
 
 ---
@@ -31,7 +31,7 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 - [x] **Day 13**: Create image and video upload UI and handling.
 - [x] **Day 14**: Connect media upload storage handling with the backend database.
 - [x] **Day 15**: Implement post feed retrieval API (retrieve posts in chronological order).
-- [ ] **Day 16**: Add like and unlike functionality to posts.
+- [x] **Day 16**: Add like and unlike functionality to posts.
 - [ ] **Day 17**: Add commenting system (post comments, display comment lists).
 - [ ] **Day 18**: Add sharing functionality for posts.
 - [ ] **Day 19**: Create friend request system (send, accept, reject requests).
@@ -223,6 +223,14 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 * **Problems:** Managing pagination limits and disabling button when feed ends.
 * **Solutions:** Evaluated feed array sizes returned from backend; if the result is smaller than the limit (10), disabled page loading triggers.
 * **Next Task:** Add like and unlike functionality to posts on Day 16.
+
+### Day 16
+* **Date:** June 28, 2026
+* **Completed:** Created post like/unlike API route `POST /api/posts/like` supporting user array toggles, modified `PostCard` client component to run optimistically with error rollback handlers, and updated documentation in `docs/api-documentation.md`.
+* **Files Changed:** `src/app/api/posts/like/route.ts`, `src/components/social/PostCard.tsx`, `docs/api-documentation.md`, `progress/day-16.md`, `progress/development-log.md`, `task.md`
+* **Problems:** Ensuring client UI rollbacks are triggered safely when the API encounters server errors.
+* **Solutions:** Saved the initial states (`liked` and `likesCount`) before starting the fetch request, restoring these variables inside a try-catch error block.
+* **Next Task:** Add commenting system (post comments, display comment lists) on Day 17.
 
 
 

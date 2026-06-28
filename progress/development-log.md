@@ -17,6 +17,7 @@ This index lists all our daily progress files for easy navigation during evaluat
 * [Day 13: Created image and video upload UI and handling](./day-13.md)
 * [Day 14: Connected media upload storage handling with the backend database](./day-14.md)
 * [Day 15: Implemented post feed retrieval API (retrieve posts in chronological order)](./day-15.md)
+* [Day 16: Added like and unlike functionality to posts](./day-16.md)
 
 
 

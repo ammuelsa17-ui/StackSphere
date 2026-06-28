@@ -164,3 +164,27 @@ This document logs the endpoints, requests, and response models of the StackSphe
 * **Error Cases:**
   * `401 Unauthorized`: Session missing or expired.
 
+### 2.3 Like/Unlike Social Post
+* **Endpoint:** `POST /api/posts/like`
+* **Purpose:** Toggle liking and unliking a social space feed post.
+* **Headers:** Required NextAuth session cookies.
+* **Request Body:**
+  ```json
+  {
+    "postId": "postId"
+  }
+  ```
+* **Success Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "liked": true,
+    "likesCount": 1
+  }
+  ```
+* **Error Cases:**
+  * `401 Unauthorized`: Session missing or expired.
+  * `400 Bad Request`: Post ID is missing.
+  * `404 Not Found`: Post could not be found.
+
+
