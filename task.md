@@ -5,8 +5,8 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 ---
 
 ## 📊 Summary
-* **Current Day**: Day 16
-* **Overall Progress**: 26.7% (16/60 Days Completed)
+* **Current Day**: Day 17
+* **Overall Progress**: 28.3% (17/60 Days Completed)
 * **Status**: In Progress
 
 ---
@@ -32,7 +32,7 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 - [x] **Day 14**: Connect media upload storage handling with the backend database.
 - [x] **Day 15**: Implement post feed retrieval API (retrieve posts in chronological order).
 - [x] **Day 16**: Add like and unlike functionality to posts.
-- [ ] **Day 17**: Add commenting system (post comments, display comment lists).
+- [x] **Day 17**: Add commenting system (post comments, display comment lists).
 - [ ] **Day 18**: Add sharing functionality for posts.
 - [ ] **Day 19**: Create friend request system (send, accept, reject requests).
 - [ ] **Day 20**: Implement friend list management UI and backend.
@@ -231,6 +231,14 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 * **Problems:** Ensuring client UI rollbacks are triggered safely when the API encounters server errors.
 * **Solutions:** Saved the initial states (`liked` and `likesCount`) before starting the fetch request, restoring these variables inside a try-catch error block.
 * **Next Task:** Add commenting system (post comments, display comment lists) on Day 17.
+
+### Day 17
+* **Date:** June 29, 2026
+* **Completed:** Created comment creation endpoint `POST /api/comments/create`, comment query route `GET /api/comments`, documented them in `docs/api-documentation.md`, and updated `PostCard` to render scrollable comments list and post composer form.
+* **Files Changed:** `src/app/api/comments/create/route.ts`, `src/app/api/comments/route.ts`, `src/components/social/PostCard.tsx`, `docs/api-documentation.md`, `progress/day-17.md`, `progress/development-log.md`, `task.md`
+* **Problems:** Ensuring comments are loaded only when the user chooses to expand the comment drawer.
+* **Solutions:** Wired comments loading logic inside the expanding trigger callback (`handleCommentButtonClick`), initiating network queries only when `showComments` transitions to true and state arrays are empty.
+* **Next Task:** Add sharing functionality for posts on Day 18.
 
 
 

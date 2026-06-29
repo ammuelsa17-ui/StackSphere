@@ -1,7 +1,22 @@
 "use client";
 
 import React, { useState } from "react";
-import { Heart, MessageCircle, Share2, Star, MoreHorizontal } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { Heart, MessageCircle, Share2, Star, MoreHorizontal, Send } from "lucide-react";
+
+interface CommentType {
+  id: string;
+  postId: string;
+  content: string;
+  author: {
+    name: string;
+    avatarUrl?: string;
+    subscription?: {
+      plan: string;
+    };
+  };
+  createdAt: string | Date;
+}
 
 interface PostCardProps {
   post: {
@@ -27,10 +42,81 @@ interface PostCardProps {
 
 export default function PostCard({ post, currentUserId = "" }: PostCardProps) {
   // Local state for basic visual interactivity
+  const { data: session } = useSession();
   const [liked, setLiked] = useState(post.likes.includes(currentUserId));
   const [likesCount, setLikesCount] = useState(post.likes.length);
   const [sharesCount, setSharesCount] = useState(post.sharesCount);
   const [isTogglingLike, setIsTogglingLike] = useState(false);
+
+  // Comments states
+  const [showComments, setShowComments] = useState(false);
+  const [comments, setComments] = useState<CommentType[]>([]);
+  const [isLoadingComments, setIsLoadingComments] = useState(false);
+  const [newComment, setNewComment] = useState("");
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+  const [commentsCount, setCommentsCount] = useState(post.commentsCount);
+
+  const handleCommentButtonClick = () => {
+    const nextShow = !showComments;
+    setShowComments(nextShow);
+    if (nextShow && comments.length === 0) {
+      loadComments();
+    }
+  };
+
+  const loadComments = async () => {
+    setIsLoadingComments(true);
+    try {
+      const response = await fetch(`/api/comments?postId=${post.id}`);
+      if (!response.ok) {
+        throw new Error("Failed to load comments");
+      }
+      const resData = await response.json();
+      if (resData.success && resData.comments) {
+        setComments(resData.comments);
+      }
+    } catch (err) {
+      console.error("Failed to load comments:", err);
+    } finally {
+      setIsLoadingComments(false);
+    }
+  };
+
+  const handleCommentSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newComment.trim() || isSubmittingComment) return;
+
+    setIsSubmittingComment(true);
+    try {
+      const response = await fetch("/api/comments/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          postId: post.id,
+          content: newComment.trim(),
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to create comment");
+      }
+
+      const resData = await response.json();
+      if (resData.success && resData.comment) {
+        setComments((prev) => [...prev, resData.comment]);
+        setCommentsCount((prev) => prev + 1);
+        setNewComment("");
+      }
+    } catch (err: any) {
+      console.error("Failed to submit comment:", err);
+      alert(err.message || "An error occurred while posting your comment.");
+    } finally {
+      setIsSubmittingComment(false);
+    }
+  };
 
   const handleLike = async () => {
     if (isTogglingLike) return;
@@ -202,9 +288,16 @@ export default function PostCard({ post, currentUserId = "" }: PostCardProps) {
         </button>
 
         {/* Comment action button */}
-        <button className="flex items-center gap-1.5 text-xs font-semibold text-neutral-500 hover:text-indigo-600 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/10 py-1.5 px-3 rounded-lg transition-all">
+        <button
+          onClick={handleCommentButtonClick}
+          className={`flex items-center gap-1.5 text-xs font-semibold py-1.5 px-3 rounded-lg transition-all ${
+            showComments
+              ? "text-indigo-600 bg-indigo-50 dark:bg-indigo-950/20"
+              : "text-neutral-500 hover:text-indigo-600 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/10"
+          }`}
+        >
           <MessageCircle className="h-4 w-4" />
-          <span>{post.commentsCount}</span>
+          <span>{commentsCount}</span>
         </button>
 
         {/* Share action button */}
@@ -216,6 +309,108 @@ export default function PostCard({ post, currentUserId = "" }: PostCardProps) {
           <span>{sharesCount}</span>
         </button>
       </div>
+
+      {/* Comments Section Drawer */}
+      {showComments && (
+        <div className="border-t border-neutral-100 dark:border-neutral-700/60 pt-4 mt-3 space-y-4 animate-fadeIn">
+          {/* Comments List */}
+          <div className="space-y-3.5 max-h-[300px] overflow-y-auto pr-1">
+            {isLoadingComments ? (
+              <div className="flex flex-col items-center justify-center py-6 gap-2">
+                <span className="w-6 h-6 border-2 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+                <span className="text-[10px] text-neutral-450 font-semibold">Loading comments...</span>
+              </div>
+            ) : comments.length === 0 ? (
+              <p className="text-xs text-neutral-400 dark:text-neutral-500 text-center py-4 font-medium">
+                No replies yet. Start the conversation!
+              </p>
+            ) : (
+              comments.map((comment) => (
+                <div key={comment.id} className="flex gap-2.5 items-start text-xs text-neutral-700 dark:text-neutral-350">
+                  {comment.author.avatarUrl ? (
+                    <img
+                      src={comment.author.avatarUrl}
+                      alt={comment.author.name}
+                      className="w-7 h-7 rounded-full object-cover shrink-0"
+                    />
+                  ) : (
+                    <div className={`w-7 h-7 rounded-full bg-gradient-to-tr ${getAvatarColor(comment.author.name)} flex items-center justify-center text-white font-bold text-[10px] shadow-sm shrink-0`}>
+                      {getInitials(comment.author.name)}
+                    </div>
+                  )}
+
+                  <div className="flex-1 bg-neutral-50 dark:bg-neutral-900/40 border border-neutral-100 dark:border-neutral-800 rounded-xl px-3 py-2 space-y-1">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-bold text-neutral-800 dark:text-neutral-100">
+                          {comment.author.name}
+                        </span>
+                        {comment.author.subscription?.plan && (
+                          <span className={`inline-flex items-center gap-0.5 px-1 py-px text-[7px] font-bold border rounded-full ${getPlanColor(comment.author.subscription.plan)}`}>
+                            <Star className="h-1.5 w-1.5 fill-current" />
+                            {comment.author.subscription.plan}
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[9px] text-neutral-400 dark:text-neutral-500">
+                        {new Date(comment.createdAt).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                    </div>
+                    <p className="text-[11px] leading-relaxed whitespace-pre-line text-neutral-600 dark:text-neutral-350">
+                      {comment.content}
+                    </p>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Comment Composer */}
+          <form onSubmit={handleCommentSubmit} className="flex gap-3 pt-2">
+            {session?.user?.image ? (
+              <img
+                src={session.user.image}
+                alt={session.user.name || "Me"}
+                className="w-8 h-8 rounded-full object-cover shrink-0"
+              />
+            ) : (
+              <div className={`w-8 h-8 rounded-full bg-gradient-to-tr ${getAvatarColor(session?.user?.name || "Member")} flex items-center justify-center text-white font-bold text-xs shadow-sm shrink-0`}>
+                {getInitials(session?.user?.name || "Member")}
+              </div>
+            )}
+
+            <div className="flex-1 flex gap-2">
+              <input
+                type="text"
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                placeholder="Write a reply..."
+                className="flex-1 h-8 px-3.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-transparent text-xs text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+              />
+              <button
+                type="submit"
+                disabled={isSubmittingComment || !newComment.trim()}
+                className={`h-8 w-8 rounded-lg flex items-center justify-center text-white transition-all shrink-0 shadow-sm ${
+                  newComment.trim() && !isSubmittingComment
+                    ? "bg-indigo-600 hover:bg-indigo-500 active:scale-95"
+                    : "bg-indigo-400 cursor-not-allowed"
+                }`}
+              >
+                {isSubmittingComment ? (
+                  <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <Send className="h-3.5 w-3.5" />
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
 
     </div>
   );

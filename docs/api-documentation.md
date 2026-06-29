@@ -187,4 +187,73 @@ This document logs the endpoints, requests, and response models of the StackSphe
   * `400 Bad Request`: Post ID is missing.
   * `404 Not Found`: Post could not be found.
 
+### 2.4 Create Post Comment
+* **Endpoint:** `POST /api/comments/create`
+* **Purpose:** Publish a reply to a post.
+* **Headers:** Required NextAuth session cookies.
+* **Request Body:**
+  ```json
+  {
+    "postId": "postId",
+    "content": "This is a comment!"
+  }
+  ```
+* **Success Response (201 Created):**
+  ```json
+  {
+    "success": true,
+    "comment": {
+      "id": "commentId",
+      "postId": "postId",
+      "content": "This is a comment!",
+      "author": {
+        "name": "Sarah Connor",
+        "email": "sarah@example.com",
+        "avatarUrl": "",
+        "subscription": {
+          "plan": "Gold"
+        }
+      },
+      "createdAt": "2026-06-25T12:00:00.000Z"
+    }
+  }
+  ```
+* **Error Cases:**
+  * `401 Unauthorized`: Session missing or expired.
+  * `400 Bad Request`: Empty content or missing Post ID.
+  * `404 Not Found`: Target post could not be found.
+
+### 2.5 Retrieve Post Comments
+* **Endpoint:** `GET /api/comments`
+* **Purpose:** Retrieve all comments for a post in chronological order (oldest first).
+* **Headers:** Required NextAuth session cookies.
+* **Query Parameters:**
+  - `postId`: The post ID to load comments for (Required)
+* **Success Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "comments": [
+      {
+        "id": "commentId",
+        "postId": "postId",
+        "content": "This is a comment!",
+        "author": {
+          "name": "Sarah Connor",
+          "email": "sarah@example.com",
+          "avatarUrl": "",
+          "subscription": {
+            "plan": "Gold"
+          }
+        },
+        "createdAt": "2026-06-25T12:00:00.000Z"
+      }
+    ]
+  }
+  ```
+* **Error Cases:**
+  * `401 Unauthorized`: Session missing or expired.
+  * `400 Bad Request`: postId query parameter missing.
+
+
 
