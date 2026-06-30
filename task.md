@@ -5,8 +5,8 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 ---
 
 ## 📊 Summary
-* **Current Day**: Day 17
-* **Overall Progress**: 28.3% (17/60 Days Completed)
+* **Current Day**: Day 18
+* **Overall Progress**: 30.0% (18/60 Days Completed)
 * **Status**: In Progress
 
 ---
@@ -33,7 +33,7 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 - [x] **Day 15**: Implement post feed retrieval API (retrieve posts in chronological order).
 - [x] **Day 16**: Add like and unlike functionality to posts.
 - [x] **Day 17**: Add commenting system (post comments, display comment lists).
-- [ ] **Day 18**: Add sharing functionality for posts.
+- [x] **Day 18**: Add sharing functionality for posts.
 - [ ] **Day 19**: Create friend request system (send, accept, reject requests).
 - [ ] **Day 20**: Implement friend list management UI and backend.
 - [ ] **Day 21**: Implement friend-based posting restrictions:
@@ -239,6 +239,14 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 * **Problems:** Ensuring comments are loaded only when the user chooses to expand the comment drawer.
 * **Solutions:** Wired comments loading logic inside the expanding trigger callback (`handleCommentButtonClick`), initiating network queries only when `showComments` transitions to true and state arrays are empty.
 * **Next Task:** Add sharing functionality for posts on Day 18.
+
+### Day 18
+* **Date:** June 30, 2026
+* **Completed:** Created post sharing endpoint `POST /api/posts/share` to increment DB count, modified `PostCard` to copy deep link to user clipboard, and displayed custom bouncing confirmation toast alerts.
+* **Files Changed:** `src/app/api/posts/share/route.ts`, `src/components/social/PostCard.tsx`, `docs/api-documentation.md`, `progress/day-18.md`, `progress/development-log.md`, `task.md`
+* **Problems:** Preventing layout shifts during absolute element toggles inside flex components.
+* **Solutions:** Absolute positioned the tooltip overlay (`absolute bottom-full left-1/2 -translate-x-1/2`) relative to the wrap container, avoiding any structural resizing inside the toolbar grid.
+* **Next Task:** Create friend request system (send, accept, reject requests) on Day 19.
 
 
 

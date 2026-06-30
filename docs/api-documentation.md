@@ -255,5 +255,28 @@ This document logs the endpoints, requests, and response models of the StackSphe
   * `401 Unauthorized`: Session missing or expired.
   * `400 Bad Request`: postId query parameter missing.
 
+### 2.6 Share Social Post
+* **Endpoint:** `POST /api/posts/share`
+* **Purpose:** Increment the share count statistics when a post is shared.
+* **Headers:** Required NextAuth session cookies.
+* **Request Body:**
+  ```json
+  {
+    "postId": "postId"
+  }
+  ```
+* **Success Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "sharesCount": 1
+  }
+  ```
+* **Error Cases:**
+  * `401 Unauthorized`: Session missing or expired.
+  * `400 Bad Request`: Post ID is missing.
+  * `404 Not Found`: Post could not be found.
+
+
 
 

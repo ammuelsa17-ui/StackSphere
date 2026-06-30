@@ -19,6 +19,7 @@ This index lists all our daily progress files for easy navigation during evaluat
 * [Day 15: Implemented post feed retrieval API (retrieve posts in chronological order)](./day-15.md)
 * [Day 16: Added like and unlike functionality to posts](./day-16.md)
 * [Day 17: Added commenting system (post comments, display comment lists)](./day-17.md)
+* [Day 18: Added sharing functionality for posts](./day-18.md)
 
 
 

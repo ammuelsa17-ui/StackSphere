@@ -47,6 +47,7 @@ export default function PostCard({ post, currentUserId = "" }: PostCardProps) {
   const [likesCount, setLikesCount] = useState(post.likes.length);
   const [sharesCount, setSharesCount] = useState(post.sharesCount);
   const [isTogglingLike, setIsTogglingLike] = useState(false);
+  const [showShareToast, setShowShareToast] = useState(false);
 
   // Comments states
   const [showComments, setShowComments] = useState(false);
@@ -159,8 +160,44 @@ export default function PostCard({ post, currentUserId = "" }: PostCardProps) {
     }
   };
 
-  const handleShare = () => {
+  const handleShare = async () => {
+    // 1. Copy formatted post link to user's clipboard
+    const postUrl = `${window.location.origin}/social/posts/${post.id}`;
+    try {
+      await navigator.clipboard.writeText(postUrl);
+      setShowShareToast(true);
+      setTimeout(() => setShowShareToast(false), 2000);
+    } catch (err) {
+      console.error("Clipboard copy failed:", err);
+    }
+
+    // 2. Optimistically increment count on UI
+    const prevCount = sharesCount;
     setSharesCount((prev) => prev + 1);
+
+    // 3. Update backend API database record
+    try {
+      const response = await fetch("/api/posts/share", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ postId: post.id }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to register share");
+      }
+
+      const resData = await response.json();
+      if (resData.success && typeof resData.sharesCount === "number") {
+        setSharesCount(resData.sharesCount);
+      }
+    } catch (err) {
+      console.error("Post share api error:", err);
+      // Fallback on total failure
+      setSharesCount(prevCount);
+    }
   };
 
   // Get initials for avatar fallback
@@ -301,13 +338,20 @@ export default function PostCard({ post, currentUserId = "" }: PostCardProps) {
         </button>
 
         {/* Share action button */}
-        <button
-          onClick={handleShare}
-          className="flex items-center gap-1.5 text-xs font-semibold text-neutral-500 hover:text-emerald-600 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/10 py-1.5 px-3 rounded-lg transition-all"
-        >
-          <Share2 className="h-4 w-4" />
-          <span>{sharesCount}</span>
-        </button>
+        <div className="relative">
+          <button
+            onClick={handleShare}
+            className="flex items-center gap-1.5 text-xs font-semibold text-neutral-500 hover:text-emerald-600 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/10 py-1.5 px-3 rounded-lg transition-all"
+          >
+            <Share2 className="h-4 w-4" />
+            <span>{sharesCount}</span>
+          </button>
+          {showShareToast && (
+            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1.5 bg-emerald-600 text-white text-[9px] font-bold px-2 py-0.5 rounded shadow-sm whitespace-nowrap animate-bounce">
+              Link copied!
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Comments Section Drawer */}
