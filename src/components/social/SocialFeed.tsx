@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import CreatePostCard from "./CreatePostCard";
 import PostCard from "./PostCard";
+import FriendManager from "./FriendManager";
 import { UserPlus, UserCheck, TrendingUp, Hash, Star } from "lucide-react";
 
 interface SocialFeedProps {
@@ -252,68 +253,8 @@ export default function SocialFeed({ currentUser, initialPosts = [] }: SocialFee
 
       {/* Right Column: Widgets / Sidebars */}
       <div className="lg:col-span-4 space-y-6">
-        
-        {/* Suggested Friends Widget */}
-        <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-5 shadow-sm space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-neutral-800 dark:text-neutral-100">
-              Suggested Authors
-            </h3>
-            <button className="text-xs font-semibold text-indigo-650 hover:text-indigo-500 transition-colors">
-              See All
-            </button>
-          </div>
-
-          <div className="space-y-3.5">
-            {SUGGESTED_FRIENDS.map((friend) => {
-              const isFollowing = followingStates[friend.id];
-              return (
-                <div key={friend.id} className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className={`w-9 h-9 rounded-full bg-gradient-to-tr ${getAvatarColor(friend.name)} flex items-center justify-center text-white font-bold text-xs shadow-sm shrink-0`}>
-                      {friend.avatarInitials}
-                    </div>
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <h4 className="text-xs font-bold text-neutral-800 dark:text-neutral-100 truncate hover:text-indigo-600 transition-colors cursor-pointer">
-                          {friend.name}
-                        </h4>
-                        <span className={`inline-flex items-center gap-0.5 px-1 py-px text-[7px] font-bold border rounded-full ${getPlanColor(friend.plan)}`}>
-                          <Star className="h-1.5 w-1.5 fill-current" />
-                          {friend.plan}
-                        </span>
-                      </div>
-                      <p className="text-[10px] text-neutral-400 dark:text-neutral-500 truncate mt-0.5">
-                        {friend.role}
-                      </p>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => toggleFollow(friend.id)}
-                    className={`flex items-center gap-1 px-3 py-1.5 text-[10px] font-bold rounded-lg border transition-all duration-200 shrink-0 ${
-                      isFollowing
-                        ? "bg-neutral-50 border-neutral-200 text-neutral-600 hover:bg-neutral-100 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400"
-                        : "bg-indigo-600 border-indigo-600 text-white hover:bg-indigo-500 shadow-sm"
-                    }`}
-                  >
-                    {isFollowing ? (
-                      <>
-                        <UserCheck className="h-3 w-3" />
-                        <span>Following</span>
-                      </>
-                    ) : (
-                      <>
-                        <UserPlus className="h-3 w-3" />
-                        <span>Follow</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+              {/* Dynamic Friend Request & List Management Widget */}
+        <FriendManager />
 
         {/* Trending Hashtags Widget */}
         <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-5 shadow-sm space-y-4">

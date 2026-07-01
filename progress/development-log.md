@@ -20,6 +20,8 @@ This index lists all our daily progress files for easy navigation during evaluat
 * [Day 16: Added like and unlike functionality to posts](./day-16.md)
 * [Day 17: Added commenting system (post comments, display comment lists)](./day-17.md)
 * [Day 18: Added sharing functionality for posts](./day-18.md)
+* [Day 19: Created friend request system (send, accept, reject requests)](./day-19.md)
+* [Day 20: Implemented friend list management UI and backend](./day-20.md)
 
 
 

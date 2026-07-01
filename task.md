@@ -5,8 +5,8 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 ---
 
 ## 📊 Summary
-* **Current Day**: Day 18
-* **Overall Progress**: 30.0% (18/60 Days Completed)
+* **Current Day**: Day 20
+* **Overall Progress**: 33.3% (20/60 Days Completed)
 * **Status**: In Progress
 
 ---
@@ -34,8 +34,8 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 - [x] **Day 16**: Add like and unlike functionality to posts.
 - [x] **Day 17**: Add commenting system (post comments, display comment lists).
 - [x] **Day 18**: Add sharing functionality for posts.
-- [ ] **Day 19**: Create friend request system (send, accept, reject requests).
-- [ ] **Day 20**: Implement friend list management UI and backend.
+- [x] **Day 19**: Create friend request system (send, accept, reject requests).
+- [x] **Day 20**: Implement friend list management UI and backend.
 - [ ] **Day 21**: Implement friend-based posting restrictions:
   - 0 friends: Cannot post.
   - 1 friend: Post once per day.
@@ -247,6 +247,22 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 * **Problems:** Preventing layout shifts during absolute element toggles inside flex components.
 * **Solutions:** Absolute positioned the tooltip overlay (`absolute bottom-full left-1/2 -translate-x-1/2`) relative to the wrap container, avoiding any structural resizing inside the toolbar grid.
 * **Next Task:** Create friend request system (send, accept, reject requests) on Day 19.
+
+### Day 19
+* **Date:** July 1, 2026
+* **Completed:** Created FriendRequest database collection, created user search endpoint `GET /api/users/search` to find users and annotate relationship states, and created friend request sending API `POST /api/friends/request`.
+* **Files Changed:** `src/models/FriendRequest.ts`, `src/app/api/users/search/route.ts`, `src/app/api/friends/request/route.ts`, `progress/day-19.md`, `progress/development-log.md`, `task.md`
+* **Problems:** Managing user relationships and annotating search results efficiently.
+* **Solutions:** Querying request states involving the active user in a single database lookup and annotating user items mapping to search hits.
+* **Next Task:** Implement friend list management UI and backend on Day 20.
+
+### Day 20
+* **Date:** July 1, 2026
+* **Completed:** Created request response API `POST /api/friends/request/respond`, list retrieve/remove APIs `GET /api/friends` and `DELETE /api/friends`, created interactive `FriendManager` client component panel, and integrated it into the `SocialFeed` right column layout.
+* **Files Changed:** `src/app/api/friends/request/respond/route.ts`, `src/app/api/friends/route.ts`, `src/components/social/FriendManager.tsx`, `src/components/social/SocialFeed.tsx`, `docs/api-documentation.md`, `progress/day-20.md`, `progress/development-log.md`, `task.md`
+* **Problems:** Ensuring updates on accept/remove operations synchronize search index details.
+* **Solutions:** Wired status resets and loaded collection updates immediately inside operations click trigger handlers in the UI.
+* **Next Task:** Implement friend-based posting restrictions on Day 21.
 
 
 

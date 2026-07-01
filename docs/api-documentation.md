@@ -277,6 +277,124 @@ This document logs the endpoints, requests, and response models of the StackSphe
   * `400 Bad Request`: Post ID is missing.
   * `404 Not Found`: Post could not be found.
 
+## 3. Friends & Social Connection APIs
+
+### 3.1 Search Members
+* **Endpoint:** `GET /api/users/search`
+* **Purpose:** Find platform members by name/email and check connection relationships.
+* **Headers:** Required NextAuth session cookies.
+* **Query Parameters:**
+  - `q`: Search keyword query (string, required)
+* **Success Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "users": [
+      {
+        "id": "userId",
+        "name": "Sarah Connor",
+        "email": "sarah@example.com",
+        "avatarUrl": "",
+        "subscription": {
+          "plan": "Gold"
+        },
+        "relationship": "none",
+        "requestId": ""
+      }
+    ]
+  }
+  ```
+
+### 3.2 Send Friend Request
+* **Endpoint:** `POST /api/friends/request`
+* **Purpose:** Send a pending friend invitation to another user.
+* **Headers:** Required NextAuth session cookies.
+* **Request Body:**
+  ```json
+  {
+    "receiverId": "receiverUserId"
+  }
+  ```
+* **Success Response (201 Created):**
+  ```json
+  {
+    "success": true,
+    "message": "Friend request sent successfully.",
+    "request": {
+      "id": "requestId",
+      "sender": "senderUserId",
+      "receiver": "receiverUserId",
+      "status": "pending"
+    }
+  }
+  ```
+* **Error Cases:**
+  * `400 Bad Request`: Self requests, duplicate requests, or already friends.
+  * `404 Not Found`: Target user does not exist.
+
+### 3.3 Respond to Friend Request
+* **Endpoint:** `POST /api/friends/request/respond`
+* **Purpose:** Accept or reject a pending incoming invitation.
+* **Headers:** Required NextAuth session cookies.
+* **Request Body:**
+  ```json
+  {
+    "requestId": "requestId",
+    "action": "accept"
+  }
+  ```
+* **Success Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "Friend request accepted successfully.",
+    "status": "accepted"
+  }
+  ```
+
+### 3.4 Retrieve Friends or Requests List
+* **Endpoint:** `GET /api/friends`
+* **Purpose:** Load active friends or incoming pending invites.
+* **Headers:** Required NextAuth session cookies.
+* **Query Parameters:**
+  - `type`: Either `"list"` (default, accepted friends) or `"requests"` (pending requests)
+* **Success Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "friends": [
+      {
+        "id": "friendUserId",
+        "name": "Sarah Connor",
+        "email": "sarah@example.com",
+        "avatarUrl": "",
+        "subscription": {
+          "plan": "Gold"
+        }
+      }
+    ]
+  }
+  ```
+
+### 3.5 Remove Mutual Connection
+* **Endpoint:** `DELETE /api/friends`
+* **Purpose:** Break friendship bond mutually between two accounts.
+* **Headers:** Required NextAuth session cookies.
+* **Request Body:**
+  ```json
+  {
+    "friendId": "friendUserId"
+  }
+  ```
+* **Success Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "Friend removed successfully."
+  }
+  ```
+
+
 
 
 
