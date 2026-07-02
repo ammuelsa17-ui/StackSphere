@@ -22,6 +22,7 @@ This index lists all our daily progress files for easy navigation during evaluat
 * [Day 18: Added sharing functionality for posts](./day-18.md)
 * [Day 19: Created friend request system (send, accept, reject requests)](./day-19.md)
 * [Day 20: Implemented friend list management UI and backend](./day-20.md)
+* [Day 21: Implemented friend-based posting restrictions](./day-21.md)
 
 
 

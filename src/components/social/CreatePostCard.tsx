@@ -5,6 +5,13 @@ import { useSession } from "next-auth/react";
 import { Image, Video, Send, X, Star } from "lucide-react";
 
 interface CreatePostCardProps {
+  currentUser?: {
+    id: string;
+    name: string;
+    email?: string;
+    image?: string;
+    plan?: string;
+  };
   onPostCreated?: (post: {
     content: string;
     mediaUrl?: string;
@@ -12,7 +19,7 @@ interface CreatePostCardProps {
   }) => void;
 }
 
-export default function CreatePostCard({ onPostCreated }: CreatePostCardProps) {
+export default function CreatePostCard({ currentUser, onPostCreated }: CreatePostCardProps) {
   const { data: session } = useSession();
   const [content, setContent] = useState("");
   const [isExpanded, setIsExpanded] = useState(false);
@@ -52,6 +59,14 @@ export default function CreatePostCard({ onPostCreated }: CreatePostCardProps) {
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: "image" | "video") => {
+    const userPlan = currentUser?.plan || "Free";
+    if (userPlan === "Free") {
+      alert("Only premium subscribers (Bronze, Silver, Gold plans) can attach images or videos to posts. Please upgrade your subscription plan in the Dashboard to unlock media uploads.");
+      // Reset input value to prevent triggering file picker again with same file
+      if (e.target) e.target.value = "";
+      return;
+    }
+
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -88,6 +103,12 @@ export default function CreatePostCard({ onPostCreated }: CreatePostCardProps) {
   };
 
   const handleAddMockImage = () => {
+    const userPlan = currentUser?.plan || "Free";
+    if (userPlan === "Free") {
+      alert("Only premium subscribers (Bronze, Silver, Gold plans) can attach images or videos to posts. Please upgrade your subscription plan in the Dashboard to unlock media uploads.");
+      return;
+    }
+
     const mockImages = [
       "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&auto=format&fit=crop&q=60",
       "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop&q=60",

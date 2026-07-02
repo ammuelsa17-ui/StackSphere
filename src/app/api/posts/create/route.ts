@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import connectToDatabase from "@/lib/mongodb";
 import Post from "@/models/Post";
 import Upload from "@/models/Upload";
+import User from "@/models/User";
 
 export async function POST(req: Request) {
   try {
@@ -42,6 +43,51 @@ export async function POST(req: Request) {
 
     // 6. Connect to the database
     await connectToDatabase();
+
+    // 6b. Retrieve user and verify friend-count based limitations
+    const userId = (session.user as any).id;
+    const dbUser = await User.findById(userId).select("friends").lean();
+    if (!dbUser) {
+      return NextResponse.json(
+        { error: "User profile could not be found." },
+        { status: 404 }
+      );
+    }
+
+    const friendCount = dbUser.friends?.length || 0;
+
+    if (friendCount === 0) {
+      return NextResponse.json(
+        { error: "You cannot create a post because you have 0 friends. Please add at least 1 friend to start posting." },
+        { status: 403 }
+      );
+    }
+
+    // Determine daily post limit based on friend count
+    let dailyLimit = 5; // standard limit for 3+ friends
+    if (friendCount === 1) dailyLimit = 1;
+    else if (friendCount === 2) dailyLimit = 2;
+
+    // Calculate start of current UTC calendar day
+    const startOfToday = new Date();
+    startOfToday.setUTCHours(0, 0, 0, 0);
+
+    // Count user's posts created today
+    const postCountToday = await Post.countDocuments({
+      author: userId,
+      createdAt: { $gte: startOfToday },
+    });
+
+    if (postCountToday >= dailyLimit) {
+      return NextResponse.json(
+        {
+          error: `Daily posting limit reached. With ${friendCount} friend${
+            friendCount === 1 ? "" : "s"
+          }, you can post up to ${dailyLimit} time${dailyLimit === 1 ? "" : "s"} per day.`,
+        },
+        { status: 403 }
+      );
+    }
 
     // 7. Create the new post in the database
     const newPost = await Post.create({

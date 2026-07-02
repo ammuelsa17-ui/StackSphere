@@ -5,6 +5,7 @@ import { writeFile } from "fs/promises";
 import { join } from "path";
 import connectToDatabase from "@/lib/mongodb";
 import Upload from "@/models/Upload";
+import User from "@/models/User";
 
 export async function POST(req: Request) {
   try {
@@ -16,6 +17,25 @@ export async function POST(req: Request) {
       return NextResponse.json(
         { error: "Unauthorized access. Please log in." },
         { status: 401 }
+      );
+    }
+ 
+    // 2.1 Connect to DB and verify premium plan check
+    await connectToDatabase();
+    const userId = (session.user as any).id;
+    const dbUser = await User.findById(userId).select("subscription").lean();
+    if (!dbUser) {
+      return NextResponse.json(
+        { error: "User profile could not be found." },
+        { status: 404 }
+      );
+    }
+
+    const plan = dbUser.subscription?.plan || "Free";
+    if (plan === "Free") {
+      return NextResponse.json(
+        { error: "Only premium subscribers (Bronze, Silver, Gold plans) can upload images and videos." },
+        { status: 403 }
       );
     }
 
@@ -76,8 +96,7 @@ export async function POST(req: Request) {
     
     await writeFile(filePath, buffer);
 
-    // 9. Connect to database and save media upload metadata log
-    await connectToDatabase();
+    // 9. Save media upload metadata log
     await Upload.create({
       uploader: (session.user as any).id,
       filename: uniqueFilename,

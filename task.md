@@ -5,8 +5,8 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 ---
 
 ## 📊 Summary
-* **Current Day**: Day 20
-* **Overall Progress**: 33.3% (20/60 Days Completed)
+* **Current Day**: Day 21
+* **Overall Progress**: 35.0% (21/60 Days Completed)
 * **Status**: In Progress
 
 ---
@@ -36,7 +36,7 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 - [x] **Day 18**: Add sharing functionality for posts.
 - [x] **Day 19**: Create friend request system (send, accept, reject requests).
 - [x] **Day 20**: Implement friend list management UI and backend.
-- [ ] **Day 21**: Implement friend-based posting restrictions:
+- [x] **Day 21**: Implement friend-based posting restrictions:
   - 0 friends: Cannot post.
   - 1 friend: Post once per day.
   - 2 friends: Post twice per day.
@@ -263,6 +263,14 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 * **Problems:** Ensuring updates on accept/remove operations synchronize search index details.
 * **Solutions:** Wired status resets and loaded collection updates immediately inside operations click trigger handlers in the UI.
 * **Next Task:** Implement friend-based posting restrictions on Day 21.
+
+### Day 21
+* **Date:** July 2, 2026
+* **Completed:** Implemented daily posting restrictions in `POST /api/posts/create` based on friend count checks (0/1/2/3+ friends), early connect Early plan checks in `POST /api/uploads` and client components to prevent Free users from attaching media file elements.
+* **Files Changed:** `src/app/api/posts/create/route.ts`, `src/app/api/uploads/route.ts`, `src/components/social/CreatePostCard.tsx`, `src/components/social/SocialFeed.tsx`, `progress/day-21.md`, `progress/development-log.md`, `task.md`
+* **Problems:** Enforcing uploading bans early before local uploads write streams copy items.
+* **Solutions:** Shifted database connection to the top of `/api/uploads` route handling, executing User plan queries before handling file data streams.
+* **Next Task:** Test social features on Day 22.
 
 
 

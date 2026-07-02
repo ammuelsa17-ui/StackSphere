@@ -222,7 +222,7 @@ export default function SocialFeed({ currentUser, initialPosts = [] }: SocialFee
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
       {/* Left/Center Column: Post Creator and Feed List */}
       <div className="lg:col-span-8 space-y-6">
-        <CreatePostCard onPostCreated={handlePostCreated} />
+        <CreatePostCard currentUser={currentUser} onPostCreated={handlePostCreated} />
 
         <div className="space-y-6">
           {posts.map((post) => (
