@@ -158,15 +158,15 @@ export default function CreatePostCard({ currentUser, onPostCreated }: CreatePos
     <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-5 shadow-sm transition-all duration-200">
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Input Area */}
-        <div className="flex gap-4">
+        <div className="flex gap-3 sm:gap-4">
           {session?.user?.image ? (
             <img
               src={session.user.image}
               alt={userName}
-              className="w-10 h-10 rounded-full object-cover shrink-0"
+              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover shrink-0"
             />
           ) : (
-            <div className={`w-10 h-10 rounded-full bg-gradient-to-tr ${getAvatarColor(userName)} flex items-center justify-center text-white font-bold text-sm shadow-sm shrink-0`}>
+            <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr ${getAvatarColor(userName)} flex items-center justify-center text-white font-bold text-xs sm:text-sm shadow-sm shrink-0`}>
               {getInitials(userName)}
             </div>
           )}
@@ -185,7 +185,7 @@ export default function CreatePostCard({ currentUser, onPostCreated }: CreatePos
 
         {/* Media Preview Box or Uploading State */}
         {(mediaUrl || isUploading) && (
-          <div className="relative rounded-xl overflow-hidden border border-neutral-150 dark:border-neutral-700/60 min-h-[150px] max-h-[250px] bg-neutral-50 dark:bg-neutral-900/20 ml-14 flex items-center justify-center">
+          <div className="relative rounded-xl overflow-hidden border border-neutral-150 dark:border-neutral-700/60 min-h-[150px] max-h-[250px] bg-neutral-50 dark:bg-neutral-900/20 ml-11 sm:ml-14 flex items-center justify-center">
             {isUploading ? (
               <div className="flex flex-col items-center gap-2 py-8">
                 <span className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
@@ -214,8 +214,8 @@ export default function CreatePostCard({ currentUser, onPostCreated }: CreatePos
 
         {/* Action Toolbar */}
         {isExpanded && (
-          <div className="flex items-center justify-between pt-3 border-t border-neutral-100 dark:border-neutral-700/60 ml-14">
-            <div className="flex items-center gap-1">
+          <div className="flex items-center justify-between pt-3 border-t border-neutral-100 dark:border-neutral-700/60 ml-11 sm:ml-14">
+            <div className="flex items-center gap-0.5 sm:gap-1">
               {/* Hidden file inputs */}
               <input
                 type="file"

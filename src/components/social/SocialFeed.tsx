@@ -219,9 +219,9 @@ export default function SocialFeed({ currentUser, initialPosts = [] }: SocialFee
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+    <div className="grid grid-cols-1 md:grid-cols-12 gap-5 md:gap-6 lg:gap-8 items-start">
       {/* Left/Center Column: Post Creator and Feed List */}
-      <div className="lg:col-span-8 space-y-6">
+      <div className="md:col-span-7 lg:col-span-8 space-y-6">
         <CreatePostCard currentUser={currentUser} onPostCreated={handlePostCreated} />
 
         <div className="space-y-6">
@@ -252,7 +252,7 @@ export default function SocialFeed({ currentUser, initialPosts = [] }: SocialFee
       </div>
 
       {/* Right Column: Widgets / Sidebars */}
-      <div className="lg:col-span-4 space-y-6">
+      <div className="md:col-span-5 lg:col-span-4 space-y-6">
               {/* Dynamic Friend Request & List Management Widget */}
         <FriendManager />
 

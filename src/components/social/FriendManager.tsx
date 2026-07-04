@@ -255,13 +255,13 @@ export default function FriendManager() {
       <div className="flex border-b border-neutral-250 dark:border-neutral-700/60 bg-neutral-50/50 dark:bg-neutral-900/10">
         <button
           onClick={() => setActiveTab("friends")}
-          className={`flex-1 py-3 text-center text-xs font-bold transition-all relative ${
+          className={`flex-1 py-3 px-1 sm:px-2 text-center text-[10px] sm:text-xs font-bold transition-all relative ${
             activeTab === "friends"
               ? "text-indigo-600 dark:text-indigo-400"
               : "text-neutral-500 hover:text-neutral-750 dark:hover:text-neutral-300"
           }`}
         >
-          <div className="flex items-center justify-center gap-1.5">
+          <div className="flex items-center justify-center gap-1 sm:gap-1.5">
             <Users className="h-3.5 w-3.5" />
             <span>Friends ({friendsList.length})</span>
           </div>
@@ -272,17 +272,17 @@ export default function FriendManager() {
 
         <button
           onClick={() => setActiveTab("requests")}
-          className={`flex-1 py-3 text-center text-xs font-bold transition-all relative ${
+          className={`flex-1 py-3 px-1 sm:px-2 text-center text-[10px] sm:text-xs font-bold transition-all relative ${
             activeTab === "requests"
               ? "text-indigo-600 dark:text-indigo-400"
               : "text-neutral-500 hover:text-neutral-750 dark:hover:text-neutral-300"
           }`}
         >
-          <div className="flex items-center justify-center gap-1.5">
+          <div className="flex items-center justify-center gap-1 sm:gap-1.5">
             <UserRoundPlus className="h-3.5 w-3.5" />
             <span>Requests</span>
             {pendingRequests.length > 0 && (
-              <span className="inline-flex items-center justify-center px-1.5 py-px text-[9px] font-bold bg-indigo-600 text-white rounded-full leading-none">
+              <span className="inline-flex items-center justify-center px-1 py-px text-[8px] sm:text-[9px] font-bold bg-indigo-600 text-white rounded-full leading-none">
                 {pendingRequests.length}
               </span>
             )}
@@ -294,13 +294,13 @@ export default function FriendManager() {
 
         <button
           onClick={() => setActiveTab("search")}
-          className={`flex-1 py-3 text-center text-xs font-bold transition-all relative ${
+          className={`flex-1 py-3 px-1 sm:px-2 text-center text-[10px] sm:text-xs font-bold transition-all relative ${
             activeTab === "search"
               ? "text-indigo-600 dark:text-indigo-400"
               : "text-neutral-500 hover:text-neutral-750 dark:hover:text-neutral-300"
           }`}
         >
-          <div className="flex items-center justify-center gap-1.5">
+          <div className="flex items-center justify-center gap-1 sm:gap-1.5">
             <Search className="h-3.5 w-3.5" />
             <span>Find</span>
           </div>

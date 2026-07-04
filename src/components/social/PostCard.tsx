@@ -243,15 +243,15 @@ export default function PostCard({ post, currentUserId = "" }: PostCardProps) {
       
       {/* Header Section */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 sm:gap-3">
           {post.author.avatarUrl ? (
             <img
               src={post.author.avatarUrl}
               alt={post.author.name}
-              className="w-10 h-10 rounded-full object-cover"
+              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
             />
           ) : (
-            <div className={`w-10 h-10 rounded-full bg-gradient-to-tr ${getAvatarColor(post.author.name)} flex items-center justify-center text-white font-bold text-sm shadow-sm`}>
+            <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr ${getAvatarColor(post.author.name)} flex items-center justify-center text-white font-bold text-xs sm:text-sm shadow-sm`}>
               {getInitials(post.author.name)}
             </div>
           )}
@@ -310,11 +310,11 @@ export default function PostCard({ post, currentUserId = "" }: PostCardProps) {
       )}
 
       {/* Bottom Toolbar */}
-      <div className="flex items-center justify-between border-t border-neutral-100 dark:border-neutral-700/60 pt-3.5 mt-2">
+      <div className="flex items-center justify-between border-t border-neutral-100 dark:border-neutral-700/60 pt-3.5 mt-2 gap-1 flex-wrap">
         {/* Like action button */}
         <button
           onClick={handleLike}
-          className={`flex items-center gap-1.5 text-xs font-semibold py-1.5 px-3 rounded-lg transition-all ${
+          className={`flex items-center gap-1 sm:gap-1.5 text-xs font-semibold py-1.5 px-2 sm:px-3 rounded-lg transition-all ${
             liked
               ? "text-rose-650 bg-rose-50 dark:bg-rose-950/20"
               : "text-neutral-500 hover:text-rose-600 hover:bg-rose-50/50 dark:hover:bg-rose-950/10"
@@ -327,7 +327,7 @@ export default function PostCard({ post, currentUserId = "" }: PostCardProps) {
         {/* Comment action button */}
         <button
           onClick={handleCommentButtonClick}
-          className={`flex items-center gap-1.5 text-xs font-semibold py-1.5 px-3 rounded-lg transition-all ${
+          className={`flex items-center gap-1 sm:gap-1.5 text-xs font-semibold py-1.5 px-2 sm:px-3 rounded-lg transition-all ${
             showComments
               ? "text-indigo-600 bg-indigo-50 dark:bg-indigo-950/20"
               : "text-neutral-500 hover:text-indigo-600 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/10"
@@ -341,7 +341,7 @@ export default function PostCard({ post, currentUserId = "" }: PostCardProps) {
         <div className="relative">
           <button
             onClick={handleShare}
-            className="flex items-center gap-1.5 text-xs font-semibold text-neutral-500 hover:text-emerald-600 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/10 py-1.5 px-3 rounded-lg transition-all"
+            className="flex items-center gap-1 sm:gap-1.5 text-xs font-semibold text-neutral-500 hover:text-emerald-600 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/10 py-1.5 px-2 sm:px-3 rounded-lg transition-all"
           >
             <Share2 className="h-4 w-4" />
             <span>{sharesCount}</span>
@@ -370,15 +370,15 @@ export default function PostCard({ post, currentUserId = "" }: PostCardProps) {
               </p>
             ) : (
               comments.map((comment) => (
-                <div key={comment.id} className="flex gap-2.5 items-start text-xs text-neutral-700 dark:text-neutral-350">
+                <div key={comment.id} className="flex gap-2 sm:gap-2.5 items-start text-xs text-neutral-700 dark:text-neutral-350">
                   {comment.author.avatarUrl ? (
                     <img
-                      src={comment.author.avatarUrl}
-                      alt={comment.author.name}
-                      className="w-7 h-7 rounded-full object-cover shrink-0"
+                       src={comment.author.avatarUrl}
+                       alt={comment.author.name}
+                       className="w-6 h-6 sm:w-7 sm:h-7 rounded-full object-cover shrink-0"
                     />
                   ) : (
-                    <div className={`w-7 h-7 rounded-full bg-gradient-to-tr ${getAvatarColor(comment.author.name)} flex items-center justify-center text-white font-bold text-[10px] shadow-sm shrink-0`}>
+                    <div className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-tr ${getAvatarColor(comment.author.name)} flex items-center justify-center text-white font-bold text-[9px] sm:text-[10px] shadow-sm shrink-0`}>
                       {getInitials(comment.author.name)}
                     </div>
                   )}
@@ -415,15 +415,15 @@ export default function PostCard({ post, currentUserId = "" }: PostCardProps) {
           </div>
 
           {/* Comment Composer */}
-          <form onSubmit={handleCommentSubmit} className="flex gap-3 pt-2">
+          <form onSubmit={handleCommentSubmit} className="flex gap-2 sm:gap-3 pt-2">
             {session?.user?.image ? (
               <img
                 src={session.user.image}
                 alt={session.user.name || "Me"}
-                className="w-8 h-8 rounded-full object-cover shrink-0"
+                className="w-6 h-6 sm:w-8 sm:h-8 rounded-full object-cover shrink-0"
               />
             ) : (
-              <div className={`w-8 h-8 rounded-full bg-gradient-to-tr ${getAvatarColor(session?.user?.name || "Member")} flex items-center justify-center text-white font-bold text-xs shadow-sm shrink-0`}>
+              <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gradient-to-tr ${getAvatarColor(session?.user?.name || "Member")} flex items-center justify-center text-white font-bold text-[9px] sm:text-xs shadow-sm shrink-0`}>
                 {getInitials(session?.user?.name || "Member")}
               </div>
             )}
