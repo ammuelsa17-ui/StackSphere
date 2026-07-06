@@ -25,6 +25,7 @@ This index lists all our daily progress files for easy navigation during evaluat
 * [Day 21: Implemented friend-based posting restrictions](./day-21.md)
 * [Day 22: Tested social features](./day-22.md)
 * [Day 23: Improved responsiveness of social space layouts](./day-23.md)
+* [Day 24: Optimized API response times and payloads](./day-24.md)
 
 
 

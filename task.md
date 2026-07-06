@@ -5,8 +5,8 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 ---
 
 ## 📊 Summary
-* **Current Day**: Day 23
-* **Overall Progress**: 38.3% (23/60 Days Completed)
+* **Current Day**: Day 24
+* **Overall Progress**: 40.0% (24/60 Days Completed)
 * **Status**: In Progress
 
 ---
@@ -43,7 +43,7 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
   - 10+ friends: Post without restrictions.
 - [x] **Day 22**: Test social features.
 - [x] **Day 23**: Improve responsiveness of social space layouts.
-- [ ] **Day 24**: Optimize API response times and payloads.
+- [x] **Day 24**: Optimize API response times and payloads.
 - [ ] **Day 25**: Perform bug fixes and code cleanup for the social space.
 
 ### Phase 3: Password Recovery & Security
@@ -287,6 +287,14 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 * **Problems:** Text wrapping and clipping on widgets tabs and author details at narrow viewport sizes.
 * **Solutions:** Applied mobile-first CSS classes, scaling icon and text dimensions dynamically alongside viewport changes.
 * **Next Task:** Optimize API response times and payloads on Day 24.
+
+### Day 24
+* **Date:** July 6, 2026
+* **Completed:** Defined database indexes on Post, Comment, and FriendRequest models to speed up database queries, and implemented pagination parameters (`page` and `limit`) in Comments retrieve API route.
+* **Files Changed:** `src/models/Post.ts`, `src/models/Comment.ts`, `src/models/FriendRequest.ts`, `src/app/api/comments/route.ts`, `progress/day-24.md`, `progress/development-log.md`, `task.md`
+* **Problems:** Evaluating database collection scans for compound sorting parameters.
+* **Solutions:** Declared schema indexes on query sort patterns (`createdAt: -1`, `postId: 1`, etc.) so MongoDB executes query optimizations.
+* **Next Task:** Perform bug fixes and code cleanup for the social space on Day 25.
 
 
 

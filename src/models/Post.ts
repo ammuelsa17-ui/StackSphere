@@ -42,6 +42,10 @@ const PostSchema = new Schema(
   }
 );
 
+// Indexes to speed up chronological feeds and author-specific post queries
+PostSchema.index({ createdAt: -1 });
+PostSchema.index({ author: 1, createdAt: -1 });
+
 // Prevent re-compilation errors during Next.js hot-reloads
 const Post = models.Post || model("Post", PostSchema);
 

@@ -23,6 +23,9 @@ const CommentSchema = new Schema(
   }
 );
 
+// Compound index to speed up chronological post comment list fetches
+CommentSchema.index({ postId: 1, createdAt: 1 });
+
 // Prevent re-compilation errors during Next.js hot-reloads
 const Comment = models.Comment || model("Comment", CommentSchema);
 

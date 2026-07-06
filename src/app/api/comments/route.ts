@@ -17,9 +17,11 @@ export async function GET(req: Request) {
       );
     }
 
-    // 3. Extract postId query parameter
+    // 3. Extract pagination and postId parameters
     const { searchParams } = new URL(req.url);
     const postId = searchParams.get("postId");
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
+    const limit = Math.max(1, Math.min(200, parseInt(searchParams.get("limit") || "100")));
 
     // 4. Validate query parameter
     if (!postId || postId.trim() === "") {
@@ -32,10 +34,12 @@ export async function GET(req: Request) {
     // 5. Connect to the database
     await connectToDatabase();
 
-    // 6. Query comments for the given post (chronological order, oldest first)
+    // 6. Query comments for the given post (chronological order, oldest first) with pagination
     const dbComments = await Comment.find({ postId })
       .populate("author", "name image avatarUrl subscription")
       .sort({ createdAt: 1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
       .lean();
 
     // 7. Map database records to clean serialized format
