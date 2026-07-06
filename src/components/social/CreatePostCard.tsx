@@ -92,9 +92,10 @@ export default function CreatePostCard({ currentUser, onPostCreated }: CreatePos
         setMediaUrl(resData.url);
         setMediaType(resData.type);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : "An error occurred during file upload.";
       console.error("Upload error:", err);
-      alert(err.message || "An error occurred during file upload.");
+      alert(errMsg);
       removeMedia();
     } finally {
       setIsUploading(false);

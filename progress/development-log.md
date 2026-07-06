@@ -26,6 +26,7 @@ This index lists all our daily progress files for easy navigation during evaluat
 * [Day 22: Tested social features](./day-22.md)
 * [Day 23: Improved responsiveness of social space layouts](./day-23.md)
 * [Day 24: Optimized API response times and payloads](./day-24.md)
+* [Day 25: Performed bug fixes and code cleanup for the social space](./day-25.md)
 
 
 

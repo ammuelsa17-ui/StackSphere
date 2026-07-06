@@ -111,9 +111,10 @@ export default function PostCard({ post, currentUserId = "" }: PostCardProps) {
         setCommentsCount((prev) => prev + 1);
         setNewComment("");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : "An error occurred while posting your comment.";
       console.error("Failed to submit comment:", err);
-      alert(err.message || "An error occurred while posting your comment.");
+      alert(errMsg);
     } finally {
       setIsSubmittingComment(false);
     }
@@ -149,12 +150,13 @@ export default function PostCard({ post, currentUserId = "" }: PostCardProps) {
         setLiked(resData.liked);
         setLikesCount(resData.likesCount);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : "An error occurred while updating the like count.";
       console.error("Like toggle error:", err);
       // Rollback on failure
       setLiked(wasLiked);
       setLikesCount(initialCount);
-      alert(err.message || "An error occurred while updating the like count.");
+      alert(errMsg);
     } finally {
       setIsTogglingLike(false);
     }

@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import CreatePostCard from "./CreatePostCard";
 import PostCard from "./PostCard";
 import FriendManager from "./FriendManager";
-import { UserPlus, UserCheck, TrendingUp, Hash, Star } from "lucide-react";
+import { TrendingUp, Hash } from "lucide-react";
 
 interface SocialFeedProps {
   currentUser: {
@@ -86,11 +86,7 @@ const INITIAL_POSTS: PostType[] = [
   },
 ];
 
-const SUGGESTED_FRIENDS = [
-  { id: "friend-1", name: "Sarah Connor", role: "DevOps Engineer", plan: "Gold", avatarInitials: "SC" },
-  { id: "friend-2", name: "Alex Mercer", role: "Fullstack Developer", plan: "Silver", avatarInitials: "AM" },
-  { id: "friend-3", name: "Lina Park", role: "UI/UX Designer", plan: "Bronze", avatarInitials: "LP" },
-];
+
 
 const TRENDING_TAGS = [
   { tag: "nextjs", count: "1.2k posts" },
@@ -105,7 +101,6 @@ export default function SocialFeed({ currentUser, initialPosts = [] }: SocialFee
   const [posts, setPosts] = useState<PostType[]>(
     initialPosts.length > 0 ? initialPosts : INITIAL_POSTS
   );
-  const [followingStates, setFollowingStates] = useState<Record<string, boolean>>({});
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(initialPosts.length >= 10);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -131,9 +126,10 @@ export default function SocialFeed({ currentUser, initialPosts = [] }: SocialFee
         setPosts((prevPosts) => [...prevPosts, ...newPosts]);
         setPage(nextPage);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : "An error occurred while loading more posts.";
       console.error("Failed to load more posts:", err);
-      alert(err.message || "An error occurred while loading more posts.");
+      alert(errMsg);
     } finally {
       setIsLoadingMore(false);
     }
@@ -180,43 +176,14 @@ export default function SocialFeed({ currentUser, initialPosts = [] }: SocialFee
 
         setPosts((prevPosts) => [createdPost, ...prevPosts]);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : "Something went wrong while posting.";
       console.error("Failed to submit post:", err);
-      alert(err.message || "Something went wrong while posting.");
+      alert(errMsg);
     }
   };
 
-  const toggleFollow = (friendId: string) => {
-    setFollowingStates((prev) => ({
-      ...prev,
-      [friendId]: !prev[friendId],
-    }));
-  };
 
-  const getAvatarColor = (name: string) => {
-    const charSum = name.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    const colors = [
-      "from-indigo-500 to-purple-600",
-      "from-blue-500 to-indigo-600",
-      "from-violet-500 to-fuchsia-600",
-      "from-teal-500 to-emerald-600",
-      "from-rose-500 to-pink-600",
-    ];
-    return colors[charSum % colors.length];
-  };
-
-  const getPlanColor = (plan: string) => {
-    switch (plan?.toLowerCase()) {
-      case "gold":
-        return "bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900/30";
-      case "silver":
-        return "bg-slate-100 text-slate-855 border-slate-300 dark:bg-slate-900/30 dark:text-slate-400 dark:border-slate-800/30";
-      case "bronze":
-        return "bg-orange-100 text-orange-800 border-orange-300 dark:bg-orange-950/30 dark:text-orange-400 dark:border-orange-900/30";
-      default:
-        return "bg-neutral-100 text-neutral-800 border-neutral-200 dark:bg-neutral-900/30 dark:text-neutral-400 dark:border-neutral-800/30";
-    }
-  };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-12 gap-5 md:gap-6 lg:gap-8 items-start">

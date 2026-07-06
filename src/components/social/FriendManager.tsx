@@ -134,8 +134,9 @@ export default function FriendManager() {
           )
         );
       }
-    } catch (err: any) {
-      alert(err.message || "Could not send friend request.");
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : "Could not send friend request.";
+      alert(errMsg);
     } finally {
       setActioningId(null);
     }
@@ -174,8 +175,9 @@ export default function FriendManager() {
           )
         );
       }
-    } catch (err: any) {
-      alert(err.message || "Failed to respond to friend request.");
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : "Failed to respond to friend request.";
+      alert(errMsg);
     } finally {
       setActioningId(null);
     }
@@ -206,8 +208,9 @@ export default function FriendManager() {
           )
         );
       }
-    } catch (err: any) {
-      alert(err.message || "Could not remove friend.");
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : "Could not remove friend.";
+      alert(errMsg);
     } finally {
       setActioningId(null);
     }
