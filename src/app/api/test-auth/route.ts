@@ -4,6 +4,8 @@ import connectToDatabase from "@/lib/mongodb";
 import User from "@/models/User";
 import LoginHistory from "@/models/LoginHistory";
 import { POST as registerHandler } from "@/app/api/auth/register/route";
+import { POST as forgotPasswordHandler } from "@/app/api/auth/forgot-password/route";
+import { POST as resetPasswordHandler } from "@/app/api/auth/reset-password/route";
 import { authOptions } from "@/lib/auth";
 
 export async function GET() {
@@ -283,6 +285,124 @@ export async function GET() {
       }
     } else {
       addResult("Profile Database Update", "FAIL", "Skipped: Test user was not successfully registered.");
+    }
+
+    // ----------------------------------------------------
+    // Test 10: Forgot Password Token Generation
+    // ----------------------------------------------------
+    let resetToken = "";
+    try {
+      const req = new Request("http://localhost/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: "testauth@example.com" }),
+      });
+      const response = await forgotPasswordHandler(req);
+      const data = await response.json();
+
+      if (response.status === 200 && data.success && data.token) {
+        resetToken = data.token;
+        // Verify database state matches
+        const userInDb = await User.findOne({ email: "testauth@example.com" });
+        if (userInDb && userInDb.resetPasswordToken === resetToken && userInDb.resetPasswordExpires) {
+          addResult("Forgot Password Link", "PASS", "Reset token generated and stored correctly on user schema.");
+        } else {
+          addResult("Forgot Password Link", "FAIL", "Token properties did not persist to database record.");
+        }
+      } else {
+        addResult("Forgot Password Link", "FAIL", `Expected success status 200, got ${response.status}. Msg: ${JSON.stringify(data)}`);
+      }
+    } catch (err: any) {
+      addResult("Forgot Password Link", "FAIL", err.message);
+    }
+
+    // ----------------------------------------------------
+    // Test 11: Reset Password - Invalid Token Rejection
+    // ----------------------------------------------------
+    try {
+      const req = new Request("http://localhost/api/auth/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: "invalid_mock_token_123", password: "newpassword123" }),
+      });
+      const response = await resetPasswordHandler(req);
+      const data = await response.json();
+
+      if (response.status === 400 && data.error && data.error.includes("invalid")) {
+        addResult("Password Reset - Invalid Token", "PASS", `Rejected invalid token correctly: "${data.error}"`);
+      } else {
+        addResult("Password Reset - Invalid Token", "FAIL", `Expected rejection status 400, got ${response.status}. Msg: ${JSON.stringify(data)}`);
+      }
+    } catch (err: any) {
+      addResult("Password Reset - Invalid Token", "FAIL", err.message);
+    }
+
+    // ----------------------------------------------------
+    // Test 12: Reset Password - Expired Token Rejection
+    // ----------------------------------------------------
+    if (resetToken) {
+      try {
+        // Manually simulate expiration in the database
+        await User.updateOne(
+          { email: "testauth@example.com" },
+          { resetPasswordExpires: new Date(Date.now() - 60000) } // 1 minute ago
+        );
+
+        const req = new Request("http://localhost/api/auth/reset-password", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token: resetToken, password: "newpassword123" }),
+        });
+        const response = await resetPasswordHandler(req);
+        const data = await response.json();
+
+        if (response.status === 400 && data.error && data.error.includes("expired")) {
+          addResult("Password Reset - Expired Token", "PASS", `Rejected expired token correctly: "${data.error}"`);
+        } else {
+          addResult("Password Reset - Expired Token", "FAIL", `Expected expiration rejection, got ${response.status}. Msg: ${JSON.stringify(data)}`);
+        }
+      } catch (err: any) {
+        addResult("Password Reset - Expired Token", "FAIL", err.message);
+      }
+    } else {
+      addResult("Password Reset - Expired Token", "FAIL", "Skipped: Reset token was not generated.");
+    }
+
+    // ----------------------------------------------------
+    // Test 13: Reset Password - Successful Password Update
+    // ----------------------------------------------------
+    if (resetToken) {
+      try {
+        // Restore token expiration to a future date
+        await User.updateOne(
+          { email: "testauth@example.com" },
+          { resetPasswordExpires: new Date(Date.now() + 3600000) } // 1 hour from now
+        );
+
+        const req = new Request("http://localhost/api/auth/reset-password", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token: resetToken, password: "newpassword123" }),
+        });
+        const response = await resetPasswordHandler(req);
+        const data = await response.json();
+
+        if (response.status === 200 && data.success) {
+          // Verify token details cleared in DB
+          const userInDb = await User.findOne({ email: "testauth@example.com" });
+          if (userInDb && userInDb.resetPasswordToken === "" && userInDb.resetPasswordExpires === null) {
+            addResult("Password Reset - Success", "PASS", "Password updated and reset token fields successfully cleared in DB.");
+          } else {
+            addResult("Password Reset - Success", "FAIL", `Token fields not cleared in database: ${JSON.stringify(userInDb)}`);
+          }
+        } else {
+          addResult("Password Reset - Success", "FAIL", `Expected success 200, got ${response.status}. Msg: ${JSON.stringify(data)}`);
+        }
+      } catch (err: any) {
+        addResult("Password Reset - Success", "FAIL", err.message);
+      }
+    } else {
+      addResult("Password Reset - Success", "FAIL", "Skipped: Reset token was not generated.");
     }
 
     // ----------------------------------------------------

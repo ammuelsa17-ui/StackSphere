@@ -5,8 +5,8 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 ---
 
 ## 📊 Summary
-* **Current Day**: Day 26
-* **Overall Progress**: 43.3% (26/60 Days Completed)
+* **Current Day**: Day 27
+* **Overall Progress**: 45.0% (27/60 Days Completed)
 * **Status**: In Progress
 
 ---
@@ -48,7 +48,7 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 
 ### Phase 3: Password Recovery & Security
 - [x] **Day 26**: Create Forgot Password page UI.
-- [ ] **Day 27**: Implement password reset API.
+- [x] **Day 27**: Implement password reset API.
 - [ ] **Day 28**: Add email/phone verification flow.
 - [ ] **Day 29**: Create custom random password generator (letters only).
 - [ ] **Day 30**: Add limitation: only one reset request per day.
@@ -311,6 +311,14 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 * **Problems:** Integrating UI validation feedback mechanisms before actual recovery APIs exist.
 * **Solutions:** Designed local email verification checks and mocked API request dispatches to allow visual validation during testing.
 * **Next Task:** Implement password reset API on Day 27.
+
+### Day 27
+* **Date:** July 8, 2026
+* **Completed:** Added reset password recovery properties to User schema, created forgot-password and reset-password API handlers, and added E2E validation checks directly inside the test runner endpoint.
+* **Files Changed:** `src/models/User.ts`, `src/app/api/auth/forgot-password/route.ts`, `src/app/api/auth/reset-password/route.ts`, `src/app/api/test-auth/route.ts`, `progress/day-27.md`, `progress/development-log.md`, `task.md`
+* **Problems:** Safely storing recovery details without interfering with standard NextAuth sign-in flows.
+* **Solutions:** Isolated password recovery logic from external libraries, relying on model schema attributes and bcryptjs hashing.
+* **Next Task:** Add email/phone verification flow on Day 28.
 
 
 

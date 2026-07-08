@@ -75,6 +75,15 @@ const UserSchema = new Schema(
       type: SubscriptionSchema,
       default: () => ({}),
     },
+    // Password reset recovery fields
+    resetPasswordToken: {
+      type: String,
+      default: "",
+    },
+    resetPasswordExpires: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true, // Automatically creates createdAt and updatedAt fields

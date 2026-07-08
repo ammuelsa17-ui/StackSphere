@@ -28,6 +28,7 @@ This index lists all our daily progress files for easy navigation during evaluat
 * [Day 24: Optimized API response times and payloads](./day-24.md)
 * [Day 25: Performed bug fixes and code cleanup for the social space](./day-25.md)
 * [Day 26: Created Forgot Password page UI](./day-26.md)
+* [Day 27: Implemented password reset API](./day-27.md)
 
 
 
