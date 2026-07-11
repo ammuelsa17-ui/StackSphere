@@ -1,4 +1,4 @@
-import mongoose, { Schema, model, models } from "mongoose";
+import { Schema, model, models } from "mongoose";
 
 // Subscription sub-schema for user profiles
 const SubscriptionSchema = new Schema({
@@ -81,6 +81,15 @@ const UserSchema = new Schema(
       default: "",
     },
     resetPasswordExpires: {
+      type: Date,
+      default: null,
+    },
+    // OTP verification recovery fields
+    verificationCode: {
+      type: String,
+      default: "",
+    },
+    verificationCodeExpires: {
       type: Date,
       default: null,
     },

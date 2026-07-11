@@ -5,8 +5,8 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 ---
 
 ## 📊 Summary
-* **Current Day**: Day 27
-* **Overall Progress**: 45.0% (27/60 Days Completed)
+* **Current Day**: Day 29
+* **Overall Progress**: 48.3% (29/60 Days Completed)
 * **Status**: In Progress
 
 ---
@@ -49,8 +49,8 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 ### Phase 3: Password Recovery & Security
 - [x] **Day 26**: Create Forgot Password page UI.
 - [x] **Day 27**: Implement password reset API.
-- [ ] **Day 28**: Add email/phone verification flow.
-- [ ] **Day 29**: Create custom random password generator (letters only).
+- [x] **Day 28**: Add email/phone verification flow.
+- [x] **Day 29**: Create custom random password generator (letters only).
 - [ ] **Day 30**: Add limitation: only one reset request per day.
 - [ ] **Day 31**: Test password recovery workflow.
 - [ ] **Day 32**: Enhance authentication security measures.
@@ -319,6 +319,22 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 * **Problems:** Safely storing recovery details without interfering with standard NextAuth sign-in flows.
 * **Solutions:** Isolated password recovery logic from external libraries, relying on model schema attributes and bcryptjs hashing.
 * **Next Task:** Add email/phone verification flow on Day 28.
+
+### Day 28
+* **Date:** July 11, 2026
+* **Completed:** Implemented verification schema attributes, expanded forgot-password route query capabilities for phone recoveries, created verify-code OTP check endpoints, and updated client form logic supporting multi-step input codes verification.
+* **Files Changed:** `src/models/User.ts`, `src/app/api/auth/forgot-password/route.ts`, `src/app/api/auth/verify-code/route.ts`, `src/components/auth/ForgotPasswordForm.tsx`, `src/app/api/test-auth/route.ts`, `progress/day-28.md`, `progress/development-log.md`, `task.md`
+* **Problems:** Making sure verification code values expire cleanly after check processes compile.
+* **Solutions:** Unset the code and expiration parameters inside Mongoose databases immediately upon a valid OTP verify execution.
+* **Next Task:** Create custom random password generator on Day 29.
+
+### Day 29
+* **Date:** July 11, 2026
+* **Completed:** Built cryptographically secure letters-only password generation helper utility and integrated a trigger button in the client-side recovery form to automatically populate fields.
+* **Files Changed:** `src/lib/passwordGenerator.ts`, `src/components/auth/ForgotPasswordForm.tsx`, `src/app/api/test-auth/route.ts`, `progress/day-29.md`, `progress/development-log.md`, `task.md`
+* **Problems:** Verifying random string formats consist only of alphabetical characters.
+* **Solutions:** Implemented regex verification tests in the E2E runner validating password formats contain strictly letter combinations.
+* **Next Task:** Add limitation: only one reset request per day on Day 30.
 
 
 

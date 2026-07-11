@@ -29,6 +29,8 @@ This index lists all our daily progress files for easy navigation during evaluat
 * [Day 25: Performed bug fixes and code cleanup for the social space](./day-25.md)
 * [Day 26: Created Forgot Password page UI](./day-26.md)
 * [Day 27: Implemented password reset API](./day-27.md)
+* [Day 28: Added email/phone verification flow](./day-28.md)
+* [Day 29: Created custom random password generator (letters only)](./day-29.md)
 
 
 

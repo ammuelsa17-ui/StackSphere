@@ -6,6 +6,8 @@ import LoginHistory from "@/models/LoginHistory";
 import { POST as registerHandler } from "@/app/api/auth/register/route";
 import { POST as forgotPasswordHandler } from "@/app/api/auth/forgot-password/route";
 import { POST as resetPasswordHandler } from "@/app/api/auth/reset-password/route";
+import { POST as verifyCodeHandler } from "@/app/api/auth/verify-code/route";
+import { generateLettersOnlyPassword } from "@/lib/passwordGenerator";
 import { authOptions } from "@/lib/auth";
 
 export async function GET() {
@@ -288,9 +290,10 @@ export async function GET() {
     }
 
     // ----------------------------------------------------
-    // Test 10: Forgot Password Token Generation
+    // Test 10: Forgot Password Link & OTP Generation (Email)
     // ----------------------------------------------------
-    let resetToken = "";
+    let testOtp = "";
+    let emailResetToken = "";
     try {
       const req = new Request("http://localhost/api/auth/forgot-password", {
         method: "POST",
@@ -300,109 +303,196 @@ export async function GET() {
       const response = await forgotPasswordHandler(req);
       const data = await response.json();
 
-      if (response.status === 200 && data.success && data.token) {
-        resetToken = data.token;
-        // Verify database state matches
+      if (response.status === 200 && data.success && data.verificationCode && data.token) {
+        testOtp = data.verificationCode;
+        emailResetToken = data.token;
+
+        // Verify database fields match
         const userInDb = await User.findOne({ email: "testauth@example.com" });
-        if (userInDb && userInDb.resetPasswordToken === resetToken && userInDb.resetPasswordExpires) {
-          addResult("Forgot Password Link", "PASS", "Reset token generated and stored correctly on user schema.");
+        if (
+          userInDb &&
+          userInDb.verificationCode === testOtp &&
+          userInDb.verificationCodeExpires &&
+          userInDb.resetPasswordToken === emailResetToken
+        ) {
+          addResult("Forgot Password OTP (Email)", "PASS", "Reset token and 6-digit OTP code generated and saved successfully to User model.");
         } else {
-          addResult("Forgot Password Link", "FAIL", "Token properties did not persist to database record.");
+          addResult("Forgot Password OTP (Email)", "FAIL", `Database values did not persist: ${JSON.stringify(userInDb)}`);
         }
       } else {
-        addResult("Forgot Password Link", "FAIL", `Expected success status 200, got ${response.status}. Msg: ${JSON.stringify(data)}`);
+        addResult("Forgot Password OTP (Email)", "FAIL", `Expected success status 200, got ${response.status}. Msg: ${JSON.stringify(data)}`);
       }
     } catch (err: any) {
-      addResult("Forgot Password Link", "FAIL", err.message);
+      addResult("Forgot Password OTP (Email)", "FAIL", err.message);
     }
 
     // ----------------------------------------------------
-    // Test 11: Reset Password - Invalid Token Rejection
+    // Test 11: Recovery Option - Look up by Phone Number
     // ----------------------------------------------------
     try {
-      const req = new Request("http://localhost/api/auth/reset-password", {
+      // Setup a temporary phone number for the test user
+      await User.updateOne({ email: "testauth@example.com" }, { phoneNumber: "+15551234567" });
+
+      const req = new Request("http://localhost/api/auth/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: "invalid_mock_token_123", password: "newpassword123" }),
+        body: JSON.stringify({ phoneNumber: "+15551234567" }),
       });
-      const response = await resetPasswordHandler(req);
+      const response = await forgotPasswordHandler(req);
       const data = await response.json();
 
-      if (response.status === 400 && data.error && data.error.includes("invalid")) {
-        addResult("Password Reset - Invalid Token", "PASS", `Rejected invalid token correctly: "${data.error}"`);
+      if (response.status === 200 && data.success && data.method === "phone" && data.verificationCode) {
+        addResult("Forgot Password OTP (Phone)", "PASS", "Successfully requested OTP recovery using phone number lookup.");
       } else {
-        addResult("Password Reset - Invalid Token", "FAIL", `Expected rejection status 400, got ${response.status}. Msg: ${JSON.stringify(data)}`);
+        addResult("Forgot Password OTP (Phone)", "FAIL", `Phone recovery request failed, status ${response.status}. Msg: ${JSON.stringify(data)}`);
       }
     } catch (err: any) {
-      addResult("Password Reset - Invalid Token", "FAIL", err.message);
+      addResult("Forgot Password OTP (Phone)", "FAIL", err.message);
     }
 
     // ----------------------------------------------------
-    // Test 12: Reset Password - Expired Token Rejection
+    // Test 12: Code Verification - Invalid Code Rejection
     // ----------------------------------------------------
-    if (resetToken) {
+    try {
+      const req = new Request("http://localhost/api/auth/verify-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ identity: "testauth@example.com", code: "000000" }), // Wrong OTP code
+      });
+      const response = await verifyCodeHandler(req);
+      const data = await response.json();
+
+      if (response.status === 400 && data.error && data.error.includes("Invalid")) {
+        addResult("OTP Verification - Invalid Code", "PASS", `Rejected incorrect code correctly: "${data.error}"`);
+      } else {
+        addResult("OTP Verification - Invalid Code", "FAIL", `Expected rejection status 400, got ${response.status}. Msg: ${JSON.stringify(data)}`);
+      }
+    } catch (err: any) {
+      addResult("OTP Verification - Invalid Code", "FAIL", err.message);
+    }
+
+    // ----------------------------------------------------
+    // Test 13: Code Verification - Expired Code Rejection
+    // ----------------------------------------------------
+    if (testOtp) {
       try {
-        // Manually simulate expiration in the database
+        // Manually simulate OTP code expiration in DB
         await User.updateOne(
           { email: "testauth@example.com" },
-          { resetPasswordExpires: new Date(Date.now() - 60000) } // 1 minute ago
+          { verificationCodeExpires: new Date(Date.now() - 60000) } // 1 minute ago
         );
 
-        const req = new Request("http://localhost/api/auth/reset-password", {
+        const req = new Request("http://localhost/api/auth/verify-code", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token: resetToken, password: "newpassword123" }),
+          body: JSON.stringify({ identity: "testauth@example.com", code: testOtp }),
         });
-        const response = await resetPasswordHandler(req);
+        const response = await verifyCodeHandler(req);
         const data = await response.json();
 
         if (response.status === 400 && data.error && data.error.includes("expired")) {
-          addResult("Password Reset - Expired Token", "PASS", `Rejected expired token correctly: "${data.error}"`);
+          addResult("OTP Verification - Expired Code", "PASS", `Rejected expired code correctly: "${data.error}"`);
         } else {
-          addResult("Password Reset - Expired Token", "FAIL", `Expected expiration rejection, got ${response.status}. Msg: ${JSON.stringify(data)}`);
+          addResult("OTP Verification - Expired Code", "FAIL", `Expected expiration error, got status ${response.status}. Msg: ${JSON.stringify(data)}`);
         }
       } catch (err: any) {
-        addResult("Password Reset - Expired Token", "FAIL", err.message);
+        addResult("OTP Verification - Expired Code", "FAIL", err.message);
       }
     } else {
-      addResult("Password Reset - Expired Token", "FAIL", "Skipped: Reset token was not generated.");
+      addResult("OTP Verification - Expired Code", "FAIL", "Skipped: Test OTP was not generated.");
     }
 
     // ----------------------------------------------------
-    // Test 13: Reset Password - Successful Password Update
+    // Test 14: OTP Verification Success & Password Reset Handler
     // ----------------------------------------------------
-    if (resetToken) {
+    let verifiedResetToken = "";
+    if (testOtp) {
       try {
-        // Restore token expiration to a future date
+        // Restore OTP details for successful verify operation
         await User.updateOne(
           { email: "testauth@example.com" },
-          { resetPasswordExpires: new Date(Date.now() + 3600000) } // 1 hour from now
+          { 
+            verificationCode: testOtp, 
+            verificationCodeExpires: new Date(Date.now() + 600000), // 10 minutes from now
+            resetPasswordToken: emailResetToken,
+            resetPasswordExpires: new Date(Date.now() + 3600000) // 1 hour from now
+          }
         );
 
+        const req = new Request("http://localhost/api/auth/verify-code", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ identity: "testauth@example.com", code: testOtp }),
+        });
+        const response = await verifyCodeHandler(req);
+        const data = await response.json();
+
+        if (response.status === 200 && data.success && data.resetToken) {
+          verifiedResetToken = data.resetToken;
+
+          // Check DB cleared verification attributes
+          const userInDb = await User.findOne({ email: "testauth@example.com" });
+          if (userInDb && userInDb.verificationCode === "" && userInDb.verificationCodeExpires === null) {
+            addResult("OTP Verification - Success", "PASS", "Verified OTP code successfully and cleared recovery fields in DB.");
+          } else {
+            addResult("OTP Verification - Success", "FAIL", "OTP fields were not cleared after successful validation.");
+          }
+        } else {
+          addResult("OTP Verification - Success", "FAIL", `Verification request failed, status ${response.status}. Msg: ${JSON.stringify(data)}`);
+        }
+      } catch (err: any) {
+        addResult("OTP Verification - Success", "FAIL", err.message);
+      }
+    } else {
+      addResult("OTP Verification - Success", "FAIL", "Skipped: Test OTP was not generated.");
+    }
+
+    // ----------------------------------------------------
+    // Test 15: Custom Password Generator format check
+    // ----------------------------------------------------
+    try {
+      const randomPassword = generateLettersOnlyPassword(16);
+      const isLettersOnly = /^[A-Za-z]+$/.test(randomPassword);
+
+      if (randomPassword.length === 16 && isLettersOnly) {
+        addResult("Custom Password Generator", "PASS", `Generated letters-only password: "${randomPassword}" correctly matching regex filter.`);
+      } else {
+        addResult("Custom Password Generator", "FAIL", `Generated invalid password characters: "${randomPassword}"`);
+      }
+    } catch (err: any) {
+      addResult("Custom Password Generator", "FAIL", err.message);
+    }
+
+    // ----------------------------------------------------
+    // Test 16: Complete Reset Password Operation
+    // ----------------------------------------------------
+    if (verifiedResetToken) {
+      try {
+        const generatedPassword = generateLettersOnlyPassword(12);
         const req = new Request("http://localhost/api/auth/reset-password", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token: resetToken, password: "newpassword123" }),
+          body: JSON.stringify({ token: verifiedResetToken, password: generatedPassword }),
         });
         const response = await resetPasswordHandler(req);
         const data = await response.json();
 
         if (response.status === 200 && data.success) {
-          // Verify token details cleared in DB
+          // Verify reset fields are cleared
           const userInDb = await User.findOne({ email: "testauth@example.com" });
           if (userInDb && userInDb.resetPasswordToken === "" && userInDb.resetPasswordExpires === null) {
-            addResult("Password Reset - Success", "PASS", "Password updated and reset token fields successfully cleared in DB.");
+            addResult("Reset Password API Completion", "PASS", "Successfully reset user account password using verification recovery flow.");
           } else {
-            addResult("Password Reset - Success", "FAIL", `Token fields not cleared in database: ${JSON.stringify(userInDb)}`);
+            addResult("Reset Password API Completion", "FAIL", "Database password reset token attributes were not cleared.");
           }
         } else {
-          addResult("Password Reset - Success", "FAIL", `Expected success 200, got ${response.status}. Msg: ${JSON.stringify(data)}`);
+          addResult("Reset Password API Completion", "FAIL", `Expected reset success 200, got ${response.status}. Msg: ${JSON.stringify(data)}`);
         }
       } catch (err: any) {
-        addResult("Password Reset - Success", "FAIL", err.message);
+        addResult("Reset Password API Completion", "FAIL", err.message);
       }
     } else {
-      addResult("Password Reset - Success", "FAIL", "Skipped: Reset token was not generated.");
+      addResult("Reset Password API Completion", "FAIL", "Skipped: Success resetToken not available.");
     }
 
     // ----------------------------------------------------
