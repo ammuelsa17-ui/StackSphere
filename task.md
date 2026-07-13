@@ -5,8 +5,8 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 ---
 
 ## 📊 Summary
-* **Current Day**: Day 29
-* **Overall Progress**: 48.3% (29/60 Days Completed)
+* **Current Day**: Day 31
+* **Overall Progress**: 51.6% (31/60 Days Completed)
 * **Status**: In Progress
 
 ---
@@ -51,8 +51,8 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 - [x] **Day 27**: Implement password reset API.
 - [x] **Day 28**: Add email/phone verification flow.
 - [x] **Day 29**: Create custom random password generator (letters only).
-- [ ] **Day 30**: Add limitation: only one reset request per day.
-- [ ] **Day 31**: Test password recovery workflow.
+- [x] **Day 30**: Add limitation: only one reset request per day.
+- [x] **Day 31**: Test password recovery workflow.
 - [ ] **Day 32**: Enhance authentication security measures.
 - [ ] **Day 33**: Add strict input validation rules.
 - [ ] **Day 34**: Clean up security issues.
@@ -335,6 +335,22 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 * **Problems:** Verifying random string formats consist only of alphabetical characters.
 * **Solutions:** Implemented regex verification tests in the E2E runner validating password formats contain strictly letter combinations.
 * **Next Task:** Add limitation: only one reset request per day on Day 30.
+
+### Day 30
+* **Date:** July 12, 2026
+* **Completed:** Implemented password recovery rate-limiting constraint (1 request per 24 hours per user record) and added validation tests in the in-memory test suite.
+* **Files Changed:** `src/models/User.ts`, `src/app/api/auth/forgot-password/route.ts`, `src/app/api/test-auth/route.ts`, `progress/day-30.md`, `progress/development-log.md`, `task.md`
+* **Problems:** Preventing rate-limiting tests from failing when multiple lookup routes are hit in succession.
+* **Solutions:** Reset the last request timestamp in the user document model setup before succeeding recovery option checks.
+* **Next Task:** Test password recovery workflow on Day 31.
+
+### Day 31
+* **Date:** July 13, 2026
+* **Completed:** Created external E2E NodeJS automated verification workflow script, validated entire sequence from request to reset under local server execution, and updated docs testing guide.
+* **Files Changed:** `scratch/test-recovery-flow.js`, `docs/testing-plan.md`, `progress/day-31.md`, `progress/development-log.md`, `task.md`
+* **Problems:** Ensuring verification scripts could run directly over network APIs without browser dependencies.
+* **Solutions:** Used Node's standard http library module to build clean REST requests imitating frontend forms payload submits.
+* **Next Task:** Enhance authentication security measures on Day 32.
 
 
 

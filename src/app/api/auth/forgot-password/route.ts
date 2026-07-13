@@ -40,12 +40,18 @@ export async function POST(req: Request) {
       );
     }
 
+    // Rate‑limit: allow only one request per 24 h
+    const now = new Date();
+    if (user.lastForgotPasswordRequestedAt && now.getTime() - user.lastForgotPasswordRequestedAt.getTime() < 24 * 60 * 60 * 1000) {
+      return NextResponse.json({ error: "Password reset already requested today." }, { status: 429 });
+    }
+
     // Generate secure recovery token (32 bytes)
     const token = crypto.randomBytes(32).toString("hex");
     // Set token expiration (1 hour from now)
     const expiry = new Date(Date.now() + 60 * 60 * 1000);
 
-    // Generate 6-digit verification code (OTP)
+    // Generate 6‑digit verification code (OTP)
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
     // Set verification code expiration (10 minutes from now)
     const verificationExpiry = new Date(Date.now() + 10 * 60 * 1000);
@@ -54,6 +60,8 @@ export async function POST(req: Request) {
     user.resetPasswordExpires = expiry;
     user.verificationCode = verificationCode;
     user.verificationCodeExpires = verificationExpiry;
+    // Update the rate‑limit timestamp
+    user.lastForgotPasswordRequestedAt = now;
     await user.save();
 
     return NextResponse.json({

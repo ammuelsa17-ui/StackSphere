@@ -38,3 +38,17 @@ This document tracks the testing checklist for all completed modules to ensure c
 - [ ] **Points Earning:** Answer question (+5 points), answer upvotes hit 5 (+5 points).
 - [ ] **Points Deduction:** Post downvoted or deleted (points deducted correctly).
 - [ ] **Point Transfer:** Validate user has >10 points before executing transfer.
+
+---
+
+## 5. Password Recovery & Security Testing
+- [x] **Forgot Password OTP (Email):** Check that request generates a 6-digit numeric OTP and reset token.
+- [x] **Forgot Password OTP (Phone):** Verify user search and OTP dispatch by phone number.
+- [x] **OTP Verification Rules:**
+  - [x] Reject invalid 6-digit codes.
+  - [x] Reject expired verification codes.
+  - [x] Clear verification fields upon successful validation.
+- [x] **Rate Limiting:** Ensure password reset requests are limited to one per 24 hours per user.
+- [x] **Letters-Only Password Generator:** Verify that generated temporary passwords match strictly alphabetical characters `[A-Za-z]`.
+- [x] **Reset Password API Completion:** Verify new passwords can be set successfully and reset tokens are invalidated.
+

@@ -330,8 +330,11 @@ export async function GET() {
     // Test 11: Recovery Option - Look up by Phone Number
     // ----------------------------------------------------
     try {
-      // Setup a temporary phone number for the test user
-      await User.updateOne({ email: "testauth@example.com" }, { phoneNumber: "+15551234567" });
+      // Setup a temporary phone number for the test user and clear request timestamp to avoid rate-limiting
+      await User.updateOne(
+        { email: "testauth@example.com" },
+        { phoneNumber: "+15551234567", lastForgotPasswordRequestedAt: null }
+      );
 
       const req = new Request("http://localhost/api/auth/forgot-password", {
         method: "POST",
@@ -448,7 +451,54 @@ export async function GET() {
     }
 
     // ----------------------------------------------------
-    // Test 15: Custom Password Generator format check
+    // Test 16: Rate limit on forgot password request (immediate second call)
+    // ----------------------------------------------------
+    try {
+      // Second request immediately after the successful one above
+      const req2 = new Request("http://localhost/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: "testauth@example.com" }),
+      });
+      const response2 = await forgotPasswordHandler(req2);
+      const data2 = await response2.json();
+
+      if (response2.status === 429 && data2.error && data2.error.includes("already requested")) {
+        addResult("Forgot Password Rate Limit - Immediate", "PASS", `Correctly rejected second request: "${data2.error}"`);
+      } else {
+        addResult("Forgot Password Rate Limit - Immediate", "FAIL", `Expected 429, got ${response2.status}. Msg: ${JSON.stringify(data2)}`);
+      }
+    } catch (err: any) {
+      addResult("Forgot Password Rate Limit - Immediate", "FAIL", err.message);
+    }
+
+    // ----------------------------------------------------
+    // Test 17: Rate limit after 24‑hour window (simulated)
+    // ----------------------------------------------------
+    // Manually back‑date the request timestamp to bypass the limit
+    await User.updateOne({ email: "testauth@example.com" }, { lastForgotPasswordRequestedAt: new Date(Date.now() - 25 * 60 * 60 * 1000) });
+    try {
+      const req3 = new Request("http://localhost/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: "testauth@example.com" }),
+      });
+      const response3 = await forgotPasswordHandler(req3);
+      const data3 = await response3.json();
+
+      if (response3.status === 200 && data3.success) {
+        if (data3.token) {
+          verifiedResetToken = data3.token;
+        }
+        addResult("Forgot Password Rate Limit - After 24h", "PASS", "Accepted request after 24‑hour window.");
+      } else {
+        addResult("Forgot Password Rate Limit - After 24h", "FAIL", `Expected success 200, got ${response3.status}. Msg: ${JSON.stringify(data3)}`);
+      }
+    } catch (err: any) {
+      addResult("Forgot Password Rate Limit - After 24h", "FAIL", err.message);
+    }
+    // ----------------------------------------------------
+    // Test 18: Custom Password Generator format check
     // ----------------------------------------------------
     try {
       const randomPassword = generateLettersOnlyPassword(16);
@@ -464,7 +514,7 @@ export async function GET() {
     }
 
     // ----------------------------------------------------
-    // Test 16: Complete Reset Password Operation
+    // Test 19: Complete Reset Password Operation
     // ----------------------------------------------------
     if (verifiedResetToken) {
       try {
@@ -496,7 +546,7 @@ export async function GET() {
     }
 
     // ----------------------------------------------------
-    // Test 10: Teardown Cleanup
+    // Test 20: Teardown Cleanup
     // ----------------------------------------------------
     try {
       const userDelete = await User.deleteOne({ email: "testauth@example.com" });

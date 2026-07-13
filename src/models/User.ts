@@ -93,6 +93,10 @@ const UserSchema = new Schema(
       type: Date,
       default: null,
     },
+    lastForgotPasswordRequestedAt: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true, // Automatically creates createdAt and updatedAt fields

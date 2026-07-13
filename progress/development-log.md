@@ -31,6 +31,9 @@ This index lists all our daily progress files for easy navigation during evaluat
 * [Day 27: Implemented password reset API](./day-27.md)
 * [Day 28: Added email/phone verification flow](./day-28.md)
 * [Day 29: Created custom random password generator (letters only)](./day-29.md)
+* [Day 30: Added password reset rate-limiting](./day-30.md)
+* [Day 31: Tested password recovery workflow](./day-31.md)
+
 
 
 
