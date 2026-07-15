@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import connectToDatabase from "@/lib/mongodb";
 import Comment from "@/models/Comment";
 import Post from "@/models/Post";
+import { sanitizeString } from "@/utils/validation";
 
 export async function POST(req: Request) {
   try {
@@ -22,15 +23,18 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { postId, content } = body;
 
+    const postIdClean = sanitizeString(postId);
+    const contentClean = sanitizeString(content);
+
     // 4. Validate inputs
-    if (!postId || postId.trim() === "") {
+    if (!postIdClean) {
       return NextResponse.json(
         { error: "Post ID is required." },
         { status: 400 }
       );
     }
 
-    if (!content || content.trim() === "") {
+    if (!contentClean) {
       return NextResponse.json(
         { error: "Comment content cannot be empty." },
         { status: 400 }
@@ -41,7 +45,7 @@ export async function POST(req: Request) {
     await connectToDatabase();
 
     // 6. Verify that the post exists
-    const postExists = await Post.exists({ _id: postId });
+    const postExists = await Post.exists({ _id: postIdClean });
     if (!postExists) {
       return NextResponse.json(
         { error: "Target post could not be found." },
@@ -51,9 +55,9 @@ export async function POST(req: Request) {
 
     // 7. Create the comment document
     const newComment = await Comment.create({
-      postId,
+      postId: postIdClean,
       author: (session.user as any).id,
-      content: content.trim(),
+      content: contentClean,
     });
 
     // 8. Increment comments count in post document

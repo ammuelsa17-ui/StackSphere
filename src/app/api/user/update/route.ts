@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import connectToDatabase from "@/lib/mongodb";
 import User from "@/models/User";
+import { sanitizeString, validatePhone } from "@/utils/validation";
 
 export async function POST(req: Request) {
   try {
@@ -21,10 +22,21 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { name, phoneNumber, avatarUrl } = body;
 
+    const nameClean = sanitizeString(name);
+    const phoneClean = sanitizeString(phoneNumber);
+    const avatarClean = sanitizeString(avatarUrl);
+
     // 4. Validate required name field
-    if (!name || name.trim() === "") {
+    if (!nameClean) {
       return NextResponse.json(
         { error: "Name is required and cannot be empty." },
+        { status: 400 }
+      );
+    }
+
+    if (phoneClean && !validatePhone(phoneClean)) {
+      return NextResponse.json(
+        { error: "Please provide a valid phone number" },
         { status: 400 }
       );
     }
@@ -36,9 +48,9 @@ export async function POST(req: Request) {
     const updatedUser = await User.findByIdAndUpdate(
       (session.user as any).id,
       {
-        name: name.trim(),
-        phoneNumber: phoneNumber ? phoneNumber.trim() : "",
-        avatarUrl: avatarUrl ? avatarUrl.trim() : "",
+        name: nameClean,
+        phoneNumber: phoneClean || "",
+        avatarUrl: avatarClean || "",
       },
       { new: true, runValidators: true } // Returns the modified document & checks model constraints
     );

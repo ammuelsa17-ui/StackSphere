@@ -33,6 +33,8 @@ This index lists all our daily progress files for easy navigation during evaluat
 * [Day 29: Created custom random password generator (letters only)](./day-29.md)
 * [Day 30: Added password reset rate-limiting](./day-30.md)
 * [Day 31: Tested password recovery workflow](./day-31.md)
+* [Day 32: Enhanced authentication security measures](./day-32.md)
+* [Day 33: Added strict input validation rules](./day-33.md)
 
 
 

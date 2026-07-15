@@ -2,22 +2,41 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import connectToDatabase from "@/lib/mongodb";
 import User from "@/models/User";
+import { sanitizeString, validateEmail, validatePhone, validatePassword } from "@/utils/validation";
 
 export async function POST(req: Request) {
   try {
     const { name, email, password, phoneNumber } = await req.json();
 
+    const nameClean = sanitizeString(name);
+    const emailClean = sanitizeString(email);
+    const phoneClean = sanitizeString(phoneNumber);
+
     // 1. Basic input validation
-    if (!name || !email || !password) {
+    if (!nameClean || !emailClean || !password) {
       return NextResponse.json(
         { error: "Missing required fields (name, email, password)" },
         { status: 400 }
       );
     }
 
-    if (password.length < 6) {
+    if (!validateEmail(emailClean)) {
       return NextResponse.json(
-        { error: "Password must be at least 6 characters long" },
+        { error: "Please provide a valid email address" },
+        { status: 400 }
+      );
+    }
+
+    if (!validatePassword(password)) {
+      return NextResponse.json(
+        { error: "Password must be at least 6 characters long and contain both letters and numbers" },
+        { status: 400 }
+      );
+    }
+
+    if (phoneClean && !validatePhone(phoneClean)) {
+      return NextResponse.json(
+        { error: "Please provide a valid phone number" },
         { status: 400 }
       );
     }
@@ -26,7 +45,7 @@ export async function POST(req: Request) {
     await connectToDatabase();
 
     // 2. Check if a user already exists with this email
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email: emailClean });
     if (existingUser) {
       return NextResponse.json(
         { error: "A user with this email already exists" },
@@ -39,10 +58,10 @@ export async function POST(req: Request) {
 
     // 4. Create and save the new user record in MongoDB
     const newUser = await User.create({
-      name,
-      email,
+      name: nameClean,
+      email: emailClean,
       password: hashedPassword,
-      phoneNumber: phoneNumber || "",
+      phoneNumber: phoneClean || "",
       points: 0, // Set initial rewards points to 0
       subscription: {
         plan: "Free",

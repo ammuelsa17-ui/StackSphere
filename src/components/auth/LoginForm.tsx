@@ -9,7 +9,10 @@ import { LogIn } from "lucide-react";
 export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [otpCode, setOtpCode] = useState("");
+  const [showOtpInput, setShowOtpInput] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
@@ -17,10 +20,17 @@ export default function LoginForm() {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
+    setInfoMessage(null);
 
     // Basic client-side validation
     if (!email || !password) {
       setError("Please fill in all fields.");
+      setIsLoading(false);
+      return;
+    }
+
+    if (showOtpInput && !otpCode) {
+      setError("Please enter the verification code.");
       setIsLoading(false);
       return;
     }
@@ -31,10 +41,16 @@ export default function LoginForm() {
         redirect: false,
         email,
         password,
+        code: showOtpInput ? otpCode : undefined,
       });
 
       if (res?.error) {
-        setError(res.error); // Display login error (e.g. wrong password)
+        if (res.error === "OTP_REQUIRED") {
+          setShowOtpInput(true);
+          setInfoMessage("A verification code (OTP) has been sent to your email. Please enter it below to complete sign in.");
+        } else {
+          setError(res.error); // Display login error (e.g. wrong password)
+        }
       } else {
         router.push("/dashboard"); // Redirect to dashboard on success
         router.refresh();
@@ -64,6 +80,12 @@ export default function LoginForm() {
           </div>
         )}
 
+        {infoMessage && (
+          <div className="bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 p-3 rounded-lg text-sm text-center font-medium">
+            {infoMessage}
+          </div>
+        )}
+
         <div className="flex flex-col gap-1.5">
           <label
             htmlFor="email"
@@ -73,12 +95,13 @@ export default function LoginForm() {
           </label>
           <input
             required
+            disabled={showOtpInput}
             type="email"
             id="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
-            className="bg-neutral-50 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-xl p-3 text-sm text-neutral-800 dark:text-neutral-100 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200"
+            className="bg-neutral-50 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-xl p-3 text-sm text-neutral-800 dark:text-neutral-100 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 disabled:opacity-60"
           />
         </div>
 
@@ -92,29 +115,51 @@ export default function LoginForm() {
             </label>
             <Link
               href="/forgot-password"
-              className="text-xs font-semibold text-indigo-600 dark:text-indigo-405 hover:underline"
+              className="text-xs font-semibold text-indigo-600 dark:text-indigo-450 hover:underline"
             >
               Forgot Password?
             </Link>
           </div>
           <input
             required
+            disabled={showOtpInput}
             type="password"
             id="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
-            className="bg-neutral-50 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-xl p-3 text-sm text-neutral-800 dark:text-neutral-100 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200"
+            className="bg-neutral-50 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-xl p-3 text-sm text-neutral-800 dark:text-neutral-100 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 disabled:opacity-60"
           />
         </div>
+
+        {showOtpInput && (
+          <div className="flex flex-col gap-1.5">
+            <label
+              htmlFor="otpCode"
+              className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400"
+            >
+              Verification Code (OTP)
+            </label>
+            <input
+              required
+              type="text"
+              id="otpCode"
+              maxLength={6}
+              value={otpCode}
+              onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))}
+              placeholder="123456"
+              className="bg-neutral-50 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-xl p-3 text-sm text-center tracking-widest font-mono text-neutral-800 dark:text-neutral-100 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200"
+            />
+          </div>
+        )}
 
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full h-11 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm rounded-xl disabled:opacity-50 transition-all duration-200 flex items-center justify-center gap-2"
+          className="w-full h-11 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm rounded-xl disabled:opacity-50 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
         >
           <LogIn className="h-4 w-4" />
-          <span>{isLoading ? "Signing In..." : "Sign In"}</span>
+          <span>{isLoading ? "Processing..." : showOtpInput ? "Verify & Sign In" : "Sign In"}</span>
         </button>
       </form>
 

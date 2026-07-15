@@ -5,6 +5,7 @@ import connectToDatabase from "@/lib/mongodb";
 import Post from "@/models/Post";
 import Upload from "@/models/Upload";
 import User from "@/models/User";
+import { sanitizeString } from "@/utils/validation";
 
 export async function POST(req: Request) {
   try {
@@ -23,8 +24,10 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { content, mediaUrl, mediaType } = body;
 
+    const contentClean = sanitizeString(content);
+
     // 4. Validate required content field
-    if (!content || content.trim() === "") {
+    if (!contentClean) {
       return NextResponse.json(
         { error: "Post content cannot be empty." },
         { status: 400 }
@@ -92,7 +95,7 @@ export async function POST(req: Request) {
     // 7. Create the new post in the database
     const newPost = await Post.create({
       author: (session.user as any).id,
-      content: content.trim(),
+      content: contentClean,
       mediaUrl: mediaUrl || "",
       mediaType: normalizedMediaType,
       likes: [],

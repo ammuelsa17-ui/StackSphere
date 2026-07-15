@@ -5,8 +5,8 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 ---
 
 ## 📊 Summary
-* **Current Day**: Day 31
-* **Overall Progress**: 51.6% (31/60 Days Completed)
+* **Current Day**: Day 33
+* **Overall Progress**: 55.0% (33/60 Days Completed)
 * **Status**: In Progress
 
 ---
@@ -53,8 +53,8 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 - [x] **Day 29**: Create custom random password generator (letters only).
 - [x] **Day 30**: Add limitation: only one reset request per day.
 - [x] **Day 31**: Test password recovery workflow.
-- [ ] **Day 32**: Enhance authentication security measures.
-- [ ] **Day 33**: Add strict input validation rules.
+- [x] **Day 32**: Enhance authentication security measures.
+- [x] **Day 33**: Add strict input validation rules.
 - [ ] **Day 34**: Clean up security issues.
 - [ ] **Day 35**: Complete authentication module review.
 
@@ -351,6 +351,22 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 * **Problems:** Ensuring verification scripts could run directly over network APIs without browser dependencies.
 * **Solutions:** Used Node's standard http library module to build clean REST requests imitating frontend forms payload submits.
 * **Next Task:** Enhance authentication security measures on Day 32.
+
+### Day 32
+* **Date:** July 14, 2026
+* **Completed:** Configured Advanced Credentials rules on NextAuth (Chrome OTP challenge, Microsoft Edge bypass, and Mobile 10 AM - 1 PM time window check), modified client login form layout, and added E2E assertions for all browser and device categories.
+* **Files Changed:** `src/lib/auth.ts`, `src/components/auth/LoginForm.tsx`, `src/app/api/test-auth/route.ts`, `progress/day-32.md`, `progress/development-log.md`, `task.md`
+* **Problems:** Supporting Chrome OTP challenges without breaking Edge direct login test assertions.
+* **Solutions:** Mocked verificationCode in user documents during Chrome tests to complete full session authorization checks.
+* **Next Task:** Add strict input validation rules on Day 33.
+
+### Day 33
+* **Date:** July 15, 2026
+* **Completed:** Created custom input validation and HTML/XSS sanitization utility module, applied sanitization rules across registration, login, profile edit, posts, and comments API routes, and verified checks against weak inputs.
+* **Files Changed:** `src/utils/validation.ts`, `src/app/api/auth/register/route.ts`, `src/lib/auth.ts`, `src/app/api/user/update/route.ts`, `src/app/api/posts/create/route.ts`, `src/app/api/comments/create/route.ts`, `src/app/api/test-auth/route.ts`, `progress/day-33.md`, `progress/development-log.md`, `task.md`
+* **Problems:** Disallowing weak passwords while preserving standard client submissions.
+* **Solutions:** Enforced letter-and-number character requirements strictly on credentials registers.
+* **Next Task:** Clean up security issues on Day 34.
 
 
 

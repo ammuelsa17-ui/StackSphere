@@ -182,8 +182,14 @@ export async function GET() {
           },
         };
 
+        // Pre-configure DB verificationCode so Chrome browser OTP check passes
+        await User.updateOne(
+          { email: "testauth@example.com" },
+          { verificationCode: "999999", verificationCodeExpires: new Date(Date.now() + 10 * 60 * 1000) }
+        );
+
         authenticatedUser = await authorize(
-          { email: "testauth@example.com", password: "password123" },
+          { email: "testauth@example.com", password: "password123", code: "999999" },
           mockReq as any
         );
 
@@ -246,6 +252,187 @@ export async function GET() {
         }
       } else {
         addResult("Login History Tracking", "FAIL", "Skipped: Success authorization or signIn callback not found.");
+      }
+
+      // ----------------------------------------------------
+      // Test 21: Chrome browser OTP challenge (Trigger)
+      // ----------------------------------------------------
+      try {
+        const mockReqChrome = {
+          headers: {
+            get: (key: string) => {
+              if (key === "user-agent") return "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+              return null;
+            },
+          },
+        };
+        await authorize(
+          { email: "testauth@example.com", password: "password123" }, // No code provided
+          mockReqChrome as any
+        );
+        addResult("Chrome OTP Challenge - Trigger", "FAIL", "Expected OTP_REQUIRED error, but authorize succeeded.");
+      } catch (err: any) {
+        if (err.message === "OTP_REQUIRED") {
+          addResult("Chrome OTP Challenge - Trigger", "PASS", "Chrome browser successfully triggered OTP challenge.");
+        } else {
+          addResult("Chrome OTP Challenge - Trigger", "FAIL", `Unexpected error: "${err.message}"`);
+        }
+      }
+
+      // ----------------------------------------------------
+      // Test 22: Chrome browser OTP challenge (Invalid Code)
+      // ----------------------------------------------------
+      try {
+        const mockReqChrome = {
+          headers: {
+            get: (key: string) => {
+              if (key === "user-agent") return "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+              return null;
+            },
+          },
+        };
+        await authorize(
+          { email: "testauth@example.com", password: "password123", code: "000000" }, // Invalid code
+          mockReqChrome as any
+        );
+        addResult("Chrome OTP Challenge - Invalid Code", "FAIL", "Expected invalid OTP code error, but authorize succeeded.");
+      } catch (err: any) {
+        if (err.message.includes("Invalid or expired")) {
+          addResult("Chrome OTP Challenge - Invalid Code", "PASS", `Correctly rejected invalid code: "${err.message}"`);
+        } else {
+          addResult("Chrome OTP Challenge - Invalid Code", "FAIL", `Unexpected error: "${err.message}"`);
+        }
+      }
+
+      // ----------------------------------------------------
+      // Test 23: Microsoft Edge browser logs in directly
+      // ----------------------------------------------------
+      try {
+        const mockReqEdge = {
+          headers: {
+            get: (key: string) => {
+              if (key === "user-agent") return "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0";
+              return null;
+            },
+          },
+        };
+        const edgeUser = await authorize(
+          { email: "testauth@example.com", password: "password123" }, // No code needed
+          mockReqEdge as any
+        );
+        if (edgeUser && edgeUser.email === "testauth@example.com") {
+          addResult("Edge Direct Login", "PASS", "Microsoft Edge logged in directly without OTP challenge.");
+        } else {
+          addResult("Edge Direct Login", "FAIL", `Expected user object, got: ${JSON.stringify(edgeUser)}`);
+        }
+      } catch (err: any) {
+        addResult("Edge Direct Login", "FAIL", err.message);
+      }
+
+      // ----------------------------------------------------
+      // Test 24: Mobile time-window restriction (Outside window check)
+      // ----------------------------------------------------
+      const originalGetHours = Date.prototype.getHours;
+      try {
+        // Mock getHours to return 15 (3:00 PM, outside the allowed 10 AM - 1 PM window)
+        Date.prototype.getHours = () => 15;
+
+        const mockReqMobile = {
+          headers: {
+            get: (key: string) => {
+              if (key === "user-agent") return "Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1";
+              return null;
+            },
+          },
+        };
+
+        await authorize(
+          { email: "testauth@example.com", password: "password123" },
+          mockReqMobile as any
+        );
+        addResult("Mobile Restriction - Outside Window", "FAIL", "Expected login to be rejected, but authorize succeeded.");
+      } catch (err: any) {
+        if (err.message.includes("restricted")) {
+          addResult("Mobile Restriction - Outside Window", "PASS", `Blocked login outside window correctly: "${err.message}"`);
+        } else {
+          addResult("Mobile Restriction - Outside Window", "FAIL", `Unexpected error: "${err.message}"`);
+        }
+      } finally {
+        Date.prototype.getHours = originalGetHours;
+      }
+
+      // ----------------------------------------------------
+      // Test 25: Mobile time-window restriction (Inside window check)
+      // ----------------------------------------------------
+      try {
+        // Mock getHours to return 11 (11:00 AM, inside the allowed 10 AM - 1 PM window)
+        Date.prototype.getHours = () => 11;
+
+        const mockReqMobile = {
+          headers: {
+            get: (key: string) => {
+              if (key === "user-agent") return "Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1";
+              return null;
+            },
+          },
+        };
+
+        const mobileUser = await authorize(
+          { email: "testauth@example.com", password: "password123" },
+          mockReqMobile as any
+        );
+        if (mobileUser && mobileUser.email === "testauth@example.com") {
+          addResult("Mobile Restriction - Inside Window", "PASS", "Allowed login inside the 10:00 AM - 1:00 PM window.");
+        } else {
+          addResult("Mobile Restriction - Inside Window", "FAIL", `Expected user, got: ${JSON.stringify(mobileUser)}`);
+        }
+      } catch (err: any) {
+        addResult("Mobile Restriction - Inside Window", "FAIL", err.message);
+      } finally {
+        Date.prototype.getHours = originalGetHours;
+      }
+
+      // ----------------------------------------------------
+      // Test 26: Strict Registration Validations (Day 33)
+      // ----------------------------------------------------
+      try {
+        // 1. Weak password (no number)
+        const reqWeakPass = new Request("http://localhost/api/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: "Strict Test User",
+            email: "stricttest@example.com",
+            password: "lettersallOnly", // No number
+          }),
+        });
+        const resWeakPass = await registerHandler(reqWeakPass);
+        const dataWeakPass = await resWeakPass.json();
+
+        // 2. Invalid phone format
+        const reqBadPhone = new Request("http://localhost/api/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: "Strict Test User",
+            email: "stricttest@example.com",
+            password: "password123",
+            phoneNumber: "invalid-phone-format",
+          }),
+        });
+        const resBadPhone = await registerHandler(reqBadPhone);
+        const dataBadPhone = await resBadPhone.json();
+
+        const passWeakPass = resWeakPass.status === 400 && dataWeakPass.error && dataWeakPass.error.includes("Password must");
+        const passBadPhone = resBadPhone.status === 400 && dataBadPhone.error && dataBadPhone.error.includes("phone number");
+
+        if (passWeakPass && passBadPhone) {
+          addResult("Strict Registration Validations", "PASS", "Strict input validations successfully rejected weak passwords and bad phone formats.");
+        } else {
+          addResult("Strict Registration Validations", "FAIL", `Validation checks failed. WeakPass status: ${resWeakPass.status}, BadPhone status: ${resBadPhone.status}`);
+        }
+      } catch (err: any) {
+        addResult("Strict Registration Validations", "FAIL", err.message);
       }
     }
 

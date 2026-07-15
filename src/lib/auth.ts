@@ -5,6 +5,7 @@ import connectToDatabase from "@/lib/mongodb";
 import User from "@/models/User";
 import LoginHistory from "@/models/LoginHistory";
 import { parseBrowser, parseOS, parseDeviceType } from "@/utils/userAgent";
+import { sanitizeString, validateEmail } from "@/utils/validation";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -13,17 +14,23 @@ export const authOptions: NextAuthOptions = {
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
+        code: { label: "OTP Code", type: "text" },
       },
       async authorize(credentials, req) {
         if (!credentials?.email || !credentials?.password) {
           throw new Error("Please enter your email and password");
         }
 
+        const emailClean = sanitizeString(credentials.email);
+        if (!validateEmail(emailClean)) {
+          throw new Error("Please provide a valid email address");
+        }
+
         // Connect to MongoDB
         await connectToDatabase();
         
         // Find the user and explicitly select the hidden password field
-        const user = await User.findOne({ email: credentials.email }).select("+password");
+        const user = await User.findOne({ email: emailClean }).select("+password");
 
         if (!user) {
           throw new Error("No user found with this email");
@@ -55,6 +62,47 @@ export const authOptions: NextAuthOptions = {
 
         if (ipAddress.includes(",")) {
           ipAddress = ipAddress.split(",")[0].trim();
+        }
+
+        const browser = parseBrowser(userAgent);
+        const deviceType = parseDeviceType(userAgent);
+
+        // Mobile login window check (blocked outside 10:00 AM - 1:00 PM)
+        if (deviceType === "Mobile") {
+          const currentHour = new Date().getHours();
+          if (currentHour < 10 || currentHour >= 13) {
+            throw new Error("Mobile logins are restricted to the 10:00 AM - 1:00 PM window.");
+          }
+        }
+
+        // Chrome browser OTP challenge check
+        if (browser === "Chrome") {
+          const code = credentials?.code ? String(credentials.code).trim() : "";
+          if (!code) {
+            // Generate OTP code
+            const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+            const verificationExpiry = new Date(Date.now() + 10 * 60 * 1000);
+            
+            user.verificationCode = verificationCode;
+            user.verificationCodeExpires = verificationExpiry;
+            await user.save();
+            
+            console.log(`[MOCK EMAIL CHALLENGE] Sent OTP code "${verificationCode}" to email "${user.email}"`);
+            throw new Error("OTP_REQUIRED");
+          } else {
+            // Validate code
+            const codeMatches = user.verificationCode === code;
+            const codeActive = user.verificationCodeExpires && user.verificationCodeExpires > new Date();
+            
+            if (!codeMatches || !codeActive) {
+              throw new Error("Invalid or expired OTP code.");
+            }
+            
+            // Clear verification fields
+            user.verificationCode = "";
+            user.verificationCodeExpires = null;
+            await user.save();
+          }
         }
 
         // Return user details without sensitive fields (password) or dynamic fields (points, plan)
