@@ -5,8 +5,8 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 ---
 
 ## 📊 Summary
-* **Current Day**: Day 33
-* **Overall Progress**: 55.0% (33/60 Days Completed)
+* **Current Day**: Day 34
+* **Overall Progress**: 56.6% (34/60 Days Completed)
 * **Status**: In Progress
 
 ---
@@ -55,7 +55,7 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 - [x] **Day 31**: Test password recovery workflow.
 - [x] **Day 32**: Enhance authentication security measures.
 - [x] **Day 33**: Add strict input validation rules.
-- [ ] **Day 34**: Clean up security issues.
+- [x] **Day 34**: Clean up security issues.
 - [ ] **Day 35**: Complete authentication module review.
 
 ### Phase 4: Subscription & Payment System
@@ -367,6 +367,15 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 * **Problems:** Disallowing weak passwords while preserving standard client submissions.
 * **Solutions:** Enforced letter-and-number character requirements strictly on credentials registers.
 * **Next Task:** Clean up security issues on Day 34.
+
+### Day 34
+* **Date:** July 17, 2026
+* **Completed:** Applied `select: false` to hide sensitive User model fields from default queries, added explicit `.select()` calls across all auth routes, extended sanitization to forgot-password/verify-code/reset-password routes, added HTTP security headers to middleware, expanded security policy documentation, and fixed test passwords to satisfy new strict validation rules.
+* **Files Changed:** `src/models/User.ts`, `src/lib/auth.ts`, `src/middleware.ts`, `src/app/api/auth/forgot-password/route.ts`, `src/app/api/auth/verify-code/route.ts`, `src/app/api/auth/reset-password/route.ts`, `src/app/api/test-auth/route.ts`, `scratch/test-recovery-flow.js`, `docs/security-policy.md`, `progress/day-34.md`, `progress/development-log.md`, `task.md`
+* **Problems:** Hidden fields caused test assertions to fail when verifying DB state after recovery operations.
+* **Solutions:** Added `.select("+fieldName")` to all queries that need to read or verify sensitive fields in test assertions.
+* **Next Task:** Complete authentication module review on Day 35.
+
 
 
 

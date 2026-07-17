@@ -495,7 +495,7 @@ export async function GET() {
         emailResetToken = data.token;
 
         // Verify database fields match
-        const userInDb = await User.findOne({ email: "testauth@example.com" });
+        const userInDb = await User.findOne({ email: "testauth@example.com" }).select("+verificationCode +verificationCodeExpires +resetPasswordToken");
         if (
           userInDb &&
           userInDb.verificationCode === testOtp &&
@@ -621,7 +621,7 @@ export async function GET() {
           verifiedResetToken = data.resetToken;
 
           // Check DB cleared verification attributes
-          const userInDb = await User.findOne({ email: "testauth@example.com" });
+           const userInDb = await User.findOne({ email: "testauth@example.com" }).select("+verificationCode +verificationCodeExpires");
           if (userInDb && userInDb.verificationCode === "" && userInDb.verificationCodeExpires === null) {
             addResult("OTP Verification - Success", "PASS", "Verified OTP code successfully and cleared recovery fields in DB.");
           } else {
@@ -705,7 +705,7 @@ export async function GET() {
     // ----------------------------------------------------
     if (verifiedResetToken) {
       try {
-        const generatedPassword = generateLettersOnlyPassword(12);
+        const generatedPassword = generateLettersOnlyPassword(10) + "42"; // Append numbers to satisfy strict validation
         const req = new Request("http://localhost/api/auth/reset-password", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -716,7 +716,7 @@ export async function GET() {
 
         if (response.status === 200 && data.success) {
           // Verify reset fields are cleared
-          const userInDb = await User.findOne({ email: "testauth@example.com" });
+          const userInDb = await User.findOne({ email: "testauth@example.com" }).select("+resetPasswordToken +resetPasswordExpires");
           if (userInDb && userInDb.resetPasswordToken === "" && userInDb.resetPasswordExpires === null) {
             addResult("Reset Password API Completion", "PASS", "Successfully reset user account password using verification recovery flow.");
           } else {

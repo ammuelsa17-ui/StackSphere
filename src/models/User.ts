@@ -75,27 +75,32 @@ const UserSchema = new Schema(
       type: SubscriptionSchema,
       default: () => ({}),
     },
-    // Password reset recovery fields
+    // Password reset recovery fields (hidden from default queries)
     resetPasswordToken: {
       type: String,
       default: "",
+      select: false,
     },
     resetPasswordExpires: {
       type: Date,
       default: null,
+      select: false,
     },
-    // OTP verification recovery fields
+    // OTP verification recovery fields (hidden from default queries)
     verificationCode: {
       type: String,
       default: "",
+      select: false,
     },
     verificationCodeExpires: {
       type: Date,
       default: null,
+      select: false,
     },
     lastForgotPasswordRequestedAt: {
       type: Date,
       default: null,
+      select: false,
     },
   },
   {

@@ -2,13 +2,17 @@ import { NextResponse } from "next/server";
 import crypto from "crypto";
 import connectToDatabase from "@/lib/mongodb";
 import User from "@/models/User";
+import { sanitizeString, validateEmail, validatePhone } from "@/utils/validation";
 
 export async function POST(req: Request) {
   try {
     const { email, phoneNumber } = await req.json();
 
-    const emailProvided = typeof email === "string" && email.trim() !== "";
-    const phoneProvided = typeof phoneNumber === "string" && phoneNumber.trim() !== "";
+    const emailClean = sanitizeString(email);
+    const phoneClean = sanitizeString(phoneNumber);
+
+    const emailProvided = emailClean !== "";
+    const phoneProvided = phoneClean !== "";
 
     if (!emailProvided && !phoneProvided) {
       return NextResponse.json(
@@ -21,16 +25,21 @@ export async function POST(req: Request) {
 
     let user;
     if (emailProvided) {
-      const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-      if (!emailRegex.test(email)) {
+      if (!validateEmail(emailClean)) {
         return NextResponse.json(
           { error: "Please provide a valid email address." },
           { status: 400 }
         );
       }
-      user = await User.findOne({ email: email.trim().toLowerCase() });
+      user = await User.findOne({ email: emailClean.toLowerCase() }).select("+resetPasswordToken +resetPasswordExpires +verificationCode +verificationCodeExpires +lastForgotPasswordRequestedAt");
     } else {
-      user = await User.findOne({ phoneNumber: phoneNumber.trim() });
+      if (!validatePhone(phoneClean)) {
+        return NextResponse.json(
+          { error: "Please provide a valid phone number." },
+          { status: 400 }
+        );
+      }
+      user = await User.findOne({ phoneNumber: phoneClean }).select("+resetPasswordToken +resetPasswordExpires +verificationCode +verificationCodeExpires +lastForgotPasswordRequestedAt");
     }
 
     if (!user) {

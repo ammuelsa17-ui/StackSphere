@@ -120,7 +120,7 @@ async function runTests() {
 
   // Step 6: Complete reset password operation
   console.log('\nStep 6: Resetting password using the recovery token...');
-  const newPassword = 'NewSecretPassword';
+  const newPassword = 'NewSecret42Pass';
   const resetPassResult = await makeRequest('/api/auth/reset-password', 'POST', { token: verifiedResetToken, password: newPassword });
   if (resetPassResult.status === 200 && resetPassResult.data.success) {
     console.log(' [PASS] Password has been successfully reset.');

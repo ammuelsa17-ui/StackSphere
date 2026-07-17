@@ -30,7 +30,7 @@ export const authOptions: NextAuthOptions = {
         await connectToDatabase();
         
         // Find the user and explicitly select the hidden password field
-        const user = await User.findOne({ email: emailClean }).select("+password");
+        const user = await User.findOne({ email: emailClean }).select("+password +verificationCode +verificationCodeExpires");
 
         if (!user) {
           throw new Error("No user found with this email");

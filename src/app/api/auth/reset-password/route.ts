@@ -2,21 +2,24 @@ import { NextResponse } from "next/server";
 import bcryptjs from "bcryptjs";
 import connectToDatabase from "@/lib/mongodb";
 import User from "@/models/User";
+import { sanitizeString, validatePassword } from "@/utils/validation";
 
 export async function POST(req: Request) {
   try {
     const { token, password } = await req.json();
 
-    if (!token || token.trim() === "") {
+    const tokenClean = sanitizeString(token);
+
+    if (!tokenClean) {
       return NextResponse.json(
         { error: "Reset token is required." },
         { status: 400 }
       );
     }
 
-    if (!password || password.length < 6) {
+    if (!validatePassword(password)) {
       return NextResponse.json(
-        { error: "Password must be at least 6 characters long." },
+        { error: "Password must be at least 6 characters long and contain both letters and numbers." },
         { status: 400 }
       );
     }
@@ -25,9 +28,9 @@ export async function POST(req: Request) {
 
     // Query user by matching reset token that has not expired yet
     const user = await User.findOne({
-      resetPasswordToken: token,
+      resetPasswordToken: tokenClean,
       resetPasswordExpires: { $gt: new Date() },
-    });
+    }).select("+password +resetPasswordToken +resetPasswordExpires");
 
     if (!user) {
       return NextResponse.json(

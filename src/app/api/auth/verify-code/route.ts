@@ -1,19 +1,23 @@
 import { NextResponse } from "next/server";
 import connectToDatabase from "@/lib/mongodb";
 import User from "@/models/User";
+import { sanitizeString } from "@/utils/validation";
 
 export async function POST(req: Request) {
   try {
     const { identity, code } = await req.json();
 
-    if (!identity || identity.trim() === "") {
+    const identityClean = sanitizeString(identity);
+    const codeClean = sanitizeString(code);
+
+    if (!identityClean) {
       return NextResponse.json(
         { error: "Email address or phone number is required." },
         { status: 400 }
       );
     }
 
-    if (!code || code.trim() === "") {
+    if (!codeClean) {
       return NextResponse.json(
         { error: "Verification code is required." },
         { status: 400 }
@@ -22,14 +26,13 @@ export async function POST(req: Request) {
 
     await connectToDatabase();
 
-    const identityClean = identity.trim();
     // Query user by email or phone number
     const user = await User.findOne({
       $or: [
         { email: identityClean.toLowerCase() },
         { phoneNumber: identityClean },
       ],
-    });
+    }).select("+verificationCode +verificationCodeExpires +resetPasswordToken");
 
     if (!user) {
       return NextResponse.json(
@@ -39,7 +42,7 @@ export async function POST(req: Request) {
     }
 
     // Verify code match and expiration
-    const codeMatches = user.verificationCode === code.trim();
+    const codeMatches = user.verificationCode === codeClean;
     const codeActive = user.verificationCodeExpires && user.verificationCodeExpires > new Date();
 
     if (!codeMatches || !codeActive) {
