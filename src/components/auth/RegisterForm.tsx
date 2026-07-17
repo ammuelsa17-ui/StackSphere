@@ -36,6 +36,12 @@ export default function RegisterForm() {
       return;
     }
 
+    if (!/[a-zA-Z]/.test(password) || !/\d/.test(password)) {
+      setError("Password must contain both letters and numbers.");
+      setIsLoading(false);
+      return;
+    }
+
     if (password !== confirmPassword) {
       setError("Passwords do not match.");
       setIsLoading(false);

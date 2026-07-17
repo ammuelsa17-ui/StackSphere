@@ -5,13 +5,17 @@ This document tracks the testing checklist for all completed modules to ensure c
 ---
 
 ## 1. Authentication & Session Testing
-- [ ] **Correct Login:** Ensure credentials authenticate and trigger session creation.
-- [ ] **Incorrect Credentials:** Fail login on wrong password/unregistered email.
-- [ ] **Validation:** Verify fields enforce lengths and format patterns (e.g. valid email syntax).
-- [ ] **Device Rules:**
-  - [ ] Chrome browser triggers OTP challenge email.
-  - [ ] Microsoft Edge logs in directly.
-  - [ ] Mobile users blocked outside of 10:00 AM - 1:00 PM window.
+- [x] **Correct Login:** Ensure credentials authenticate and trigger session creation.
+- [x] **Incorrect Credentials:** Fail login on wrong password/unregistered email.
+- [x] **Validation:** Verify fields enforce lengths and format patterns (e.g. valid email syntax).
+- [x] **Device Rules:**
+  - [x] Chrome browser triggers OTP challenge email.
+  - [x] Microsoft Edge logs in directly.
+  - [x] Mobile users blocked outside of 10:00 AM - 1:00 PM window.
+- [x] **Input Sanitization:** All auth endpoints strip HTML tags and validate inputs with centralised utilities.
+- [x] **Sensitive Field Protection:** Security fields hidden from default database queries.
+- [x] **Security Headers:** Protected routes return X-Content-Type-Options, X-Frame-Options, X-XSS-Protection, Referrer-Policy, Permissions-Policy headers.
+- [x] **Client-Side Validation:** RegisterForm and ForgotPasswordForm enforce password complexity (letters + numbers) before submission.
 
 ---
 
@@ -49,6 +53,6 @@ This document tracks the testing checklist for all completed modules to ensure c
   - [x] Reject expired verification codes.
   - [x] Clear verification fields upon successful validation.
 - [x] **Rate Limiting:** Ensure password reset requests are limited to one per 24 hours per user.
-- [x] **Letters-Only Password Generator:** Verify that generated temporary passwords match strictly alphabetical characters `[A-Za-z]`.
+- [x] **Password Generator:** Verify that generated passwords include both letters and numbers.
 - [x] **Reset Password API Completion:** Verify new passwords can be set successfully and reset tokens are invalidated.
-
+- [x] **Strict Password Validation:** Reject passwords missing letters or numbers at both client and server.

@@ -29,13 +29,20 @@ export default function ForgotPasswordForm() {
   const [generatedPassword, setGeneratedPassword] = useState("");
   const [copied, setCopied] = useState(false);
 
-  // Client-side letters-only password generator (Day 29)
-  const handleGenerateLettersOnlyPassword = () => {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+  // Client-side password generator with letters and numbers (Day 29, updated Day 35)
+  const handleGeneratePassword = () => {
+    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    const digits = "0123456789";
     let randomPassword = "";
-    for (let i = 0; i < 12; i++) {
-      const index = Math.floor(Math.random() * chars.length);
-      randomPassword += chars.charAt(index);
+    // Generate 10 random letters
+    for (let i = 0; i < 10; i++) {
+      const index = Math.floor(Math.random() * letters.length);
+      randomPassword += letters.charAt(index);
+    }
+    // Append 2 random digits to satisfy strict validation
+    for (let i = 0; i < 2; i++) {
+      const index = Math.floor(Math.random() * digits.length);
+      randomPassword += digits.charAt(index);
     }
     setPassword(randomPassword);
     setConfirmPassword(randomPassword);
@@ -151,6 +158,12 @@ export default function ForgotPasswordForm() {
 
     if (!password || password.length < 6) {
       setError("Password must be at least 6 characters long.");
+      setIsLoading(false);
+      return;
+    }
+
+    if (!/[a-zA-Z]/.test(password) || !/\d/.test(password)) {
+      setError("Password must contain both letters and numbers.");
       setIsLoading(false);
       return;
     }
@@ -412,7 +425,7 @@ export default function ForgotPasswordForm() {
           <div className="flex justify-end">
             <button
               type="button"
-              onClick={handleGenerateLettersOnlyPassword}
+              onClick={handleGeneratePassword}
               className="text-[11px] font-bold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 flex items-center gap-1 bg-indigo-50 dark:bg-indigo-950/40 py-1 px-2.5 rounded-lg border border-indigo-100 dark:border-indigo-900/50 hover:scale-[1.01] active:scale-[0.99] transition-all"
             >
               <Sparkles className="h-3 w-3" />
