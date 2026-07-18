@@ -5,8 +5,8 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 ---
 
 ## 📊 Summary
-* **Current Day**: Day 35
-* **Overall Progress**: 58.3% (35/60 Days Completed)
+* **Current Day**: Day 36
+* **Overall Progress**: 60.0% (36/60 Days Completed)
 * **Status**: In Progress
 
 ---
@@ -59,7 +59,7 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 - [x] **Day 35**: Complete authentication module review.
 
 ### Phase 4: Subscription & Payment System
-- [ ] **Day 36**: Create subscription plans UI (Free, Bronze, Silver, Gold).
+- [x] **Day 36**: Create subscription plans UI (Free, Bronze, Silver, Gold).
 - [ ] **Day 37**: Integrate Stripe or Razorpay developer libraries.
 - [ ] **Day 38**: Implement payment checkout flow.
 - [ ] **Day 39**: Create payment verification webhook/endpoint.
@@ -383,6 +383,14 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 * **Problems:** Client-side password generator and validation did not match stricter server-side rules introduced in Day 33-34.
 * **Solutions:** Updated generator to produce alphanumeric passwords and added matching complexity checks on client.
 * **Next Task:** Phase 4 begins — Create subscription plans UI on Day 36.
+
+### Day 36
+* **Date:** July 18, 2026
+* **Completed:** Created the Subscription Plans UI page at `/subscription` rendering user subscription data from the database, displaying active status details, and showing styled plan option cards (Free, Bronze, Silver, Gold) with clear badges and feature grids.
+* **Files Changed:** `src/app/subscription/page.tsx`, `progress/day-36.md`, `progress/development-log.md`, `task.md`
+* **Problems:** Initial write command was interpreted as a markdown artifact creation which failed due to path constraints.
+* **Solutions:** Re-invoked the file creation command as a project file write.
+* **Next Task:** Integrate Stripe or Razorpay developer libraries on Day 37.
 
 
 

@@ -37,6 +37,7 @@ This index lists all our daily progress files for easy navigation during evaluat
 * [Day 33: Added strict input validation rules](./day-33.md)
 * [Day 34: Cleaned up security issues](./day-34.md)
 * [Day 35: Completed authentication module review](./day-35.md)
+* [Day 36: Created subscription plans UI](./day-36.md)
 
 
 
