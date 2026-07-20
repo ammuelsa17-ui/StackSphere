@@ -4,7 +4,8 @@ import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import connectToDatabase from "@/lib/mongodb";
 import User from "@/models/User";
-import { Check, HelpCircle, AlertCircle, ShieldCheck, Sparkles, Star, Zap } from "lucide-react";
+import { HelpCircle, AlertCircle, ShieldCheck, Sparkles, Zap } from "lucide-react";
+import SubscriptionPlanGrid from "@/components/subscription/SubscriptionPlanGrid";
 
 export const metadata = {
   title: "Subscription Plans - StackSphere",
@@ -20,7 +21,7 @@ export default async function SubscriptionPage() {
 
   await connectToDatabase();
 
-  const user = await User.findById((session.user as any).id).select("subscription name").lean();
+  const user = await User.findById((session.user as any).id).select("subscription name email").lean();
 
   if (!user) {
     redirect("/login");
@@ -28,6 +29,8 @@ export default async function SubscriptionPage() {
 
   const currentPlan = user.subscription?.plan || "Free";
   const paymentStatus = user.subscription?.paymentStatus || "active";
+  const userEmail = user.email || session.user.email || "";
+  
   const expiryDate = user.subscription?.expiryDate
     ? new Date(user.subscription.expiryDate).toLocaleDateString("en-US", {
         year: "numeric",
@@ -40,6 +43,7 @@ export default async function SubscriptionPage() {
     {
       name: "Free",
       price: "$0",
+      priceUSD: 0,
       period: "forever",
       description: "Essential Q&A features for developers getting started.",
       features: [
@@ -56,6 +60,7 @@ export default async function SubscriptionPage() {
     {
       name: "Bronze",
       price: "$5",
+      priceUSD: 5,
       period: "month",
       description: "Perfect for active developers seeking occasional media uploads.",
       features: [
@@ -72,6 +77,7 @@ export default async function SubscriptionPage() {
     {
       name: "Silver",
       price: "$15",
+      priceUSD: 15,
       period: "month",
       description: "Our recommended choice for professional content creators.",
       features: [
@@ -89,6 +95,7 @@ export default async function SubscriptionPage() {
     {
       name: "Gold",
       price: "$29",
+      priceUSD: 29,
       period: "month",
       description: "Ultimate power for teams, experts, and enterprise contributors.",
       features: [
@@ -159,80 +166,12 @@ export default async function SubscriptionPage() {
         )}
       </div>
 
-      {/* Grid of pricing cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
-        {plans.map((plan) => {
-          const isCurrent = currentPlan.toLowerCase() === plan.name.toLowerCase();
-          
-          return (
-            <div
-              key={plan.name}
-              className={`relative border rounded-2xl p-6 flex flex-col justify-between transition-all duration-300 hover:shadow-md ${plan.color}`}
-            >
-              {/* Popular / Premium Plan Badge */}
-              {plan.badge && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 text-[10px] font-extrabold uppercase tracking-wider bg-indigo-600 dark:bg-indigo-500 text-white rounded-full shadow-sm">
-                  {plan.badge}
-                </span>
-              )}
-
-              {/* Top content */}
-              <div className="space-y-5">
-                <div>
-                  <h3 className="text-xl font-bold text-neutral-850 dark:text-neutral-100 flex items-center gap-2">
-                    {plan.name}
-                    {isCurrent && (
-                      <span className="text-[10px] font-bold bg-indigo-50 dark:bg-indigo-900/40 text-indigo-650 dark:text-indigo-400 py-0.5 px-2 rounded-md border border-indigo-100 dark:border-indigo-900/60">
-                        Active
-                      </span>
-                    )}
-                  </h3>
-                  <p className="text-xs text-neutral-450 dark:text-neutral-400 mt-2 min-h-8">
-                    {plan.description}
-                  </p>
-                </div>
-
-                {/* Price Display */}
-                <div className="flex items-baseline gap-1.5 pb-5 border-b border-neutral-100 dark:border-neutral-805">
-                  <span className="text-4xl font-extrabold text-neutral-900 dark:text-white">
-                    {plan.price}
-                  </span>
-                  <span className="text-xs font-semibold text-neutral-450 dark:text-neutral-400">
-                    / {plan.period}
-                  </span>
-                </div>
-
-                {/* Features List */}
-                <ul className="space-y-3.5 text-xs text-neutral-700 dark:text-neutral-300">
-                  {plan.features.map((feature, idx) => (
-                    <li key={idx} className="flex gap-2.5 items-start">
-                      <Check className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* CTA Action button */}
-              <div className="mt-8 pt-4">
-                <button
-                  id={`btn-plan-${plan.name.toLowerCase()}`}
-                  disabled={isCurrent || plan.name === "Free"}
-                  className={`w-full h-11 text-xs font-bold rounded-xl transition-all duration-200 flex items-center justify-center gap-2 ${
-                    isCurrent
-                      ? "bg-neutral-100 dark:bg-neutral-805 text-neutral-405 dark:text-neutral-500 cursor-not-allowed border border-neutral-200 dark:border-neutral-750"
-                      : plan.name === "Free"
-                      ? "bg-neutral-100 dark:bg-neutral-805 text-neutral-405 dark:text-neutral-500 cursor-not-allowed border border-neutral-200 dark:border-neutral-750"
-                      : plan.buttonStyle
-                  }`}
-                >
-                  {isCurrent ? "Your Current Plan" : plan.cta}
-                </button>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      {/* Subscription Plan Grid Client Component */}
+      <SubscriptionPlanGrid
+        plans={plans}
+        currentPlan={currentPlan}
+        userEmail={userEmail}
+      />
 
       {/* Bottom informational card */}
       <div className="bg-amber-50/40 dark:bg-amber-950/10 border border-amber-250/50 dark:border-amber-900/30 rounded-2xl p-5 md:p-6 flex gap-4 items-start max-w-4xl mx-auto">

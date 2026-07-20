@@ -26,7 +26,8 @@ const TransactionSchema = new Schema(
     },
     status: {
       type: String,
-      enum: ["success", "failed"],
+      enum: ["pending", "success", "failed"],
+      default: "pending",
       required: [true, "Transaction status is required"],
     },
     invoiceUrl: {
@@ -39,7 +40,7 @@ const TransactionSchema = new Schema(
   }
 );
 
-// Prevent re-compilation errors during Next.js hot-reloads
+delete (models as any).Transaction;
 const Transaction = models.Transaction || model("Transaction", TransactionSchema);
 
 export default Transaction;

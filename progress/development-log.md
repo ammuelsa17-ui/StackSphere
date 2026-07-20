@@ -38,6 +38,8 @@ This index lists all our daily progress files for easy navigation during evaluat
 * [Day 34: Cleaned up security issues](./day-34.md)
 * [Day 35: Completed authentication module review](./day-35.md)
 * [Day 36: Created subscription plans UI](./day-36.md)
+* [Day 37: Integrated Stripe developer libraries](./day-37.md)
+* [Day 38: Implemented payment checkout flow](./day-38.md)
 
 
 

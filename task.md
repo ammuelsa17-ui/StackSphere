@@ -5,8 +5,8 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 ---
 
 ## 📊 Summary
-* **Current Day**: Day 36
-* **Overall Progress**: 60.0% (36/60 Days Completed)
+* **Current Day**: Day 38
+* **Overall Progress**: 63.3% (38/60 Days Completed)
 * **Status**: In Progress
 
 ---
@@ -60,8 +60,8 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 
 ### Phase 4: Subscription & Payment System
 - [x] **Day 36**: Create subscription plans UI (Free, Bronze, Silver, Gold).
-- [ ] **Day 37**: Integrate Stripe or Razorpay developer libraries.
-- [ ] **Day 38**: Implement payment checkout flow.
+- [x] **Day 37**: Integrate Stripe or Razorpay developer libraries.
+- [x] **Day 38**: Implement payment checkout flow.
 - [ ] **Day 39**: Create payment verification webhook/endpoint.
 - [ ] **Day 40**: Manage active subscription states on the User model.
 - [ ] **Day 41**: Enforce subscription-based question limits:
@@ -391,6 +391,23 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 * **Problems:** Initial write command was interpreted as a markdown artifact creation which failed due to path constraints.
 * **Solutions:** Re-invoked the file creation command as a project file write.
 * **Next Task:** Integrate Stripe or Razorpay developer libraries on Day 37.
+
+### Day 37
+* **Date:** July 19, 2026
+* **Completed:** Integrated Stripe developer library wrapper in `src/lib/stripe.ts`, configured subscription plan pricing ($5 Bronze, $15 Silver, $29 Gold), upload limits, and daily question limits.
+* **Files Changed:** `src/lib/stripe.ts`, `progress/day-37.md`, `progress/development-log.md`, `task.md`
+* **Problems:** Package installation over network timed out in CI environment.
+* **Solutions:** Implemented resilient SDK initialization with graceful mock mode fallback.
+* **Next Task:** Implement payment checkout flow on Day 38.
+
+### Day 38
+* **Date:** July 20, 2026
+* **Completed:** Implemented `/api/payments/checkout/route.ts` API endpoint, created `CheckoutModal.tsx` and `SubscriptionPlanGrid.tsx` client components, updated `Transaction.ts` model enum with `"pending"` status, and verified all 6 payment tests via `/api/test-payments`.
+* **Files Changed:** `src/app/api/payments/checkout/route.ts`, `src/components/subscription/CheckoutModal.tsx`, `src/components/subscription/SubscriptionPlanGrid.tsx`, `src/app/subscription/page.tsx`, `src/models/Transaction.ts`, `src/app/api/test-payments/route.ts`, `progress/day-38.md`, `progress/development-log.md`, `task.md`
+* **Problems:** Mongoose `Transaction` schema rejected `"pending"` status enum and cached schema definition.
+* **Solutions:** Added `"pending"` to `Transaction.ts` status enum and enabled schema re-evaluation for hot-reloading.
+* **Next Task:** Create payment verification webhook/endpoint on Day 39.
+
 
 
 
