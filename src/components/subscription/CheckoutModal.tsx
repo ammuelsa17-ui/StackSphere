@@ -56,6 +56,18 @@ export default function CheckoutModal({
       // 2. Simulate payment processing delay (Stripe checkout redirection simulation)
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
+      // 3. Call Verification endpoint to update active user subscription details in DB
+      const verifyRes = await fetch("/api/payments/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId: data.sessionId }),
+      });
+
+      const verifyData = await verifyRes.json();
+      if (!verifyRes.ok) {
+        throw new Error(verifyData.error || "Payment verification failed.");
+      }
+
       setIsSuccess(true);
       setIsLoading(false);
 

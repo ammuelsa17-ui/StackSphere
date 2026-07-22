@@ -40,6 +40,8 @@ This index lists all our daily progress files for easy navigation during evaluat
 * [Day 36: Created subscription plans UI](./day-36.md)
 * [Day 37: Integrated Stripe developer libraries](./day-37.md)
 * [Day 38: Implemented payment checkout flow](./day-38.md)
+* [Day 39: Created payment verification webhook/endpoint](./day-39.md)
+* [Day 40: Managed subscription states on the User model](./day-40.md)
 
 
 

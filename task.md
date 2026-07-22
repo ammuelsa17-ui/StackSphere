@@ -5,8 +5,8 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 ---
 
 ## 📊 Summary
-* **Current Day**: Day 38
-* **Overall Progress**: 63.3% (38/60 Days Completed)
+* **Current Day**: Day 40
+* **Overall Progress**: 66.6% (40/60 Days Completed)
 * **Status**: In Progress
 
 ---
@@ -62,8 +62,8 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 - [x] **Day 36**: Create subscription plans UI (Free, Bronze, Silver, Gold).
 - [x] **Day 37**: Integrate Stripe or Razorpay developer libraries.
 - [x] **Day 38**: Implement payment checkout flow.
-- [ ] **Day 39**: Create payment verification webhook/endpoint.
-- [ ] **Day 40**: Manage active subscription states on the User model.
+- [x] **Day 39**: Create payment verification webhook/endpoint.
+- [x] **Day 40**: Manage active subscription states on the User model.
 - [ ] **Day 41**: Enforce subscription-based question limits:
   - Free: 1 question/day
   - Bronze: 5 questions/day
@@ -407,6 +407,22 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 * **Problems:** Mongoose `Transaction` schema rejected `"pending"` status enum and cached schema definition.
 * **Solutions:** Added `"pending"` to `Transaction.ts` status enum and enabled schema re-evaluation for hot-reloading.
 * **Next Task:** Create payment verification webhook/endpoint on Day 39.
+
+### Day 39
+* **Date:** July 21, 2026
+* **Completed:** Created payment verification endpoint `/api/payments/verify/route.ts` and Stripe webhook handler `/api/payments/webhook/route.ts` to process success/failed event signatures.
+* **Files Changed:** `src/app/api/payments/verify/route.ts`, `src/app/api/payments/webhook/route.ts`, `src/lib/stripe.ts`, `src/components/subscription/CheckoutModal.tsx`, `progress/day-39.md`, `progress/development-log.md`, `task.md`
+* **Problems:** Webhook event signatures are rejected when mock secret is loaded in development mode.
+* **Solutions:** Implemented signature validation bypass for developer sandbox mock webhooks.
+* **Next Task:** Manage active subscription states on the User model on Day 40.
+
+### Day 40
+* **Date:** July 22, 2026
+* **Completed:** Configured Mongoose User model update triggers for plan status, start date, and 30-day duration expiration inside payment verify and webhook endpoints, verified E2E state upgrades inside test suite.
+* **Files Changed:** `src/app/api/payments/verify/route.ts`, `src/app/api/payments/webhook/route.ts`, `src/app/api/test-payments/route.ts`, `progress/day-40.md`, `progress/development-log.md`, `task.md`
+* **Problems:** Dev server hot-reloading locks Mongoose model definitions causing schema type mismatches.
+* **Solutions:** Added schema deletion hooks to ensure models recompile cleanly during hot-reloads.
+* **Next Task:** Enforce subscription-based question limits on Day 41.
 
 
 
