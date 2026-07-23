@@ -94,6 +94,30 @@ export async function POST(req: Request) {
             expiryDate,
           };
           await user.save();
+
+          // 3. Generate and save PDF Invoice (Day 42: Add automated PDF invoice/receipt generation)
+          try {
+            const currentTx = transaction || await Transaction.findOne({ paymentId: sessionId });
+            if (currentTx) {
+              const { generateInvoicePDF, saveInvoicePDF } = require("@/utils/invoice");
+              const pdfBuffer = generateInvoicePDF({
+                orderId: currentTx._id.toString(),
+                date: startDate.toLocaleDateString("en-US"),
+                planName: `${currentTx.planName} Plan Subscription`,
+                amount: currentTx.amount,
+                currency: currentTx.currency || "USD",
+                email: user.email,
+                name: user.name,
+              });
+
+              const invoiceUrl = saveInvoicePDF(currentTx._id.toString(), pdfBuffer);
+              currentTx.invoiceUrl = invoiceUrl;
+              await currentTx.save();
+            }
+          } catch (pdfErr: any) {
+            console.error("Webhook PDF Invoice generation failed:", pdfErr.message);
+          }
+
           console.log(`[WEBHOOK] Upgraded User ${finalUserId} to ${finalPlanName} subscription successfully.`);
         }
       }

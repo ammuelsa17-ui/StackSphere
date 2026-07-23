@@ -42,6 +42,7 @@ This index lists all our daily progress files for easy navigation during evaluat
 * [Day 38: Implemented payment checkout flow](./day-38.md)
 * [Day 39: Created payment verification webhook/endpoint](./day-39.md)
 * [Day 40: Managed subscription states on the User model](./day-40.md)
+* [Day 42: Added automated PDF invoice generation](./day-42.md)
 
 
 

@@ -298,6 +298,44 @@ export async function GET() {
       addResult("Stripe Webhook Processing & Fulfillment", "FAIL", err.message);
     }
 
+    // ----------------------------------------------------
+    // Test 9: Invoice PDF Generation & Storage (Day 42)
+    // ----------------------------------------------------
+    try {
+      const { generateInvoicePDF, saveInvoicePDF } = require("@/utils/invoice");
+      const fs = require("fs");
+      const path = require("path");
+
+      const testInvoiceData = {
+        orderId: "507f1f77bcf86cd799439011",
+        date: new Date().toLocaleDateString("en-US"),
+        planName: "Silver Plan Subscription",
+        amount: 15,
+        currency: "USD",
+        email: "invoice-test@example.com",
+        name: "Invoice Test User",
+      };
+
+      const pdfBuffer = generateInvoicePDF(testInvoiceData);
+      
+      if (pdfBuffer && Buffer.isBuffer(pdfBuffer) && pdfBuffer.length > 100) {
+        const invoiceUrl = saveInvoicePDF(testInvoiceData.orderId, pdfBuffer);
+        const physicalPath = path.join(process.cwd(), "public", invoiceUrl);
+
+        if (fs.existsSync(physicalPath) && fs.statSync(physicalPath).size > 100) {
+          addResult("Invoice PDF Generation & Storage", "PASS", `Generated and stored PDF invoice successfully: ${invoiceUrl}`);
+          // Clean up generated file
+          fs.unlinkSync(physicalPath);
+        } else {
+          addResult("Invoice PDF Generation & Storage", "FAIL", `Generated file not found or empty at: ${physicalPath}`);
+        }
+      } else {
+        addResult("Invoice PDF Generation & Storage", "FAIL", "Invalid PDF buffer output generated.");
+      }
+    } catch (err: any) {
+      addResult("Invoice PDF Generation & Storage", "FAIL", err.message);
+    }
+
     // Return full test summary
     const allPassed = results.every((r) => r.status === "PASS");
     return NextResponse.json({

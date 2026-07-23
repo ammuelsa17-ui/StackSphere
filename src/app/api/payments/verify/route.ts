@@ -90,11 +90,32 @@ export async function POST(req: Request) {
 
     await user.save();
 
+    // 7. Generate and save PDF Invoice (Day 42: Add automated PDF invoice/receipt generation)
+    try {
+      const { generateInvoicePDF, saveInvoicePDF } = require("@/utils/invoice");
+      const pdfBuffer = generateInvoicePDF({
+        orderId: transaction._id.toString(),
+        date: startDate.toLocaleDateString("en-US"),
+        planName: `${transaction.planName} Plan Subscription`,
+        amount: transaction.amount,
+        currency: transaction.currency || "USD",
+        email: user.email,
+        name: user.name,
+      });
+
+      const invoiceUrl = saveInvoicePDF(transaction._id.toString(), pdfBuffer);
+      transaction.invoiceUrl = invoiceUrl;
+      await transaction.save();
+    } catch (pdfErr: any) {
+      console.error("PDF Invoice generation failed:", pdfErr.message);
+    }
+
     return NextResponse.json({
       success: true,
       message: `Payment successfully verified. Upgraded to ${transaction.planName} plan.`,
       plan: transaction.planName,
       expiryDate: expiryDate.toISOString(),
+      invoiceUrl: transaction.invoiceUrl,
     });
   } catch (error: any) {
     console.error("Payment verification API error:", error);

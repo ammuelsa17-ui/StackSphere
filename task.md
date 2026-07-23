@@ -5,8 +5,8 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 ---
 
 ## 📊 Summary
-* **Current Day**: Day 40
-* **Overall Progress**: 66.6% (40/60 Days Completed)
+* **Current Day**: Day 42
+* **Overall Progress**: 68.3% (41/60 Days Completed)
 * **Status**: In Progress
 
 ---
@@ -69,7 +69,7 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
   - Bronze: 5 questions/day
   - Silver: 10 questions/day
   - Gold: Unlimited questions
-- [ ] **Day 42**: Add automated PDF invoice/receipt generation.
+- [x] **Day 42**: Add automated PDF invoice/receipt generation.
 - [ ] **Day 43**: Integrate email delivery for sending purchase receipts.
 - [ ] **Day 44**: Implement payment time restriction (Payments allowed only 10:00 AM - 11:00 AM IST).
 - [ ] **Day 45**: Run tests on the payment workflow.
@@ -423,6 +423,14 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 * **Problems:** Dev server hot-reloading locks Mongoose model definitions causing schema type mismatches.
 * **Solutions:** Added schema deletion hooks to ensure models recompile cleanly during hot-reloads.
 * **Next Task:** Enforce subscription-based question limits on Day 41.
+
+### Day 42
+* **Date:** July 23, 2026
+* **Completed:** Created custom binary PDF generator in `src/utils/invoice.ts`, connected verify/webhook API routes to generate and store PDF invoices under `public/invoices/` on payment success, logged invoice URLs, and validated E2E PDF checks.
+* **Files Changed:** `src/utils/invoice.ts`, `src/app/api/payments/verify/route.ts`, `src/app/api/payments/webhook/route.ts`, `src/app/api/test-payments/route.ts`, `progress/day-42.md`, `progress/development-log.md`, `task.md`
+* **Problems:** Web/API sandbox environments disallow third-party binary/network package installations like pdfkit.
+* **Solutions:** Built a resilient, dependency-free PDF stream compiler directly conforming to layout specs.
+* **Next Task:** Integrate email delivery for sending purchase receipts on Day 43.
 
 
 
