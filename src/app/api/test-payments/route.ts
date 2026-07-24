@@ -84,7 +84,10 @@ export async function GET() {
     try {
       const req = new Request("http://localhost/api/payments/checkout", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "x-bypass-time-gate": "true"
+        },
         body: JSON.stringify({ planName: "Bronze" }),
       });
 
@@ -334,6 +337,65 @@ export async function GET() {
       }
     } catch (err: any) {
       addResult("Invoice PDF Generation & Storage", "FAIL", err.message);
+    }
+
+    // ----------------------------------------------------
+    // Test 10: Payment Time Restriction (Day 44)
+    // ----------------------------------------------------
+    try {
+      const reqNoBypass = new Request("http://localhost/api/payments/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ planName: "Bronze" }),
+      });
+
+      const resNoBypass = await checkoutHandler(reqNoBypass);
+      const dataNoBypass = await resNoBypass.json();
+
+      const now = new Date();
+      const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
+      const istTime = new Date(utcTime + (3600000 * 5.5));
+      const istHour = istTime.getHours();
+
+      if (istHour !== 10) {
+        if (resNoBypass.status === 403 && dataNoBypass.error && dataNoBypass.error.includes("10:00 AM")) {
+          addResult("Payment Gateway Time Restriction", "PASS", `Successfully rejected payment outside 10:00 AM - 11:00 AM IST (Status: 403).`);
+        } else {
+          addResult("Payment Gateway Time Restriction", "FAIL", `Expected HTTP 403 rejection outside window, got ${resNoBypass.status}. Msg: ${JSON.stringify(dataNoBypass)}`);
+        }
+      } else {
+        // If it happens to be run exactly at 10 AM IST, it bypasses the time gate and hits authorization check (401)
+        if (resNoBypass.status === 401) {
+          addResult("Payment Gateway Time Restriction", "PASS", "Permitted payment checkout inside 10:00 AM - 11:00 AM IST window.");
+        } else {
+          addResult("Payment Gateway Time Restriction", "FAIL", `Expected HTTP 401 (Unauthorized) inside window, got ${resNoBypass.status}. Msg: ${JSON.stringify(dataNoBypass)}`);
+        }
+      }
+    } catch (err: any) {
+      addResult("Payment Gateway Time Restriction", "FAIL", err.message);
+    }
+
+    // ----------------------------------------------------
+    // Test 11: Email Receipt Dispatch (Day 43)
+    // ----------------------------------------------------
+    try {
+      const { sendReceiptEmail } = require("@/utils/email");
+      const emailRes = await sendReceiptEmail({
+        email: "receipt-test@example.com",
+        name: "Receipt Tester",
+        planName: "Bronze",
+        amount: 5,
+        currency: "USD",
+        invoicePath: "/invoices/invoice-mock.pdf",
+      });
+
+      if (emailRes && emailRes.success) {
+        addResult("Email Receipt Integration", "PASS", `Dispatched purchase receipt email successfully (Method: ${emailRes.method}).`);
+      } else {
+        addResult("Email Receipt Integration", "FAIL", "Failed to dispatch purchase receipt email.");
+      }
+    } catch (err: any) {
+      addResult("Email Receipt Integration", "FAIL", err.message);
     }
 
     // Return full test summary

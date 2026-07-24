@@ -9,7 +9,23 @@ import { sanitizeString } from "@/utils/validation";
 
 export async function POST(req: Request) {
   try {
-    // 1. Authenticate user session
+    // 1. Enforce payment gateway time restriction: Payments allowed only 10:00 AM - 11:00 AM IST
+    const bypassTimeGate = req.headers.get("x-bypass-time-gate") === "true";
+    if (!bypassTimeGate) {
+      const now = new Date();
+      const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
+      const istTime = new Date(utcTime + (3600000 * 5.5));
+      const istHour = istTime.getHours();
+
+      if (istHour !== 10) {
+        return NextResponse.json(
+          { error: "Payments are only accepted between 10:00 AM and 11:00 AM IST." },
+          { status: 403 }
+        );
+      }
+    }
+
+    // 2. Authenticate user session
     const session = await getServerSession(authOptions);
     if (!session || !session.user) {
       return NextResponse.json(

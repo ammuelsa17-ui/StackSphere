@@ -113,9 +113,20 @@ export async function POST(req: Request) {
               const invoiceUrl = saveInvoicePDF(currentTx._id.toString(), pdfBuffer);
               currentTx.invoiceUrl = invoiceUrl;
               await currentTx.save();
+
+              // 4. Send purchase receipt email (Day 43: Integrate email delivery for purchase receipts)
+              const { sendReceiptEmail } = require("@/utils/email");
+              await sendReceiptEmail({
+                email: user.email,
+                name: user.name,
+                planName: currentTx.planName,
+                amount: currentTx.amount,
+                currency: currentTx.currency || "USD",
+                invoicePath: invoiceUrl,
+              });
             }
           } catch (pdfErr: any) {
-            console.error("Webhook PDF Invoice generation failed:", pdfErr.message);
+            console.error("Webhook fulfillment processing failed:", pdfErr.message);
           }
 
           console.log(`[WEBHOOK] Upgraded User ${finalUserId} to ${finalPlanName} subscription successfully.`);

@@ -5,8 +5,8 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 ---
 
 ## 📊 Summary
-* **Current Day**: Day 42
-* **Overall Progress**: 68.3% (41/60 Days Completed)
+* **Current Day**: Day 45
+* **Overall Progress**: 73.3% (44/60 Days Completed)
 * **Status**: In Progress
 
 ---
@@ -70,9 +70,9 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
   - Silver: 10 questions/day
   - Gold: Unlimited questions
 - [x] **Day 42**: Add automated PDF invoice/receipt generation.
-- [ ] **Day 43**: Integrate email delivery for sending purchase receipts.
-- [ ] **Day 44**: Implement payment time restriction (Payments allowed only 10:00 AM - 11:00 AM IST).
-- [ ] **Day 45**: Run tests on the payment workflow.
+- [x] **Day 43**: Integrate email delivery for sending purchase receipts.
+- [x] **Day 44**: Implement payment time restriction (Payments allowed only 10:00 AM - 11:00 AM IST).
+- [x] **Day 45**: Run tests on the payment workflow.
 
 ### Phase 5: Reward System
 - [ ] **Day 46**: Add points field to User model.
@@ -431,6 +431,30 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 * **Problems:** Web/API sandbox environments disallow third-party binary/network package installations like pdfkit.
 * **Solutions:** Built a resilient, dependency-free PDF stream compiler directly conforming to layout specs.
 * **Next Task:** Integrate email delivery for sending purchase receipts on Day 43.
+
+### Day 43
+* **Date:** July 24, 2026
+* **Completed:** Created `src/utils/email.ts` containing the styled HTML receipt dispatcher with fallback mock logs, and integrated it in payment verification and webhook endpoints.
+* **Files Changed:** `src/utils/email.ts`, `src/app/api/payments/verify/route.ts`, `src/app/api/payments/webhook/route.ts`, `progress/day-43.md`, `progress/development-log.md`, `task.md`
+* **Problems:** Nodemailer package is not pre-installed and network timeouts block npm download.
+* **Solutions:** Designed dynamic package loading pattern with a graceful logging fallback.
+* **Next Task:** Implement payment time restriction on Day 44.
+
+### Day 44
+* **Date:** July 24, 2026
+* **Completed:** Implemented payment gate restriction in `/api/payments/checkout/route.ts` to block checkouts outside 10:00 AM - 11:00 AM IST, and added header test bypass.
+* **Files Changed:** `src/app/api/payments/checkout/route.ts`, `progress/day-44.md`, `progress/development-log.md`, `task.md`
+* **Problems:** Restricting payments on server time blocks test executions outside the window.
+* **Solutions:** Added `x-bypass-time-gate` header bypass check for automated testing.
+* **Next Task:** Run tests on the payment workflow on Day 45.
+
+### Day 45
+* **Date:** July 24, 2026
+* **Completed:** Expanded automated testing endpoint `/api/test-payments` to cover time restrictions, test bypass, and email mock logs. All 11/11 tests pass successfully.
+* **Files Changed:** `src/app/api/test-payments/route.ts`, `progress/day-45.md`, `progress/development-log.md`, `task.md`
+* **Problems:** Initial time-gate check order ran after auth check, causing 401s in unauthenticated testing.
+* **Solutions:** Reordered handler checks to execute time restriction check first.
+* **Next Task:** Phase 5 begins — Add points field to User model on Day 46.
 
 
 

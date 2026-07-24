@@ -106,8 +106,19 @@ export async function POST(req: Request) {
       const invoiceUrl = saveInvoicePDF(transaction._id.toString(), pdfBuffer);
       transaction.invoiceUrl = invoiceUrl;
       await transaction.save();
+
+      // 8. Send purchase receipt email (Day 43: Integrate email delivery for purchase receipts)
+      const { sendReceiptEmail } = require("@/utils/email");
+      await sendReceiptEmail({
+        email: user.email,
+        name: user.name,
+        planName: transaction.planName,
+        amount: transaction.amount,
+        currency: transaction.currency || "USD",
+        invoicePath: invoiceUrl,
+      });
     } catch (pdfErr: any) {
-      console.error("PDF Invoice generation failed:", pdfErr.message);
+      console.error("Invoice fulfillment processing failed:", pdfErr.message);
     }
 
     return NextResponse.json({

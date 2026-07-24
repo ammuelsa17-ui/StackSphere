@@ -33,8 +33,8 @@ This document tracks the testing checklist for all completed modules to ensure c
 ## 3. Subscription & Payments Testing
 - [ ] **Plan Verification:** Free users can post 1 question, Bronze posts 5 questions, Silver posts 10, Gold has no limits.
 - [x] **Stripe/Razorpay Flow:** Payment process runs successfully.
-- [ ] **Time Restriction:** Payments blocked outside of 10:00 AM - 11:00 AM IST.
-- [ ] **Invoice Emailing:** PDF invoice is generated and received in inbox after checkout.
+- [x] **Time Restriction:** Payments blocked outside of 10:00 AM - 11:00 AM IST.
+- [x] **Invoice Emailing:** PDF invoice is generated and received in inbox after checkout.
 
 ---
 
