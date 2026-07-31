@@ -43,9 +43,14 @@ export async function POST(req: Request) {
     }
 
     if (!user) {
+      // Mimic success response to prevent account enumeration
       return NextResponse.json(
-        { error: emailProvided ? "No user found with this email address." : "No user found with this phone number." },
-        { status: 404 }
+        {
+          success: true,
+          message: "Verification code sent successfully.",
+          verificationCode: process.env.NODE_ENV === "development" || process.env.TEST_ENV === "true" || true ? "123456" : undefined
+        },
+        { status: 200 }
       );
     }
 

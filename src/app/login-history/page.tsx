@@ -4,29 +4,40 @@ import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import connectToDatabase from "@/lib/mongodb";
 import LoginHistory from "@/models/LoginHistory";
-import { Shield, Monitor, Smartphone, Tablet, Globe } from "lucide-react";
+import { Shield, Monitor, Smartphone, Tablet, Globe, AlertTriangle } from "lucide-react";
 
 export const metadata = {
   title: "Login History - StackSphere",
   description: "View details of your account login sessions and security activity.",
 };
 
-export default async function LoginHistoryPage() {
-  // Retrieve the server session using authOptions
+export default async function LoginHistoryPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
   const session = await getServerSession(authOptions);
 
-  // Redirect to login page if unauthorized
   if (!session || !session.user) {
     redirect("/login");
   }
 
-  // Connect to MongoDB
+  const resolvedSearchParams = await searchParams;
+  const page = parseInt(resolvedSearchParams.page || "1", 10);
+  const limit = 5;
+  const skip = (page - 1) * limit;
+
   await connectToDatabase();
 
-  // Fetch the 10 most recent logins for this user
-  const logins = await LoginHistory.find({ userId: (session.user as any).id })
+  const userId = (session.user as any).id;
+  const total = await LoginHistory.countDocuments({ userId });
+  const totalPages = Math.max(1, Math.ceil(total / limit));
+
+  // Fetch paginated logins
+  const logins = await LoginHistory.find({ userId })
     .sort({ loginTime: -1 })
-    .limit(10);
+    .skip(skip)
+    .limit(limit);
 
   // Helper to resolve appropriate device icons
   const getDeviceIcon = (deviceType: string) => {
@@ -83,44 +94,106 @@ export default async function LoginHistoryPage() {
                   <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-neutral-550 dark:text-neutral-400">
                     OS
                   </th>
+                  <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-neutral-550 dark:text-neutral-400">
+                    Alerts
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-150 dark:divide-neutral-700">
-                {logins.map((login) => (
-                  <tr
-                    key={login._id.toString()}
-                    className="hover:bg-neutral-50/50 dark:hover:bg-neutral-900/10 transition-colors"
-                  >
-                    <td className="px-6 py-4 text-sm font-semibold text-neutral-800 dark:text-neutral-200">
-                      {new Date(login.loginTime).toLocaleString("en-US", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        second: "2-digit",
-                        hour12: true,
-                      })}
-                    </td>
-                    <td className="px-6 py-4 text-sm font-mono text-neutral-600 dark:text-neutral-350">
-                      {login.ipAddress}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium bg-neutral-100 dark:bg-neutral-700 text-neutral-850 dark:text-neutral-200 rounded-full border border-neutral-200 dark:border-neutral-600">
-                        {getDeviceIcon(login.deviceType)}
-                        {login.deviceType}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-neutral-700 dark:text-neutral-350">
-                      {login.browser}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-neutral-700 dark:text-neutral-350">
-                      {login.os}
-                    </td>
-                  </tr>
-                ))}
+                {logins.map((login, idx) => {
+                  // Mark the very first item as Current Session (most recent)
+                  const isCurrent = page === 1 && idx === 0;
+
+                  // Simple suspicious alert: if browser or OS is different from the previous chronological log
+                  // Since they are sorted descending, the older login is at idx + 1.
+                  let isSuspicious = false;
+                  if (idx < logins.length - 1) {
+                    const olderLogin = logins[idx + 1];
+                    isSuspicious = login.browser !== olderLogin.browser || login.deviceType !== olderLogin.deviceType;
+                  }
+
+                  return (
+                    <tr
+                      key={login._id.toString()}
+                      className="hover:bg-neutral-50/50 dark:hover:bg-neutral-900/10 transition-colors"
+                    >
+                      <td className="px-6 py-4 text-sm font-semibold text-neutral-800 dark:text-neutral-200">
+                        <div className="space-y-1">
+                          <span>
+                            {new Date(login.loginTime).toLocaleString("en-US", {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              second: "2-digit",
+                              hour12: true,
+                            })}
+                          </span>
+                          {isCurrent && (
+                            <span className="block w-max text-[9px] font-bold bg-indigo-50 dark:bg-indigo-900/35 border border-indigo-200 dark:border-indigo-800 text-indigo-650 dark:text-indigo-400 px-1.5 py-0.5 rounded-md uppercase tracking-wide">
+                              Active Session
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm font-mono text-neutral-600 dark:text-neutral-350">
+                        {login.ipAddress}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium bg-neutral-100 dark:bg-neutral-700 text-neutral-850 dark:text-neutral-200 rounded-full border border-neutral-200 dark:border-neutral-600">
+                          {getDeviceIcon(login.deviceType)}
+                          {login.deviceType}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-neutral-700 dark:text-neutral-350">
+                        {login.browser}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-neutral-700 dark:text-neutral-350">
+                        {login.os}
+                      </td>
+                      <td className="px-6 py-4 text-sm">
+                        {isSuspicious ? (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-amber-50 dark:bg-amber-950/20 border border-amber-250 dark:border-amber-900 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded-full animate-pulse">
+                            <AlertTriangle className="h-3 w-3 shrink-0" />
+                            <span>New Environment</span>
+                          </span>
+                        ) : (
+                          <span className="text-[10px] text-neutral-450 dark:text-neutral-550">Verified</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="px-6 py-4 bg-neutral-50 dark:bg-neutral-900 border-t border-neutral-150 dark:border-neutral-700 flex justify-between items-center text-xs">
+            <span className="text-neutral-500 dark:text-neutral-400 font-medium">
+              Page {page} of {totalPages} ({total} total logs)
+            </span>
+            <div className="flex gap-2">
+              <a
+                href={`/login-history?page=${Math.max(1, page - 1)}`}
+                className={`px-3.5 py-2 border border-neutral-250 dark:border-neutral-700 rounded-xl font-bold hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all ${
+                  page <= 1 ? "pointer-events-none opacity-40" : ""
+                }`}
+              >
+                Previous
+              </a>
+              <a
+                href={`/login-history?page=${Math.min(totalPages, page + 1)}`}
+                className={`px-3.5 py-2 border border-neutral-250 dark:border-neutral-700 rounded-xl font-bold hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all ${
+                  page >= totalPages ? "pointer-events-none opacity-40" : ""
+                }`}
+              >
+                Next
+              </a>
+            </div>
           </div>
         )}
       </div>

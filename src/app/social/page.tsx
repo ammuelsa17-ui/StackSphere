@@ -58,12 +58,36 @@ export default async function SocialPage() {
   }));
 
   // Extract a clean serializable user object for client component props
+  const friendCount = dbUser.friends?.length || 0;
+
+  // Calculate start of current UTC calendar day
+  const startOfToday = new Date();
+  startOfToday.setUTCHours(0, 0, 0, 0);
+
+  // Count user's posts created today
+  const postsCountToday = await Post.countDocuments({
+    author: dbUser._id,
+    createdAt: { $gte: startOfToday },
+  });
+
+  // Calculate daily limit
+  let dailyLimit = 2;
+  if (friendCount === 0) dailyLimit = 0;
+  else if (friendCount === 1) dailyLimit = 1;
+  else if (friendCount > 10) dailyLimit = Infinity;
+
+  const remainingPosts = dailyLimit === Infinity ? Infinity : Math.max(0, dailyLimit - postsCountToday);
+
   const currentUser = {
     id: dbUser._id.toString(),
     name: dbUser.name,
     email: dbUser.email,
     image: dbUser.avatarUrl || dbUser.image || "",
     plan: dbUser.subscription?.plan || "Free",
+    friendCount,
+    postsCountToday,
+    dailyLimit,
+    remainingPosts,
   };
 
   return (

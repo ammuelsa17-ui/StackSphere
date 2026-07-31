@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Mail, Phone, ArrowLeft, CheckCircle2, Shield, Lock, Eye, EyeOff, Sparkles, Copy, Check } from "lucide-react";
 
@@ -28,6 +28,14 @@ export default function ForgotPasswordForm() {
   // Password Generator states
   const [generatedPassword, setGeneratedPassword] = useState("");
   const [copied, setCopied] = useState(false);
+  const [resendTimer, setResendTimer] = useState(0);
+
+  useEffect(() => {
+    if (resendTimer > 0) {
+      const timer = setTimeout(() => setResendTimer(resendTimer - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendTimer]);
 
   // Client-side password generator with only uppercase and lowercase letters (Day 51)
   const handleGeneratePassword = () => {
@@ -101,6 +109,41 @@ export default function ForgotPasswordForm() {
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : "An unexpected error occurred.";
       setError(errMsg);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResendOTP = async () => {
+    if (resendTimer > 0) return;
+    setError(null);
+    setIsLoading(true);
+    setResendTimer(60);
+    try {
+      const body = method === "email" 
+        ? { email: email.trim().toLowerCase() }
+        : { phoneNumber: phoneNumber.trim() };
+
+      const response = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      const resData = await response.json();
+      if (!response.ok) {
+        throw new Error(resData.error || "Failed to resend verification code.");
+      }
+
+      if (resData.success) {
+        if (resData.verificationCode) {
+          setVerificationCode(resData.verificationCode);
+        }
+      }
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : "Failed to resend code.";
+      setError(errMsg);
+      setResendTimer(0);
     } finally {
       setIsLoading(false);
     }
@@ -385,6 +428,15 @@ export default function ForgotPasswordForm() {
             >
               <ArrowLeft className="h-3 w-3" />
               <span>Change details</span>
+            </button>
+
+            <button
+              type="button"
+              disabled={resendTimer > 0 || isLoading}
+              onClick={handleResendOTP}
+              className="font-semibold text-indigo-650 hover:text-indigo-550 transition-colors disabled:opacity-50 disabled:text-neutral-400"
+            >
+              {resendTimer > 0 ? `Resend Code (${resendTimer}s)` : "Resend Code"}
             </button>
           </div>
         </form>

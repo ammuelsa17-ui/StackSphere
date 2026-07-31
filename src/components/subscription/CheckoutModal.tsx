@@ -36,6 +36,7 @@ export default function CheckoutModal({
 
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLoading) return;
     setIsLoading(true);
     setError(null);
 

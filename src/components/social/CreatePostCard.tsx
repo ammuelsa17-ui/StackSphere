@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from "react";
 import { useSession } from "next-auth/react";
-import { Image, Video, Send, X, Star } from "lucide-react";
+import { Image, Video, Send, X, Star, AlertCircle } from "lucide-react";
 
 interface CreatePostCardProps {
   currentUser?: {
@@ -11,6 +11,10 @@ interface CreatePostCardProps {
     email?: string;
     image?: string;
     plan?: string;
+    friendCount?: number;
+    postsCountToday?: number;
+    dailyLimit?: number;
+    remainingPosts?: number;
   };
   onPostCreated?: (post: {
     content: string;
@@ -69,6 +73,29 @@ export default function CreatePostCard({ currentUser, onPostCreated }: CreatePos
 
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // 1. File Format Validation
+    const isImage = file.type.startsWith("image/");
+    const isVideo = file.type.startsWith("video/");
+    if (!isImage && !isVideo) {
+      alert("Unsupported file format! Please upload an image (PNG, JPG, WEBP) or video (MP4, WEBM).");
+      if (e.target) e.target.value = "";
+      return;
+    }
+
+    // 2. File Size Validation
+    const maxSizeBytes = userPlan.toLowerCase() === "gold" 
+      ? 15 * 1024 * 1024 // Gold: 15MB
+      : userPlan.toLowerCase() === "silver"
+      ? 10 * 1024 * 1024 // Silver: 10MB
+      : 5 * 1024 * 1024; // Bronze: 5MB
+
+    if (file.size > maxSizeBytes) {
+      const sizeLabel = userPlan.toLowerCase() === "gold" ? "15MB" : userPlan.toLowerCase() === "silver" ? "10MB" : "5MB";
+      alert(`File size exceeds limit! Your subscription plan (${userPlan}) allows media uploads up to ${sizeLabel}.`);
+      if (e.target) e.target.value = "";
+      return;
+    }
 
     setIsUploading(true);
     setUploadStatus(`Uploading ${type}...`);
@@ -152,6 +179,13 @@ export default function CreatePostCard({ currentUser, onPostCreated }: CreatePos
     }
   };
 
+  const isPostBlocked = (currentUser?.friendCount === 0) || 
+                        (currentUser?.dailyLimit !== Infinity && currentUser?.remainingPosts === 0);
+  
+  const blockReason = currentUser?.friendCount === 0 
+    ? "Posting is blocked because you have 0 friends. Add at least 1 friend to start sharing posts!"
+    : "Daily posting limit reached for today. You can post up to 1 post/day with 1 friend, or 2 posts/day with 2 to 10 friends. Add more than 10 friends to unlock unlimited posting!";
+
   const userName = session?.user?.name || "StackSphere Member";
   const userPlan = (session?.user as any)?.subscription?.plan || "Bronze";
 
@@ -174,15 +208,45 @@ export default function CreatePostCard({ currentUser, onPostCreated }: CreatePos
 
           <div className="flex-1 space-y-2">
             <textarea
+              disabled={isPostBlocked}
               value={content}
               onChange={(e) => setContent(e.target.value)}
               onFocus={handleTextareaFocus}
-              placeholder="Share your thoughts, tech insights, or ask a question..."
+              placeholder={isPostBlocked ? "Posting is restricted. See reason below." : "Share your thoughts, tech insights, or ask a question..."}
               rows={isExpanded ? 3 : 1}
-              className="w-full bg-transparent text-neutral-800 dark:text-neutral-100 placeholder-neutral-400 focus:outline-none resize-none text-sm py-2 leading-relaxed"
+              className="w-full bg-transparent text-neutral-800 dark:text-neutral-100 placeholder-neutral-400 focus:outline-none resize-none text-sm py-2 leading-relaxed disabled:opacity-60"
             />
+
+            {/* Day 52: Social Posting Limit Tracker */}
+            <div className="text-[10px] text-neutral-400 dark:text-neutral-500 font-semibold flex items-center justify-between mt-1 pt-1 border-t border-neutral-100 dark:border-neutral-750/30">
+              <span>Friends: <strong>{currentUser?.friendCount ?? 0}</strong></span>
+              <span>
+                {currentUser?.dailyLimit === Infinity ? (
+                  <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Unlimited Posting (11+ Friends)</span>
+                ) : (
+                  <span>
+                    Posts Today: <strong>{currentUser?.postsCountToday ?? 0} / {currentUser?.dailyLimit ?? 0}</strong> 
+                    { (currentUser?.remainingPosts ?? 0) === 0 ? (
+                      <span className="text-rose-500 font-bold ml-1.5">(Limit Reached)</span>
+                    ) : (
+                      <span className="text-indigo-650 dark:text-indigo-400 font-bold ml-1.5">({currentUser?.remainingPosts ?? 0} remaining)</span>
+                    )}
+                  </span>
+                )}
+              </span>
+            </div>
           </div>
         </div>
+
+        {isPostBlocked && (
+          <div className="bg-rose-50 dark:bg-rose-950/20 border border-rose-250 dark:border-rose-900 text-rose-600 dark:text-rose-450 p-3.5 rounded-xl flex gap-3 text-xs leading-normal ml-11 sm:ml-14 animate-fadeIn">
+            <AlertCircle className="h-4.5 w-4.5 shrink-0 mt-0.5" />
+            <div>
+              <span className="font-bold block mb-0.5">Posting Access Restricted</span>
+              {blockReason}
+            </div>
+          </div>
+        )}
 
         {/* Media Preview Box or Uploading State */}
         {(mediaUrl || isUploading) && (

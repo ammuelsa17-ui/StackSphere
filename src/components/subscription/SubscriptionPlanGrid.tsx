@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Check, Sparkles, Zap, HelpCircle } from "lucide-react";
+import { Check, Sparkles, Zap, HelpCircle, AlertCircle } from "lucide-react";
 import CheckoutModal from "./CheckoutModal";
 
 interface PlanConfig {
@@ -30,9 +30,20 @@ export default function SubscriptionPlanGrid({
 }: SubscriptionPlanGridProps) {
   const [selectedPlan, setSelectedPlan] = useState<PlanConfig | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [bypassGate, setBypassGate] = useState(false);
+
+  // Time Gate check (10:00 AM - 11:00 AM IST)
+  const now = new Date();
+  const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
+  const istTime = new Date(utcTime + (3600000 * 5.5));
+  const istHour = istTime.getHours();
+  const isTimeGateBlocked = istHour !== 10 && !bypassGate;
 
   const handleOpenCheckout = (plan: PlanConfig) => {
     if (plan.name.toLowerCase() === currentPlan.toLowerCase() || plan.name === "Free") {
+      return;
+    }
+    if (isTimeGateBlocked) {
       return;
     }
     setSelectedPlan(plan);
@@ -41,6 +52,25 @@ export default function SubscriptionPlanGrid({
 
   return (
     <>
+      {isTimeGateBlocked && (
+        <div className="mb-6 bg-amber-50 dark:bg-amber-950/20 border border-amber-250 dark:border-amber-900 text-amber-700 dark:text-amber-400 p-4 rounded-xl flex justify-between items-center gap-3 text-xs leading-normal">
+          <div className="flex gap-2.5 items-center">
+            <AlertCircle className="h-5 w-5 shrink-0 text-amber-500" />
+            <div>
+              <span className="font-bold block">Upgrade Gateway Locked</span>
+              Upgrades are permitted only between **10:00 AM and 11:00 AM IST**.
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setBypassGate(true)}
+            className="bg-neutral-800 hover:bg-neutral-700 text-white text-[10px] px-2 py-1 rounded font-bold transition-colors shrink-0 cursor-pointer"
+          >
+            Bypass for Testing
+          </button>
+        </div>
+      )}
+
       {/* Grid of pricing cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
         {plans.map((plan) => {
@@ -100,12 +130,14 @@ export default function SubscriptionPlanGrid({
                 <button
                   id={`btn-plan-${plan.name.toLowerCase()}`}
                   onClick={() => handleOpenCheckout(plan)}
-                  disabled={isCurrent || plan.name === "Free"}
+                  disabled={isCurrent || plan.name === "Free" || isTimeGateBlocked}
                   className={`w-full h-11 text-xs font-bold rounded-xl transition-all duration-200 flex items-center justify-center gap-2 ${
                     isCurrent
                       ? "bg-neutral-100 dark:bg-neutral-805 text-neutral-405 dark:text-neutral-500 cursor-not-allowed border border-neutral-200 dark:border-neutral-750"
                       : plan.name === "Free"
                       ? "bg-neutral-100 dark:bg-neutral-805 text-neutral-405 dark:text-neutral-500 cursor-not-allowed border border-neutral-200 dark:border-neutral-750"
+                      : isTimeGateBlocked
+                      ? "bg-neutral-100 dark:bg-neutral-805 text-neutral-400 dark:text-neutral-500 cursor-not-allowed border border-neutral-200 dark:border-neutral-750/50"
                       : plan.buttonStyle
                   }`}
                 >

@@ -7,8 +7,10 @@ import User from "@/models/User";
 import ProfileCard from "@/components/profile/ProfileCard";
 import EditProfileForm from "@/components/profile/EditProfileForm";
 import PointsDashboard from "@/components/profile/PointsDashboard";
+import PointTransfer from "@/components/rewards/PointTransfer";
 import { Activity, MessageSquare, HelpCircle, ShieldAlert, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { checkAndUpdateSubscription } from "@/utils/checkSubscription";
 
 export const metadata = {
   title: "My Profile - StackSphere",
@@ -27,8 +29,8 @@ export default async function ProfilePage() {
   // 3. Connect to MongoDB
   await connectToDatabase();
 
-  // 4. Query Mongoose model for fresh user information
-  const userData = await User.findById((session.user as any).id);
+  // 4. Query Mongoose model for fresh user information and check expiration fallback
+  const userData = await checkAndUpdateSubscription((session.user as any).id);
 
   if (!userData) {
     redirect("/login");
@@ -75,6 +77,9 @@ export default async function ProfilePage() {
 
           {/* Day 50: Points Dashboard & Rewards history */}
           <PointsDashboard initialPoints={userObj.points} />
+
+          {/* Day 52: Secure User Points Transfer */}
+          <PointTransfer currentBalance={userObj.points} />
 
           {/* Profile Activity Overview Section Placeholder */}
           <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-6 md:p-8 shadow-sm space-y-6">

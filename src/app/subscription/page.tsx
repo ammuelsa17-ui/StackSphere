@@ -4,8 +4,10 @@ import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import connectToDatabase from "@/lib/mongodb";
 import User from "@/models/User";
-import { HelpCircle, AlertCircle, ShieldCheck, Sparkles, Zap } from "lucide-react";
+import { HelpCircle, AlertCircle, ShieldCheck, Sparkles, Zap, Clock, Download } from "lucide-react";
 import SubscriptionPlanGrid from "@/components/subscription/SubscriptionPlanGrid";
+import { checkAndUpdateSubscription } from "@/utils/checkSubscription";
+import Transaction from "@/models/Transaction";
 
 export const metadata = {
   title: "Subscription Plans - StackSphere",
@@ -21,7 +23,7 @@ export default async function SubscriptionPage() {
 
   await connectToDatabase();
 
-  const user = await User.findById((session.user as any).id).select("subscription name email").lean();
+  const user = await checkAndUpdateSubscription((session.user as any).id);
 
   if (!user) {
     redirect("/login");
@@ -30,14 +32,35 @@ export default async function SubscriptionPage() {
   const currentPlan = user.subscription?.plan || "Free";
   const paymentStatus = user.subscription?.paymentStatus || "active";
   const userEmail = user.email || session.user.email || "";
+
+  const transactions = await Transaction.find({ userId: (session.user as any).id })
+    .sort({ createdAt: -1 })
+    .lean();
   
-  const expiryDate = user.subscription?.expiryDate
-    ? new Date(user.subscription.expiryDate).toLocaleDateString("en-US", {
+  const expiryDateObj = user.subscription?.expiryDate ? new Date(user.subscription.expiryDate) : null;
+  const startDateObj = user.subscription?.startDate ? new Date(user.subscription.startDate) : null;
+
+  const expiryDate = expiryDateObj
+    ? expiryDateObj.toLocaleDateString("en-US", {
         year: "numeric",
         month: "long",
         day: "numeric",
       })
     : "Lifetime";
+
+  const startDateStr = startDateObj
+    ? startDateObj.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : "";
+
+  let remainingDays = 0;
+  if (expiryDateObj) {
+    const diffTime = expiryDateObj.getTime() - Date.now();
+    remainingDays = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+  }
 
   const plans = [
     {
@@ -147,9 +170,14 @@ export default async function SubscriptionPage() {
               </span>
             </div>
             {currentPlan !== "Free" && (
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                Your membership is valid until <strong className="font-semibold">{expiryDate}</strong>.
-              </p>
+              <div className="text-xs text-neutral-500 dark:text-neutral-400 space-y-0.5">
+                <p>
+                  Started on <strong className="font-semibold">{startDateStr}</strong> • Expires on <strong className="font-semibold">{expiryDate}</strong>
+                </p>
+                <p className="text-[10px] text-indigo-650 dark:text-indigo-400 font-bold uppercase tracking-wider">
+                  {remainingDays} days remaining
+                </p>
+              </div>
             )}
           </div>
         </div>
@@ -184,6 +212,74 @@ export default async function SubscriptionPage() {
             Daily question limits are reset at midnight server time. Premium privileges (image/video file uploads) are verified dynamically before storage processing. Payment transaction details will be documented and invoiced in full compliance with developer guidelines.
           </p>
         </div>
+      </div>
+
+      {/* Transaction & Invoice History List (Day 52) */}
+      <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-6 md:p-8 shadow-sm space-y-6">
+        <h3 className="text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2 border-b border-neutral-100 dark:border-neutral-700 pb-4">
+          <Clock className="h-5 w-5 text-indigo-650" />
+          Billing & Invoice History
+        </h3>
+
+        {transactions.length === 0 ? (
+          <div className="text-center py-6 text-xs text-neutral-400 dark:text-neutral-500 font-semibold">
+            No subscription transactions found for this account.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="border-b border-neutral-150 dark:border-neutral-700 text-neutral-500 dark:text-neutral-450 font-bold uppercase tracking-wider">
+                  <th className="pb-3">Date</th>
+                  <th className="pb-3">Plan</th>
+                  <th className="pb-3">Amount</th>
+                  <th className="pb-3">Transaction ID</th>
+                  <th className="pb-3">Status</th>
+                  <th className="pb-3 text-right">Invoice</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-neutral-150 dark:divide-neutral-700">
+                {transactions.map((tx: any) => (
+                  <tr key={tx._id.toString()} className="hover:bg-neutral-50/50 dark:hover:bg-neutral-900/10">
+                    <td className="py-3.5 font-medium text-neutral-600 dark:text-neutral-350">
+                      {new Date(tx.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
+                    </td>
+                    <td className="py-3.5 font-bold text-neutral-850 dark:text-neutral-200">{tx.planName} Plan</td>
+                    <td className="py-3.5 font-mono text-neutral-650 dark:text-neutral-300">
+                      {tx.currency} {tx.amount.toFixed(2)}
+                    </td>
+                    <td className="py-3.5 font-mono text-neutral-500">{tx.paymentId}</td>
+                    <td className="py-3.5">
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        tx.status === "success" 
+                          ? "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 border border-emerald-250" 
+                          : tx.status === "failed"
+                          ? "bg-rose-50 dark:bg-rose-950/20 text-rose-600 border border-rose-250"
+                          : "bg-amber-50 dark:bg-amber-950/20 text-amber-600 border border-amber-250"
+                      }`}>
+                        {tx.status}
+                      </span>
+                    </td>
+                    <td className="py-3.5 text-right">
+                      {tx.status === "success" ? (
+                        <a
+                          href={`/invoices/invoice_${tx.paymentId}.pdf`}
+                          download={`invoice_${tx.paymentId}.pdf`}
+                          className="inline-flex items-center gap-1.5 text-indigo-650 hover:text-indigo-550 font-bold transition-all"
+                        >
+                          <Download className="h-3.5 w-3.5" />
+                          <span>PDF Invoice</span>
+                        </a>
+                      ) : (
+                        <span className="text-neutral-400 dark:text-neutral-500">—</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );
