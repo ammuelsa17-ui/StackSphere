@@ -39,8 +39,8 @@ This document tracks the testing checklist for all completed modules to ensure c
 ---
 
 ## 4. Reward Points Testing
-- [ ] **Points Earning:** Answer question (+5 points), answer upvotes hit 5 (+5 points).
-- [ ] **Points Deduction:** Post downvoted or deleted (points deducted correctly).
+- [x] **Points Earning:** Answer question (+5 points), answer upvotes hit 5 (+5 points).
+- [x] **Points Deduction:** Post downvoted or deleted (points deducted correctly).
 - [ ] **Point Transfer:** Validate user has >10 points before executing transfer.
 
 ---

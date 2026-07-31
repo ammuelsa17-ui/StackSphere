@@ -46,6 +46,11 @@ This index lists all our daily progress files for easy navigation during evaluat
 * [Day 43: Integrated purchase receipt email delivery](./day-43.md)
 * [Day 44: Implemented payment gateway time restrictions](./day-44.md)
 * [Day 45: Tested the subscription payment workflow E2E](./day-45.md)
+* [Day 46: Verified points field on the User model](./day-46.md)
+* [Day 47: Implemented answer reward points logic](./day-47.md)
+* [Day 48: Integrated upvote reward logic for popular answers](./day-48.md)
+* [Day 49: Configured downvote/removal points deduction logic](./day-49.md)
+* [Day 50: Created profile points dashboard & history list](./day-50.md)
 
 
 

@@ -6,6 +6,7 @@ import connectToDatabase from "@/lib/mongodb";
 import User from "@/models/User";
 import ProfileCard from "@/components/profile/ProfileCard";
 import EditProfileForm from "@/components/profile/EditProfileForm";
+import PointsDashboard from "@/components/profile/PointsDashboard";
 import { Activity, MessageSquare, HelpCircle, ShieldAlert, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
@@ -66,11 +67,14 @@ export default async function ProfilePage() {
           <ProfileCard user={userObj} />
         </div>
 
-        {/* Right Column: Edit Profile & Activity Overview */}
+        {/* Right Column: Edit Profile, Points Dashboard, & Activity Overview */}
         <div className="lg:col-span-2 space-y-6">
           
           {/* Edit Form */}
           <EditProfileForm initialUser={userObj} />
+
+          {/* Day 50: Points Dashboard & Rewards history */}
+          <PointsDashboard initialPoints={userObj.points} />
 
           {/* Profile Activity Overview Section Placeholder */}
           <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-6 md:p-8 shadow-sm space-y-6">

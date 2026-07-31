@@ -5,8 +5,8 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 ---
 
 ## 📊 Summary
-* **Current Day**: Day 45
-* **Overall Progress**: 73.3% (44/60 Days Completed)
+* **Current Day**: Day 50
+* **Overall Progress**: 81.6% (49/60 Days Completed)
 * **Status**: In Progress
 
 ---
@@ -75,11 +75,11 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 - [x] **Day 45**: Run tests on the payment workflow.
 
 ### Phase 5: Reward System
-- [ ] **Day 46**: Add points field to User model.
-- [ ] **Day 47**: Implement answer reward logic (+5 points per answer).
-- [ ] **Day 48**: Add upvote reward logic (+5 points when answer hits 5 upvotes).
-- [ ] **Day 49**: Add downvote/removal points deduction logic.
-- [ ] **Day 50**: Create points dashboard UI on user profile.
+- [x] **Day 46**: Add points field to User model.
+- [x] **Day 47**: Implement answer reward logic (+5 points per answer).
+- [x] **Day 48**: Add upvote reward logic (+5 points when answer hits 5 upvotes).
+- [x] **Day 49**: Add downvote/removal points deduction logic.
+- [x] **Day 50**: Create points dashboard UI on user profile.
 - [ ] **Day 51**: Create point transfer UI & search input.
 - [ ] **Day 52**: Enforce transfer restriction (Sender must have > 10 points).
 
@@ -455,6 +455,46 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 * **Problems:** Initial time-gate check order ran after auth check, causing 401s in unauthenticated testing.
 * **Solutions:** Reordered handler checks to execute time restriction check first.
 * **Next Task:** Phase 5 begins — Add points field to User model on Day 46.
+
+### Day 46
+* **Date:** July 31, 2026
+* **Completed:** Audited and verified existence and functionality of numeric `points` field on Mongoose User model schema.
+* **Files Changed:** `progress/day-46.md`, `progress/development-log.md`, `task.md`
+* **Problems:** None.
+* **Solutions:** None.
+* **Next Task:** Implement answer reward logic on Day 47.
+
+### Day 47
+* **Date:** July 31, 2026
+* **Completed:** Created Question and Answer models, built `/api/questions` listing/creation APIs, built `/api/questions/[id]/answers` creation endpoint rewarding **+5 points** to answer authors, and logging `Reward` transactions.
+* **Files Changed:** `src/models/Question.ts`, `src/models/Answer.ts`, `src/app/api/questions/route.ts`, `src/app/api/questions/[id]/answers/route.ts`, `progress/day-47.md`, `progress/development-log.md`, `task.md`
+* **Problems:** Q&A endpoints were missing in the template setup.
+* **Solutions:** Designed and implemented Q&A model layers and API handlers from scratch.
+* **Next Task:** Add upvote reward logic on Day 48.
+
+### Day 48
+* **Date:** July 31, 2026
+* **Completed:** Created `/api/answers/[id]/upvote` API endpoint implementing **+5 points** upvote reward when answer hits exactly 5 upvotes.
+* **Files Changed:** `src/app/api/answers/[id]/upvote/route.ts`, `progress/day-48.md`, `progress/development-log.md`, `task.md`
+* **Problems:** Toggling upvotes back and forth could lead to reward leaks.
+* **Solutions:** Programmed the handler to retract the upvote points bonus if upvotes drop back below 5.
+* **Next Task:** Add downvote/removal points deduction logic on Day 49.
+
+### Day 49
+* **Date:** July 31, 2026
+* **Completed:** Created downvote `/api/answers/[id]/downvote` (-2 points) and delete `/api/answers/[id]/delete` (-5 points creation reversal, -5 points upvote retract) endpoints.
+* **Files Changed:** `src/app/api/answers/[id]/downvote/route.ts`, `src/app/api/answers/[id]/delete/route.ts`, `progress/day-49.md`, `progress/development-log.md`, `task.md`
+* **Problems:** Repeated points deductions could result in negative points balances.
+* **Solutions:** Enforced bounds checking using `Math.max(0, points)` to keep balances positive.
+* **Next Task:** Create points dashboard UI on user profile on Day 50.
+
+### Day 50
+* **Date:** July 31, 2026
+* **Completed:** Built `/api/users/rewards` API endpoint, created `PointsDashboard.tsx` client component, and integrated the dashboard on the Profile account page layout.
+* **Files Changed:** `src/app/api/users/rewards/route.ts`, `src/components/profile/PointsDashboard.tsx`, `src/app/profile/page.tsx`, `src/app/api/test-rewards/route.ts`, `progress/day-50.md`, `progress/development-log.md`, `task.md`
+* **Problems:** TypeScript analyzer flagged getNextThreshold output check as potentially null.
+* **Solutions:** Resolved warning using a local nextThreshold evaluation closure.
+* **Next Task:** Create point transfer UI & search input on Day 51.
 
 
 
