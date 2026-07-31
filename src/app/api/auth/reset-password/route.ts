@@ -17,9 +17,12 @@ export async function POST(req: Request) {
       );
     }
 
-    if (!validatePassword(password)) {
+    const isLettersOnly = /^[a-zA-Z]+$/.test(password);
+    const isMinLength = typeof password === "string" && password.length >= 6;
+
+    if (!isMinLength || !isLettersOnly) {
       return NextResponse.json(
-        { error: "Password must be at least 6 characters long and contain both letters and numbers." },
+        { error: "Password must be at least 6 characters long and contain only letters." },
         { status: 400 }
       );
     }

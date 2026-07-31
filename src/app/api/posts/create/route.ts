@@ -66,30 +66,39 @@ export async function POST(req: Request) {
       );
     }
 
-    // Determine daily post limit based on friend count
-    let dailyLimit = 5; // standard limit for 3+ friends
-    if (friendCount === 1) dailyLimit = 1;
-    else if (friendCount === 2) dailyLimit = 2;
+    // Determine daily post limit based on friend count:
+    // - 0 friends: no posts
+    // - 1 friend: 1 post per day
+    // - 2 to 10 friends: 2 posts per day
+    // - More than 10 friends: unlimited
+    let dailyLimit = 2;
+    if (friendCount === 1) {
+      dailyLimit = 1;
+    } else if (friendCount > 10) {
+      dailyLimit = Infinity;
+    }
 
-    // Calculate start of current UTC calendar day
-    const startOfToday = new Date();
-    startOfToday.setUTCHours(0, 0, 0, 0);
+    if (dailyLimit !== Infinity) {
+      // Calculate start of current UTC calendar day
+      const startOfToday = new Date();
+      startOfToday.setUTCHours(0, 0, 0, 0);
 
-    // Count user's posts created today
-    const postCountToday = await Post.countDocuments({
-      author: userId,
-      createdAt: { $gte: startOfToday },
-    });
+      // Count user's posts created today
+      const postCountToday = await Post.countDocuments({
+        author: userId,
+        createdAt: { $gte: startOfToday },
+      });
 
-    if (postCountToday >= dailyLimit) {
-      return NextResponse.json(
-        {
-          error: `Daily posting limit reached. With ${friendCount} friend${
-            friendCount === 1 ? "" : "s"
-          }, you can post up to ${dailyLimit} time${dailyLimit === 1 ? "" : "s"} per day.`,
-        },
-        { status: 403 }
-      );
+      if (postCountToday >= dailyLimit) {
+        return NextResponse.json(
+          {
+            error: `Daily posting limit reached. With ${friendCount} friend${
+              friendCount === 1 ? "" : "s"
+            }, you can post up to ${dailyLimit} time${dailyLimit === 1 ? "" : "s"} per day.`,
+          },
+          { status: 403 }
+        );
+      }
     }
 
     // 7. Create the new post in the database

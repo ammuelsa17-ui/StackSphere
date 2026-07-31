@@ -705,7 +705,7 @@ export async function GET() {
     // ----------------------------------------------------
     if (verifiedResetToken) {
       try {
-        const generatedPassword = generateLettersOnlyPassword(10) + "42"; // Append numbers to satisfy strict validation
+        const generatedPassword = generateLettersOnlyPassword(12); // Pure letters-only password
         const req = new Request("http://localhost/api/auth/reset-password", {
           method: "POST",
           headers: { "Content-Type": "application/json" },

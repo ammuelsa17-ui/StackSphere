@@ -29,20 +29,14 @@ export default function ForgotPasswordForm() {
   const [generatedPassword, setGeneratedPassword] = useState("");
   const [copied, setCopied] = useState(false);
 
-  // Client-side password generator with letters and numbers (Day 29, updated Day 35)
+  // Client-side password generator with only uppercase and lowercase letters (Day 51)
   const handleGeneratePassword = () => {
     const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-    const digits = "0123456789";
     let randomPassword = "";
-    // Generate 10 random letters
-    for (let i = 0; i < 10; i++) {
+    // Generate 12 random letters
+    for (let i = 0; i < 12; i++) {
       const index = Math.floor(Math.random() * letters.length);
       randomPassword += letters.charAt(index);
-    }
-    // Append 2 random digits to satisfy strict validation
-    for (let i = 0; i < 2; i++) {
-      const index = Math.floor(Math.random() * digits.length);
-      randomPassword += digits.charAt(index);
     }
     setPassword(randomPassword);
     setConfirmPassword(randomPassword);
@@ -162,8 +156,8 @@ export default function ForgotPasswordForm() {
       return;
     }
 
-    if (!/[a-zA-Z]/.test(password) || !/\d/.test(password)) {
-      setError("Password must contain both letters and numbers.");
+    if (!/^[a-zA-Z]+$/.test(password)) {
+      setError("Password must contain only letters (no numbers or special characters).");
       setIsLoading(false);
       return;
     }

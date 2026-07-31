@@ -5,8 +5,8 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 ---
 
 ## 📊 Summary
-* **Current Day**: Day 50
-* **Overall Progress**: 81.6% (49/60 Days Completed)
+* **Current Day**: Day 51
+* **Overall Progress**: 83.3% (50/60 Days Completed)
 * **Status**: In Progress
 
 ---
@@ -80,8 +80,8 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 - [x] **Day 48**: Add upvote reward logic (+5 points when answer hits 5 upvotes).
 - [x] **Day 49**: Add downvote/removal points deduction logic.
 - [x] **Day 50**: Create points dashboard UI on user profile.
-- [ ] **Day 51**: Create point transfer UI & search input.
-- [ ] **Day 52**: Enforce transfer restriction (Sender must have > 10 points).
+- [x] **Day 51**: Fix recovery password validations, social posting limits, and mobile timezone gates.
+- [ ] **Day 52**: Create point transfer UI, search input, and enforce sender threshold (Sender must have > 10 points).
 
 ### Phase 6: Multi-language System
 - [ ] **Day 53**: Setup i18next/localization setup.
@@ -494,7 +494,15 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 * **Files Changed:** `src/app/api/users/rewards/route.ts`, `src/components/profile/PointsDashboard.tsx`, `src/app/profile/page.tsx`, `src/app/api/test-rewards/route.ts`, `progress/day-50.md`, `progress/development-log.md`, `task.md`
 * **Problems:** TypeScript analyzer flagged getNextThreshold output check as potentially null.
 * **Solutions:** Resolved warning using a local nextThreshold evaluation closure.
-* **Next Task:** Create point transfer UI & search input on Day 51.
+* **Next Task:** Fix recovery password validations, social posting limits, and mobile timezone gates on Day 51.
+
+### Day 51
+* **Date:** July 31, 2026
+* **Completed:** Updated password generator to output pure letters (uppercase/lowercase) and corrected reset password validator check to accept letters-only resets. Configured exact friend-count posting limits (0: block, 1: 1/day, 2-10: 2/day, >10: unlimited). Aligned mobile login window restraints to IST. Verified all changes E2E.
+* **Files Changed:** `src/components/auth/ForgotPasswordForm.tsx`, `src/app/api/auth/reset-password/route.ts`, `src/app/api/posts/create/route.ts`, `src/lib/auth.ts`, `src/app/api/test-auth/route.ts`, `src/app/api/test-social/route.ts`, `progress/day-51.md`, `progress/development-log.md`, `task.md`
+* **Problems:** Server time zone offsets blocked testing mobile logins during server UTC hours.
+* **Solutions:** Converted mobile login date verification to evaluate IST hour dynamically.
+* **Next Task:** Create point transfer UI & search input on Day 52.
 
 
 

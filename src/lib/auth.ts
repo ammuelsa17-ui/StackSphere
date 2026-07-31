@@ -69,9 +69,13 @@ export const authOptions: NextAuthOptions = {
 
         // Mobile login window check (blocked outside 10:00 AM - 1:00 PM)
         if (deviceType === "Mobile") {
-          const currentHour = new Date().getHours();
-          if (currentHour < 10 || currentHour >= 13) {
-            throw new Error("Mobile logins are restricted to the 10:00 AM - 1:00 PM window.");
+          const now = new Date();
+          const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
+          const istTime = new Date(utcTime + (3600000 * 5.5));
+          const istHour = istTime.getHours();
+
+          if (istHour < 10 || istHour >= 13) {
+            throw new Error("Mobile logins are restricted to the 10:00 AM - 1:00 PM IST window.");
           }
         }
 

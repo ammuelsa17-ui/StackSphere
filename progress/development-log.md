@@ -51,6 +51,7 @@ This index lists all our daily progress files for easy navigation during evaluat
 * [Day 48: Integrated upvote reward logic for popular answers](./day-48.md)
 * [Day 49: Configured downvote/removal points deduction logic](./day-49.md)
 * [Day 50: Created profile points dashboard & history list](./day-50.md)
+* [Day 51: Fixed recovery validation, posting rules and mobile timezone gates](./day-51.md)
 
 
 

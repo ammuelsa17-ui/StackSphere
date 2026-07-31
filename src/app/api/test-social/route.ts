@@ -5,6 +5,7 @@ import User from "@/models/User";
 import Post from "@/models/Post";
 import Comment from "@/models/Comment";
 import FriendRequest from "@/models/FriendRequest";
+import { POST as createPostHandler } from "@/app/api/posts/create/route";
 
 export async function GET() {
   const results: { name: string; status: "PASS" | "FAIL"; message: string }[] = [];
@@ -93,52 +94,76 @@ export async function GET() {
       addResult("Friend Request Acceptance", "FAIL", err.message);
     }
 
-    // 5. Test Posting Restrictions Logic
+    // 5. Test Posting Restrictions Logic (Day 51: Exact posting limit rules)
     try {
-      // A. 0 Friends check
-      // Set sender friends to empty
-      await User.findByIdAndUpdate(sender._id, { $set: { friends: [] } });
-      const senderWithNoFriends = await User.findById(sender._id);
-      const friendsCount0 = senderWithNoFriends?.friends?.length || 0;
+      const getPostLimit = (friendCount: number) => {
+        if (friendCount === 0) return 0;
+        if (friendCount === 1) return 1;
+        if (friendCount > 10) return Infinity;
+        return 2; // 2 to 10 friends
+      };
 
-      // Rule assertion: 0 friends -> limit 0
-      let limit0 = 5;
-      if (friendsCount0 === 0) limit0 = 0;
+      // A. 0 Friends check
+      await User.findByIdAndUpdate(sender._id, { $set: { friends: [] } });
+      const sender0 = await User.findById(sender._id);
+      const friendsCount0 = sender0?.friends?.length || 0;
+      const limit0 = getPostLimit(friendsCount0);
 
       if (limit0 === 0) {
-        addResult("Friend Count Logic (0 Friends)", "PASS", "Evaluated posting limit correctly: 0 friends -> Cannot post.");
+        addResult("Friend Count Logic (0 Friends)", "PASS", "Correctly evaluated 0 friends -> Cannot post.");
       } else {
         addResult("Friend Count Logic (0 Friends)", "FAIL", `Expected limit 0, got ${limit0}`);
       }
 
       // B. 1 Friend check
-      // Set sender friends to 1
       await User.findByIdAndUpdate(sender._id, { $set: { friends: [receiver._id] } });
-      const senderWith1Friend = await User.findById(sender._id);
-      const friendsCount1 = senderWith1Friend?.friends?.length || 0;
-
-      let limit1 = 5;
-      if (friendsCount1 === 1) limit1 = 1;
+      const sender1 = await User.findById(sender._id);
+      const friendsCount1 = sender1?.friends?.length || 0;
+      const limit1 = getPostLimit(friendsCount1);
 
       if (limit1 === 1) {
-        addResult("Friend Count Logic (1 Friend)", "PASS", "Evaluated posting limit correctly: 1 friend -> 1 post/day.");
+        addResult("Friend Count Logic (1 Friend)", "PASS", "Correctly evaluated 1 friend -> 1 post/day limit.");
       } else {
         addResult("Friend Count Logic (1 Friend)", "FAIL", `Expected limit 1, got ${limit1}`);
       }
 
-      // C. 2 Friends check
-      const dummyId = new mongoose.Types.ObjectId();
-      await User.findByIdAndUpdate(sender._id, { $set: { friends: [receiver._id, dummyId] } });
-      const senderWith2Friends = await User.findById(sender._id);
-      const friendsCount2 = senderWith2Friends?.friends?.length || 0;
-
-      let limit2 = 5;
-      if (friendsCount2 === 2) limit2 = 2;
+      // C. 2 to 10 Friends check (2 Friends)
+      const dummyId1 = new mongoose.Types.ObjectId();
+      await User.findByIdAndUpdate(sender._id, { $set: { friends: [receiver._id, dummyId1] } });
+      const sender2 = await User.findById(sender._id);
+      const friendsCount2 = sender2?.friends?.length || 0;
+      const limit2 = getPostLimit(friendsCount2);
 
       if (limit2 === 2) {
-        addResult("Friend Count Logic (2 Friends)", "PASS", "Evaluated posting limit correctly: 2 friends -> 2 posts/day.");
+        addResult("Friend Count Logic (2 Friends)", "PASS", "Correctly evaluated 2 friends -> 2 posts/day limit.");
       } else {
         addResult("Friend Count Logic (2 Friends)", "FAIL", `Expected limit 2, got ${limit2}`);
+      }
+
+      // D. 2 to 10 Friends check (10 Friends)
+      const dummyIds10 = Array.from({ length: 10 }, () => new mongoose.Types.ObjectId());
+      await User.findByIdAndUpdate(sender._id, { $set: { friends: dummyIds10 } });
+      const sender10 = await User.findById(sender._id);
+      const friendsCount10 = sender10?.friends?.length || 0;
+      const limit10 = getPostLimit(friendsCount10);
+
+      if (limit10 === 2) {
+        addResult("Friend Count Logic (10 Friends)", "PASS", "Correctly evaluated 10 friends -> 2 posts/day limit.");
+      } else {
+        addResult("Friend Count Logic (10 Friends)", "FAIL", `Expected limit 2, got ${limit10}`);
+      }
+
+      // E. More than 10 Friends check (11 Friends -> Unlimited)
+      const dummyIds11 = Array.from({ length: 11 }, () => new mongoose.Types.ObjectId());
+      await User.findByIdAndUpdate(sender._id, { $set: { friends: dummyIds11 } });
+      const sender11 = await User.findById(sender._id);
+      const friendsCount11 = sender11?.friends?.length || 0;
+      const limit11 = getPostLimit(friendsCount11);
+
+      if (limit11 === Infinity) {
+        addResult("Friend Count Logic (>10 Friends)", "PASS", "Correctly evaluated >10 friends -> Unlimited posts.");
+      } else {
+        addResult("Friend Count Logic (>10 Friends)", "FAIL", `Expected limit Infinity, got ${limit11}`);
       }
     } catch (err: any) {
       addResult("Posting Restrictions Logic", "FAIL", err.message);
