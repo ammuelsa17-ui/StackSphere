@@ -112,6 +112,30 @@ export async function POST(req: Request) {
       sharesCount: 0,
     });
 
+    // Concurrency Safety Check: Verify total count today after creation
+    if (dailyLimit !== Infinity) {
+      const startOfToday = new Date();
+      startOfToday.setUTCHours(0, 0, 0, 0);
+
+      const totalCountToday = await Post.countDocuments({
+        author: userId,
+        createdAt: { $gte: startOfToday },
+      });
+
+      if (totalCountToday > dailyLimit) {
+        // Rollback / delete excess creation caused by race condition
+        await Post.deleteOne({ _id: newPost._id });
+        return NextResponse.json(
+          {
+            error: `Daily posting limit reached. With ${friendCount} friend${
+              friendCount === 1 ? "" : "s"
+            }, you can post up to ${dailyLimit} time${dailyLimit === 1 ? "" : "s"} per day.`,
+          },
+          { status: 403 }
+        );
+      }
+    }
+
     // 8. If post includes media, link the upload record to this post
     if (mediaUrl && mediaUrl.trim() !== "") {
       try {

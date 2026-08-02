@@ -6,6 +6,9 @@ import Upload from "@/models/Upload";
 import User from "@/models/User";
 import { uploadMedia, deleteMedia, validateMagicBytes } from "@/utils/cloudinary";
 
+// Allow up to 30s for large video uploads on Vercel serverless
+export const maxDuration = 30;
+
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);

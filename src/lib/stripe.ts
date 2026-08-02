@@ -3,7 +3,6 @@
 let stripeInstance: any = null;
 
 try {
-  // Dynamically import stripe if installed
   const StripeModule = require("stripe");
   const stripeSecretKey = process.env.STRIPE_SECRET_KEY || "sk_test_mocksecret123";
   stripeInstance = new StripeModule(stripeSecretKey, {
@@ -15,11 +14,12 @@ try {
 
 export const stripe = stripeInstance;
 
-// Plan details definitions with pricing, features, and system limits
+// Plan details definitions with INR pricing, features, and system limits
 export interface SubscriptionPlanConfig {
   name: "Free" | "Bronze" | "Silver" | "Gold";
-  priceUSD: number;
-  amountCents: number;
+  priceINR: number;
+  priceUSD: number; // Backwards-compatible alias for price in INR
+  amountCents: number; // Amount in paise/cents (e.g. ₹100 = 10000 paise)
   currency: string;
   description: string;
   dailyQuestionLimit: number; // 1 (Free), 5 (Bronze), 10 (Silver), -1 (Gold/Unlimited)
@@ -30,9 +30,10 @@ export interface SubscriptionPlanConfig {
 export const SUBSCRIPTION_PLANS: Record<string, SubscriptionPlanConfig> = {
   Free: {
     name: "Free",
+    priceINR: 0,
     priceUSD: 0,
     amountCents: 0,
-    currency: "usd",
+    currency: "inr",
     description: "Essential Q&A features for developers getting started.",
     dailyQuestionLimit: 1,
     maxUploadSizeMB: 0,
@@ -45,9 +46,10 @@ export const SUBSCRIPTION_PLANS: Record<string, SubscriptionPlanConfig> = {
   },
   Bronze: {
     name: "Bronze",
-    priceUSD: 5,
-    amountCents: 500,
-    currency: "usd",
+    priceINR: 100,
+    priceUSD: 100,
+    amountCents: 10000,
+    currency: "inr",
     description: "Perfect for active developers seeking occasional media uploads.",
     dailyQuestionLimit: 5,
     maxUploadSizeMB: 5,
@@ -60,9 +62,10 @@ export const SUBSCRIPTION_PLANS: Record<string, SubscriptionPlanConfig> = {
   },
   Silver: {
     name: "Silver",
-    priceUSD: 15,
-    amountCents: 1500,
-    currency: "usd",
+    priceINR: 300,
+    priceUSD: 300,
+    amountCents: 30000,
+    currency: "inr",
     description: "Our recommended choice for professional content creators.",
     dailyQuestionLimit: 10,
     maxUploadSizeMB: 10,
@@ -76,9 +79,10 @@ export const SUBSCRIPTION_PLANS: Record<string, SubscriptionPlanConfig> = {
   },
   Gold: {
     name: "Gold",
-    priceUSD: 29,
-    amountCents: 2900,
-    currency: "usd",
+    priceINR: 1000,
+    priceUSD: 1000,
+    amountCents: 100000,
+    currency: "inr",
     description: "Ultimate power for teams, experts, and enterprise contributors.",
     dailyQuestionLimit: -1, // Unlimited
     maxUploadSizeMB: 20,
@@ -109,14 +113,12 @@ export async function createStripeCheckoutSession({
   cancelUrl: string;
 }) {
   const plan = SUBSCRIPTION_PLANS[planName];
-  if (!plan || plan.priceUSD === 0) {
+  if (!plan || plan.priceINR === 0) {
     throw new Error("Invalid plan selected for paid checkout.");
   }
 
-  // Generate unique fallback session ID for test environments
   const mockSessionId = `cs_test_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 
-  // Attempt real Stripe SDK call if valid API key and SDK instance are supplied
   if (stripe && process.env.STRIPE_SECRET_KEY && !process.env.STRIPE_SECRET_KEY.startsWith("sk_test_mock")) {
     try {
       const session = await stripe.checkout.sessions.create({
@@ -152,7 +154,7 @@ export async function createStripeCheckoutSession({
         sessionId: session.id,
         url: session.url || successUrl,
         isMock: false,
-        amount: plan.priceUSD,
+        amount: plan.priceINR,
         currency: plan.currency,
         planName: plan.name,
       };
@@ -161,12 +163,11 @@ export async function createStripeCheckoutSession({
     }
   }
 
-  // Developer / Mock mode fallback response
   return {
     sessionId: mockSessionId,
     url: `${successUrl}?session_id=${mockSessionId}&mock=true`,
     isMock: true,
-    amount: plan.priceUSD,
+    amount: plan.priceINR,
     currency: plan.currency,
     planName: plan.name,
   };
@@ -180,7 +181,6 @@ export async function verifyStripeCheckoutSession(sessionId: string) {
     throw new Error("Session ID is required for verification.");
   }
 
-  // Handle developer mock session IDs
   if (sessionId.startsWith("cs_test_")) {
     return {
       success: true,
@@ -190,7 +190,6 @@ export async function verifyStripeCheckoutSession(sessionId: string) {
     };
   }
 
-  // Handle real Stripe SDK verification
   if (stripe && process.env.STRIPE_SECRET_KEY && !process.env.STRIPE_SECRET_KEY.startsWith("sk_test_mock")) {
     try {
       const session = await stripe.checkout.sessions.retrieve(sessionId);
@@ -210,7 +209,6 @@ export async function verifyStripeCheckoutSession(sessionId: string) {
     }
   }
 
-  // Default mock success fallback for test/dev mode session IDs
   return {
     success: true,
     isMock: true,
@@ -218,4 +216,3 @@ export async function verifyStripeCheckoutSession(sessionId: string) {
     paymentStatus: "paid",
   };
 }
-

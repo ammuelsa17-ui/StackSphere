@@ -86,6 +86,30 @@ export async function POST(req: Request) {
       answersCount: 0,
     });
 
+    // Concurrency Safety Check: Verify total question count today after creation
+    if (limit !== Infinity) {
+      const startOfToday = new Date();
+      startOfToday.setUTCHours(0, 0, 0, 0);
+
+      const totalCountToday = await Question.countDocuments({
+        author: userId,
+        createdAt: { $gte: startOfToday },
+      });
+
+      if (totalCountToday > limit) {
+        // Rollback / delete excess creation caused by race condition
+        await Question.deleteOne({ _id: newQuestion._id });
+        return NextResponse.json(
+          {
+            error: `Daily question limit reached. Your subscription plan (${currentPlan}) allows up to ${limit} question${
+              limit === 1 ? "" : "s"
+            } per day.`,
+          },
+          { status: 403 }
+        );
+      }
+    }
+
     return NextResponse.json({ success: true, question: newQuestion }, { status: 201 });
   } catch (error: any) {
     return NextResponse.json({ error: error.message || "Failed to create question." }, { status: 500 });

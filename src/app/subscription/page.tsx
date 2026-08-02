@@ -74,7 +74,7 @@ export default async function SubscriptionPage() {
   const plans = [
     {
       name: "Free",
-      price: "$0",
+      price: "₹0",
       priceUSD: 0,
       period: "forever",
       description: "Essential Q&A features for developers getting started.",
@@ -91,8 +91,8 @@ export default async function SubscriptionPage() {
     },
     {
       name: "Bronze",
-      price: "$5",
-      priceUSD: 5,
+      price: "₹100",
+      priceUSD: 100,
       period: "month",
       description: "Perfect for active developers seeking occasional media uploads.",
       features: [
@@ -108,8 +108,8 @@ export default async function SubscriptionPage() {
     },
     {
       name: "Silver",
-      price: "$15",
-      priceUSD: 15,
+      price: "₹300",
+      priceUSD: 300,
       period: "month",
       description: "Our recommended choice for professional content creators.",
       features: [
@@ -126,8 +126,8 @@ export default async function SubscriptionPage() {
     },
     {
       name: "Gold",
-      price: "$29",
-      priceUSD: 29,
+      price: "₹1000",
+      priceUSD: 1000,
       period: "month",
       description: "Ultimate power for teams, experts, and enterprise contributors.",
       features: [

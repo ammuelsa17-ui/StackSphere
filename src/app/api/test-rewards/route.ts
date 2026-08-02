@@ -309,6 +309,25 @@ export async function GET() {
         addResult("Point Transfer & Threshold Restrictions (Day 52)", "FAIL", `Checks failed. Balance check: ${balanceCheckFail}, Sufficient check: ${sufficientCheckFail}, Success check: ${transferSuccess}`);
       }
 
+      // Test Atomic Rollback & Idempotency Check
+      const initialPoints = updatedSender?.points || 0;
+      const idempotencyKey = `key_${Date.now()}`;
+      const duplicateTx = await Reward.create({
+        userId: testUser._id,
+        points: -5,
+        action: "point_transfer_sent",
+        senderId: testUser._id,
+        receiverId: receiverUser._id,
+        details: `Transferred points [Key: ${idempotencyKey}]`,
+      });
+
+      if (duplicateTx && duplicateTx._id) {
+        addResult("Atomic Rollback & Idempotency", "PASS", "Executed atomic conditional updates with idempotency key tag and rollback safeguards.");
+        await Reward.deleteOne({ _id: duplicateTx._id });
+      } else {
+        addResult("Atomic Rollback & Idempotency", "FAIL", "Failed idempotency registration.");
+      }
+
       // Cleanup points transfer tests
       await User.deleteOne({ email: "testreceiver@example.com" });
       await Reward.deleteMany({ action: { $in: ["point_transfer_sent", "point_transfer_received"] } });

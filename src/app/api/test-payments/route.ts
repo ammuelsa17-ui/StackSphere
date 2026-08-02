@@ -45,14 +45,14 @@ export async function GET() {
       const gold = SUBSCRIPTION_PLANS.Gold;
 
       if (
-        bronze.priceUSD === 5 &&
-        silver.priceUSD === 15 &&
-        gold.priceUSD === 29 &&
+        bronze.priceINR === 100 &&
+        silver.priceINR === 300 &&
+        gold.priceINR === 1000 &&
         bronze.dailyQuestionLimit === 5 &&
         silver.dailyQuestionLimit === 10 &&
         gold.dailyQuestionLimit === -1
       ) {
-        addResult("Stripe Subscription Plan Configs", "PASS", "Bronze ($5), Silver ($15), and Gold ($29) plans configured correctly with limits.");
+        addResult("Stripe Subscription Plan Configs", "PASS", "Bronze (₹100), Silver (₹300), and Gold (₹1000) plans configured correctly with limits.");
       } else {
         addResult("Stripe Subscription Plan Configs", "FAIL", "Plan configurations do not match specified pricing and limits.");
       }
@@ -73,7 +73,7 @@ export async function GET() {
         cancelUrl: "http://localhost:3000/subscription?status=cancel",
       });
 
-      if (session && session.sessionId && session.amount === 5 && session.planName === "Bronze") {
+      if (session && session.sessionId && session.amount === 100 && session.planName === "Bronze") {
         mockSessionId = session.sessionId;
         addResult("Stripe Session Creation Helper", "PASS", `Checkout session created successfully (Session ID: ${session.sessionId}).`);
       } else {
@@ -135,15 +135,15 @@ export async function GET() {
       if (testUser) {
         const testTx = await Transaction.create({
           userId: testUser._id,
-          amount: 15,
-          currency: "USD",
+          amount: 300,
+          currency: "INR",
           paymentId: `tx_test_${Date.now()}`,
           planName: "Silver",
           status: "pending",
           invoiceUrl: "",
         });
 
-        if (testTx && testTx._id && testTx.amount === 15 && testTx.planName === "Silver") {
+        if (testTx && testTx._id && testTx.amount === 300 && testTx.planName === "Silver") {
           addResult("Transaction Model Logging", "PASS", "Logged pending subscription payment transaction to MongoDB.");
           await Transaction.deleteOne({ _id: testTx._id });
         } else {
@@ -174,8 +174,8 @@ export async function GET() {
         // Create transaction in pending status
         const tx = await Transaction.create({
           userId: testUser._id,
-          amount: 29,
-          currency: "USD",
+          amount: 1000,
+          currency: "INR",
           paymentId: testSessionId,
           planName: "Gold",
           status: "pending",
@@ -245,8 +245,8 @@ export async function GET() {
         // Create transaction in pending status
         const tx = await Transaction.create({
           userId: testUser._id,
-          amount: 15,
-          currency: "USD",
+          amount: 300,
+          currency: "INR",
           paymentId: testSessionId,
           planName: "Silver",
           status: "pending",
@@ -267,8 +267,8 @@ export async function GET() {
                   userId: testUser._id.toString(),
                   planName: "Silver",
                 },
-                amount_total: 1500,
-                currency: "usd",
+                amount_total: 30000,
+                currency: "inr",
               },
             },
           }),
@@ -318,8 +318,8 @@ export async function GET() {
         orderId: "507f1f77bcf86cd799439011",
         date: new Date().toLocaleDateString("en-US"),
         planName: "Silver Plan Subscription",
-        amount: 15,
-        currency: "USD",
+        amount: 300,
+        currency: "INR",
         email: "invoice-test@example.com",
         name: "Invoice Test User",
       };
@@ -389,8 +389,8 @@ export async function GET() {
         email: "receipt-test@example.com",
         name: "Receipt Tester",
         planName: "Bronze",
-        amount: 5,
-        currency: "USD",
+        amount: 100,
+        currency: "INR",
         invoicePath: "/invoices/invoice-mock.pdf",
       });
 
