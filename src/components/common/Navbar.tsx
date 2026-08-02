@@ -4,10 +4,12 @@ import React from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { Search, Globe, LogIn, UserPlus, LogOut, LayoutDashboard, User } from "lucide-react";
+import { useTranslation, Language } from "@/components/providers/I18nProvider";
 
 export default function Navbar() {
   const { data: session, status } = useSession();
   const isLoading = status === "loading";
+  const { language, setLanguage, t } = useTranslation();
 
   return (
     <header className="fixed top-0 left-0 right-0 h-16 border-b border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-950/80 backdrop-blur-md z-50">
@@ -45,8 +47,25 @@ export default function Navbar() {
             className="flex items-center gap-1.5 text-sm font-medium text-neutral-600 dark:text-neutral-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
           >
             <Globe className="h-4 w-4" />
-            <span className="hidden sm:inline">Social Hub</span>
+            <span className="hidden sm:inline">{t("socialSpace")}</span>
           </Link>
+
+          {/* Language Switcher Dropdown */}
+          <div className="flex items-center gap-1 bg-neutral-100 dark:bg-neutral-900 px-2 py-1 rounded-lg border border-neutral-250/20 dark:border-neutral-800">
+            <Globe className="h-3.5 w-3.5 text-neutral-400" />
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value as Language)}
+              className="bg-transparent text-xs font-semibold text-neutral-700 dark:text-neutral-300 focus:outline-none cursor-pointer border-none pr-1"
+            >
+              <option value="en" className="bg-white dark:bg-neutral-950 text-neutral-900 dark:text-white">EN</option>
+              <option value="es" className="bg-white dark:bg-neutral-950 text-neutral-900 dark:text-white">ES</option>
+              <option value="hi" className="bg-white dark:bg-neutral-950 text-neutral-900 dark:text-white">HI</option>
+              <option value="pt" className="bg-white dark:bg-neutral-950 text-neutral-900 dark:text-white">PT</option>
+              <option value="zh" className="bg-white dark:bg-neutral-950 text-neutral-900 dark:text-white">ZH</option>
+              <option value="fr" className="bg-white dark:bg-neutral-950 text-neutral-900 dark:text-white">FR</option>
+            </select>
+          </div>
 
           {/* Vertical divider */}
           <span className="w-px h-5 bg-neutral-200 dark:bg-neutral-800" />

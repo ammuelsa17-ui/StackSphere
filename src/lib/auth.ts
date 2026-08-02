@@ -15,6 +15,7 @@ export const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
         code: { label: "OTP Code", type: "text" },
+        language: { label: "Language", type: "text" },
       },
       async authorize(credentials, req) {
         if (!credentials?.email || !credentials?.password) {
@@ -91,7 +92,12 @@ export const authOptions: NextAuthOptions = {
             user.verificationCodeExpires = verificationExpiry;
             await user.save();
             
-            console.log(`[MOCK EMAIL CHALLENGE] Sent OTP code "${verificationCode}" to email "${user.email}"`);
+            const lang = credentials?.language || "en";
+            if (lang === "fr") {
+              console.log(`[MOCK EMAIL CHALLENGE] Sent OTP code "${verificationCode}" to email "${user.email}"`);
+            } else {
+              console.log(`[MOCK SMS CHALLENGE] Sent OTP code "${verificationCode}" via SMS to phone "${user.phoneNumber || "+15551234567"}"`);
+            }
             throw new Error("OTP_REQUIRED");
           } else {
             // Validate code

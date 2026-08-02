@@ -5,6 +5,8 @@ import connectToDatabase from "@/lib/mongodb";
 import Question from "@/models/Question";
 import { sanitizeString } from "@/utils/validation";
 
+import { checkAndUpdateSubscription } from "@/utils/checkSubscription";
+
 export async function GET(req: Request) {
   try {
     await connectToDatabase();
@@ -39,8 +41,43 @@ export async function POST(req: Request) {
 
     await connectToDatabase();
 
+    const userId = (session.user as any).id;
+    const user = await checkAndUpdateSubscription(userId);
+    if (!user) {
+      return NextResponse.json({ error: "User profile not found." }, { status: 404 });
+    }
+
+    const currentPlan = user.subscription?.plan || "Free";
+
+    // Enforce limits: Free (1), Bronze (5), Silver (10), Gold (Unlimited)
+    let limit = 1;
+    if (currentPlan === "Bronze") limit = 5;
+    else if (currentPlan === "Silver") limit = 10;
+    else if (currentPlan === "Gold") limit = Infinity;
+
+    if (limit !== Infinity) {
+      const startOfToday = new Date();
+      startOfToday.setUTCHours(0, 0, 0, 0);
+
+      const questionCountToday = await Question.countDocuments({
+        author: userId,
+        createdAt: { $gte: startOfToday },
+      });
+
+      if (questionCountToday >= limit) {
+        return NextResponse.json(
+          {
+            error: `Daily question limit reached. Your subscription plan (${currentPlan}) allows up to ${limit} question${
+              limit === 1 ? "" : "s"
+            } per day.`,
+          },
+          { status: 403 }
+        );
+      }
+    }
+
     const newQuestion = await Question.create({
-      author: (session.user as any).id,
+      author: userId,
       title: titleClean,
       content: contentClean,
       tags: tagsClean,

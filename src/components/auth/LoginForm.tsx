@@ -5,8 +5,10 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { LogIn } from "lucide-react";
+import { useTranslation } from "@/components/providers/I18nProvider";
 
 export default function LoginForm() {
+  const { language, t } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [otpCode, setOtpCode] = useState("");
@@ -42,12 +44,17 @@ export default function LoginForm() {
         email,
         password,
         code: showOtpInput ? otpCode : undefined,
+        language,
       });
 
       if (res?.error) {
         if (res.error === "OTP_REQUIRED") {
           setShowOtpInput(true);
-          setInfoMessage("A verification code (OTP) has been sent to your email. Please enter it below to complete sign in.");
+          if (language === "fr") {
+            setInfoMessage("Un code de vérification (OTP) a été envoyé à votre adresse e-mail. Veuillez le saisir ci-dessous.");
+          } else {
+            setInfoMessage(`A verification code (OTP) has been sent via SMS to your mobile phone. Please enter it below.`);
+          }
         } else {
           setError(res.error); // Display login error (e.g. wrong password)
         }

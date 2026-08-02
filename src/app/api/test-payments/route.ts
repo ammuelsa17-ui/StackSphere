@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import connectToDatabase from "@/lib/mongodb";
 import User from "@/models/User";
 import Transaction from "@/models/Transaction";
+import Question from "@/models/Question";
 import { SUBSCRIPTION_PLANS, createStripeCheckoutSession } from "@/lib/stripe";
 import { POST as checkoutHandler } from "@/app/api/payments/checkout/route";
 import { POST as verifyHandler } from "@/app/api/payments/verify/route";
@@ -396,6 +397,82 @@ export async function GET() {
       }
     } catch (err: any) {
       addResult("Email Receipt Integration", "FAIL", err.message);
+    }
+
+    // ----------------------------------------------------
+    // Test 12: Subscription-Based Question Posting Limits (Day 51)
+    // ----------------------------------------------------
+    try {
+      const testUser = await User.findOne({});
+      if (testUser) {
+        const originalSubscription = testUser.subscription ? JSON.parse(JSON.stringify(testUser.subscription)) : null;
+
+        // Reset user to Free subscription (allows 1 question/day)
+        testUser.subscription = { plan: "Free", paymentStatus: "active", startDate: new Date(), expiryDate: new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000) };
+        await testUser.save();
+
+        // Count existing questions posted today by this user, delete them to isolate test
+        const startOfToday = new Date();
+        startOfToday.setUTCHours(0, 0, 0, 0);
+        await Question.deleteMany({ author: testUser._id, createdAt: { $gte: startOfToday } });
+
+        // Post 1st question: should succeed
+        const q1 = await Question.create({
+          author: testUser._id,
+          title: "Test Question 1",
+          content: "Testing subscription Q&A limit rules",
+          tags: ["test"],
+          upvotes: [],
+          downvotes: [],
+          answersCount: 0,
+        });
+
+        // Try to post 2nd question using direct HTTP handler simulation
+        const { POST: postQuestionHandler } = require("../questions/route");
+        const mockRequest = new Request("http://localhost:3000/api/questions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: "Test Question 2",
+            content: "This second question should be blocked on Free plan",
+            tags: ["test"],
+          }),
+        });
+
+        // Mock NextAuth session
+        const nextAuth = require("next-auth/next");
+        const originalGetServerSession = nextAuth.getServerSession;
+        nextAuth.getServerSession = async () => ({
+          user: { id: testUser._id.toString(), email: testUser.email, name: testUser.name },
+        });
+
+        let secondPostResponse;
+        try {
+          secondPostResponse = await postQuestionHandler(mockRequest);
+        } finally {
+          // Restore original getServerSession
+          nextAuth.getServerSession = originalGetServerSession;
+        }
+
+        const secondPostData = await secondPostResponse.json();
+
+        if (secondPostResponse.status === 403 && secondPostData.error && secondPostData.error.includes("Daily question limit reached")) {
+          addResult("Subscription Question Posting Limits", "PASS", "Correctly blocked 2nd daily question on Free tier with a 403 status.");
+        } else {
+          addResult("Subscription Question Posting Limits", "FAIL", `Expected 403 block on 2nd question, got ${secondPostResponse.status}. Body: ${JSON.stringify(secondPostData)}`);
+        }
+
+        // Clean up test data
+        await Question.deleteMany({ author: testUser._id, createdAt: { $gte: startOfToday } });
+        if (originalSubscription) {
+          testUser.subscription = originalSubscription;
+          await testUser.save();
+        }
+      } else {
+        addResult("Subscription Question Posting Limits", "FAIL", "Skipped: No test user found.");
+      }
+    } catch (err: any) {
+      addResult("Subscription Question Posting Limits", "FAIL", err.message);
     }
 
     // Return full test summary

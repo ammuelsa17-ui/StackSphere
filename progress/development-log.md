@@ -51,6 +51,8 @@ This index lists all our daily progress files for easy navigation during evaluat
 * [Day 48: Integrated upvote reward logic for popular answers](./day-48.md)
 * [Day 49: Configured downvote/removal points deduction logic](./day-49.md)
 * [Day 50: Created points dashboard, transfer systems, and requirement bug fixes](./day-50.md)
+* [Day 51: Enforced subscription plan daily question posting limits](./day-51.md)
+* [Day 52: Implemented client-side multilanguage switcher dropdown and OTP routing](./day-52.md)
 
 
 

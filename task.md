@@ -5,8 +5,8 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 ---
 
 ## 📊 Summary
-* **Current Day**: Day 50
-* **Overall Progress**: 83.3% (50/60 Days Completed)
+* **Current Day**: Day 52
+* **Development Timeline Progress**: 52/60 Days (86.7%)
 * **Status**: In Progress
 
 ---
@@ -82,8 +82,8 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 - [x] **Day 50**: Create points dashboard, transfer systems, and requirement bug fixes.
 
 ### Phase 6: Subscriptions & Multilanguage Setup
-- [ ] **Day 51**: Enforce subscription-based question posting limits.
-- [ ] **Day 52**: Setup i18next localization and layout switcher dropdown.
+- [x] **Day 51**: Enforce subscription-based question posting limits.
+- [x] **Day 52**: Setup i18next localization and layout switcher dropdown.
 - [ ] **Day 53**: Setup language OTP switching (French = email OTP; others = mobile OTP) and translation dictionaries.
 - [ ] **Day 54**: E2E Multilanguage OTP tests.
 
@@ -494,6 +494,22 @@ This file tracks the day-by-day progress of the **StackSphere** Q&A + Social pla
 * **Problems:** Non-existent user forgot password requests leaked user accounts existence, server local timezone differences blocked testing mobile logins during server UTC hours, and letters-only random recovery password resets were rejected by the backend validator.
 * **Solutions:** Masked forgot password search results by returning fake success codes to prevent account enumeration, aligned mobile gate evaluations to IST timezone, and revised reset-password validators to accept letters-only passwords.
 * **Next Task:** Enforce subscription-based question posting limits on Day 51.
+
+### Day 51
+* **Date:** August 1, 2026
+* **Completed:** Implemented subscription plan daily question posting limits (Free: 1, Bronze: 5, Silver: 10, Gold: Unlimited) in Q&A forum routes, integrated automatic plan expiration downgrade triggers, and created E2E test coverage asserting correct HTTP 403 blocks.
+* **Files Changed:** `src/app/api/questions/route.ts`, `src/app/api/test-payments/route.ts`, `progress/day-51.md`, `task.md`
+* **Problems:** The E2E payment tests had missing Question schema definition imports.
+* **Solutions:** Imported Question model at top of test route.
+* **Next Task:** Setup multi-language system setup & layout switcher dropdown on Day 52.
+
+### Day 52
+* **Date:** August 2, 2026
+* **Completed:** Created client-side I18nProvider context supporting six languages (en, es, hi, pt, zh, fr), added translation selector dropdown switcher inside the Navbar header, mapped custom OTP routing gates (French -> Email OTP, others -> Mobile OTP), and integrated dynamic recover channel fields in ForgotPasswordForm.
+* **Files Changed:** `src/components/providers/I18nProvider.tsx`, `src/app/layout.tsx`, `src/components/common/Navbar.tsx`, `src/lib/auth.ts`, `src/components/auth/LoginForm.tsx`, `src/components/auth/ForgotPasswordForm.tsx`, `progress/day-52.md`, `task.md`
+* **Problems:** NextAuth default credential authorize checks do not accept language parameters in payload checks natively.
+* **Solutions:** Declared the language field definition in the credentials schema block in auth.ts.
+* **Next Task:** Expand translation dictionaries & OTP route adjustments on Day 53.
 
 
 

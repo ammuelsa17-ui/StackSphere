@@ -7,9 +7,20 @@ import { Mail, Phone, ArrowLeft, CheckCircle2, Shield, Lock, Eye, EyeOff, Sparkl
 type RecoveryStep = "REQUEST" | "VERIFY" | "RESET" | "SUCCESS";
 type RecoveryMethod = "email" | "phone";
 
+import { useTranslation } from "@/components/providers/I18nProvider";
+
 export default function ForgotPasswordForm() {
+  const { language, t } = useTranslation();
   const [step, setStep] = useState<RecoveryStep>("REQUEST");
   const [method, setMethod] = useState<RecoveryMethod>("email");
+
+  useEffect(() => {
+    if (language === "fr") {
+      setMethod("email");
+    } else {
+      setMethod("phone");
+    }
+  }, [language]);
   
   // Form input states
   const [email, setEmail] = useState("");
@@ -253,30 +264,17 @@ export default function ForgotPasswordForm() {
 
         {/* Tab Controls */}
         <div className="flex border-b border-neutral-150 dark:border-neutral-700 mb-6 p-0.5 bg-neutral-50 dark:bg-neutral-900 rounded-xl">
-          <button
-            type="button"
-            onClick={() => { setMethod("email"); setError(null); }}
-            className={`flex-1 py-2 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-all duration-200 ${
-              method === "email"
-                ? "bg-white dark:bg-neutral-800 text-neutral-800 dark:text-white shadow-sm"
-                : "text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
-            }`}
-          >
-            <Mail className="h-3.5 w-3.5" />
-            <span>Email Recovery</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => { setMethod("phone"); setError(null); }}
-            className={`flex-1 py-2 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-all duration-200 ${
-              method === "phone"
-                ? "bg-white dark:bg-neutral-800 text-neutral-800 dark:text-white shadow-sm"
-                : "text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
-            }`}
-          >
-            <Phone className="h-3.5 w-3.5" />
-            <span>Phone Recovery</span>
-          </button>
+          {language === "fr" ? (
+            <div className="w-full py-2 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 bg-white dark:bg-neutral-800 text-neutral-850 dark:text-white shadow-sm">
+              <Mail className="h-3.5 w-3.5 text-indigo-600" />
+              <span>Récupération par e-mail</span>
+            </div>
+          ) : (
+            <div className="w-full py-2 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 bg-white dark:bg-neutral-800 text-neutral-850 dark:text-white shadow-sm">
+              <Phone className="h-3.5 w-3.5 text-indigo-600" />
+              <span>Mobile Phone Recovery</span>
+            </div>
+          )}
         </div>
 
         <form onSubmit={handleRequestCode} className="space-y-4">
