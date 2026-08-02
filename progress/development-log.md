@@ -2,6 +2,8 @@
 
 This index lists all our daily progress files for easy navigation during evaluations.
 
+> Day labels represent sequential development milestones. Multiple milestones were occasionally completed on the same calendar date. The Date field inside each report records the actual date of work.
+
 * [Day 1: Initialized Next.js project structure](./day-01.md)
 * [Day 2: Configure dependencies, documentation, and repository restructure](./day-02.md)
 * [Day 3: Designed database schemas and created Mongoose models](./day-03.md)
