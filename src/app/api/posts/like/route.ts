@@ -4,6 +4,8 @@ import { authOptions } from "@/lib/auth";
 import connectToDatabase from "@/lib/mongodb";
 import Post from "@/models/Post";
 
+import Notification from "@/models/Notification";
+
 export async function POST(req: Request) {
   try {
     // 1. Get the current active session
@@ -52,6 +54,15 @@ export async function POST(req: Request) {
     } else {
       // Like: append userId to likes array
       post.likes.push(userId);
+      if (post.author && post.author.toString() !== userId) {
+        await Notification.create({
+          userId: post.author,
+          actorId: userId,
+          type: "like",
+          message: `${session.user.name || "A user"} liked your post.`,
+          link: "/social",
+        }).catch(() => {});
+      }
     }
 
     // 8. Save updated post document

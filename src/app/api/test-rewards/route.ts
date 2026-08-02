@@ -5,13 +5,12 @@ import User from "@/models/User";
 import Question from "@/models/Question";
 import Answer from "@/models/Answer";
 import Reward from "@/models/Reward";
-import { POST as createAnswerHandler } from "@/app/api/questions/[id]/answers/route";
-import { POST as upvoteHandler } from "@/app/api/answers/[id]/upvote/route";
-import { POST as downvoteHandler } from "@/app/api/answers/[id]/downvote/route";
-import { DELETE as deleteHandler } from "@/app/api/answers/[id]/delete/route";
-import { GET as getRewardsHandler } from "@/app/api/users/rewards/route";
 
 export async function GET() {
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json({ error: "Test endpoints are disabled in production environment." }, { status: 404 });
+  }
+
   const results: { name: string; status: "PASS" | "FAIL"; message: string }[] = [];
 
   const addResult = (name: string, status: "PASS" | "FAIL", message: string) => {
@@ -106,7 +105,7 @@ export async function GET() {
         await answerDoc.save();
         
         // Confirm points haven't increased yet
-        let authorUser = await User.findById(testUser._id);
+        const authorUser = await User.findById(testUser._id);
         const pointsBeforeFifth = authorUser?.points || 0;
 
         // Add 5th upvote -> triggers upvote reward (+5 points)
@@ -161,8 +160,8 @@ export async function GET() {
           details: "Answer received a downvote.",
         });
 
-        let updatedAuthor = await User.findById(testUser._id);
-        let downvoteLog = await Reward.findOne({ userId: testUser._id, action: "answer_downvoted" });
+        const updatedAuthor = await User.findById(testUser._id);
+        const downvoteLog = await Reward.findOne({ userId: testUser._id, action: "answer_downvoted" });
 
         const downvotePassed = updatedAuthor && updatedAuthor.points === 8 && downvoteLog && downvoteLog.points === -2;
 

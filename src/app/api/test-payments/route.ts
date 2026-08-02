@@ -10,6 +10,10 @@ import { POST as verifyHandler } from "@/app/api/payments/verify/route";
 import { POST as webhookHandler } from "@/app/api/payments/webhook/route";
 
 export async function GET() {
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json({ error: "Test endpoints are disabled in production environment." }, { status: 404 });
+  }
+
   const results: { name: string; status: "PASS" | "FAIL"; message: string }[] = [];
 
   const addResult = (name: string, status: "PASS" | "FAIL", message: string) => {

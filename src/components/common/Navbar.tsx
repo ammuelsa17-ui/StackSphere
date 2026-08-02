@@ -6,6 +6,8 @@ import { useSession, signOut } from "next-auth/react";
 import { Search, Globe, LogIn, UserPlus, LogOut, LayoutDashboard, User } from "lucide-react";
 import { useTranslation, Language } from "@/components/providers/I18nProvider";
 
+import NotificationBell from "@/components/common/NotificationBell";
+
 export default function Navbar() {
   const { data: session, status } = useSession();
   const isLoading = status === "loading";
@@ -83,6 +85,8 @@ export default function Navbar() {
                   <LayoutDashboard className="h-4 w-4 text-indigo-600" />
                   <span className="hidden md:inline">{t("dashboard")}</span>
                 </Link>
+                
+                <NotificationBell />
                 
                 <div className="flex items-center gap-2 px-3 h-9 rounded-lg bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-sm font-medium">
                   <User className="h-4 w-4 text-neutral-500" />

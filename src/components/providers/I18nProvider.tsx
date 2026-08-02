@@ -83,6 +83,34 @@ const translations: Record<Language, Record<string, string>> = {
     downloadInvoice: "Download PDF",
     subscribeBtn: "Subscribe Now",
     timeGateWarning: "Subscribing is restricted to 10:00 AM - 11:00 AM IST window.",
+
+    // Q&A & Social & Notifications
+    questionsTitle: "Questions & Community Discussion",
+    askQuestionBtn: "Ask Question",
+    postComposerTitle: "Create New Post",
+    postPlaceholder: "Share an update, snippet, or code thought...",
+    attachMedia: "Attach Photo or Video",
+    postButton: "Post Update",
+    friendRequestsTitle: "Friend Requests",
+    acceptBtn: "Accept",
+    rejectBtn: "Decline",
+    notificationsTitle: "Notifications",
+    markAllReadBtn: "Mark all read",
+    noNotifications: "No notifications yet",
+
+    // Final UI Cleanup Keys
+    fullNameLabel: "Full Name",
+    viewSecurityLogs: "View Security Logs",
+    verifiedLabel: "Verified",
+    transferConfirmMsg: "Are you sure you want to transfer points?",
+    secureCheckout: "Secure Checkout",
+    dateHeader: "Date",
+    statusHeader: "Status",
+    limitReached: "(Limit Reached)",
+    requestsTab: "Requests",
+    addBtn: "Add",
+    loadMorePosts: "Load More Posts",
+    footerCopyright: "© 2026 StackSphere. All Rights Reserved.",
   },
   es: {
     socialSpace: "Espacio Social",
@@ -146,6 +174,32 @@ const translations: Record<Language, Record<string, string>> = {
     downloadInvoice: "Descargar PDF",
     subscribeBtn: "Suscribirse Ahora",
     timeGateWarning: "La suscripción está restringida al horario de 10:00 AM - 11:00 AM IST.",
+
+    questionsTitle: "Preguntas y Discusión de la Comunidad",
+    askQuestionBtn: "Hacer Pregunta",
+    postComposerTitle: "Crear Nueva Publicación",
+    postPlaceholder: "Comparte una actualización, fragmento o idea de código...",
+    attachMedia: "Adjuntar Foto o Video",
+    postButton: "Publicar",
+    friendRequestsTitle: "Solicitudes de Amistad",
+    acceptBtn: "Aceptar",
+    rejectBtn: "Rechazar",
+    notificationsTitle: "Notificaciones",
+    markAllReadBtn: "Marcar todas como leídas",
+    noNotifications: "Aún no hay notificaciones",
+
+    fullNameLabel: "Nombre completo",
+    viewSecurityLogs: "Ver registros de seguridad",
+    verifiedLabel: "Verificado",
+    transferConfirmMsg: "¿Está seguro de que desea transferir puntos?",
+    secureCheckout: "Pago seguro",
+    dateHeader: "Fecha",
+    statusHeader: "Estado",
+    limitReached: "(Límite alcanzado)",
+    requestsTab: "Solicitudes",
+    addBtn: "Agregar",
+    loadMorePosts: "Cargar más publicaciones",
+    footerCopyright: "© 2026 StackSphere. Todos los derechos reservados.",
   },
   hi: {
     socialSpace: "सोशल स्पेस",
@@ -338,7 +392,7 @@ const translations: Record<Language, Record<string, string>> = {
   },
   fr: {
     socialSpace: "Espace Social",
-    dashboard: "Tableau de Bord",
+    dashboard: "Tableau de bord",
     profile: "Profil",
     subscription: "Abonnement",
     login: "Connexion",
@@ -347,57 +401,78 @@ const translations: Record<Language, Record<string, string>> = {
     loading: "Chargement...",
     error: "Erreur",
     success: "Succès",
-    backToHome: "Retour à l'Accueil",
-    qaForum: "Forum Q&R",
-    loginHistory: "Historique de Connexion",
+    backToHome: "Retour à l'accueil",
+    qaForum: "Forum Questions & Réponses",
+    loginHistory: "Historique de connexion",
     settings: "Paramètres",
-    menuNavigation: "Navigation Menu",
-    
-    signInTitle: "Se connecter à StackSphere",
-    signInSubtitle: "Saisissez vos identifiants pour vous connecter",
+    menuNavigation: "Menu de navigation",
+
+    signInTitle: "Connexion à StackSphere",
+    signInSubtitle: "Entrez vos identifiants ci-dessous",
     emailAddress: "Adresse E-mail",
     password: "Mot de passe",
     forgotPasswordLink: "Mot de passe oublié ?",
     otpCode: "Code OTP",
     signInButton: "Se connecter",
     noAccount: "Pas encore de compte ?",
-    signUpNow: "Créer un compte",
-    
-    signUpTitle: "Créer votre Compte",
-    signUpSubtitle: "Rejoignez la communauté de développeurs aujourd'hui",
-    fullName: "Nom Complet",
-    phoneNumber: "Numéro de Téléphone",
-    confirmPassword: "Confirmer le Mot de passe",
-    signUpButton: "Créer le Compte",
-    alreadyHaveAccount: "Vous avez déjà un compte ?",
+    signUpNow: "S'inscrire maintenant",
+
+    signUpTitle: "Créer votre compte",
+    signUpSubtitle: "Rejoignez la communauté de développeurs",
+    fullName: "Nom complet",
+    phoneNumber: "Numéro de téléphone",
+    confirmPassword: "Confirmer le mot de passe",
+    signUpButton: "Créer un compte",
+    alreadyHaveAccount: "Déjà un compte ?",
     signInNow: "Se connecter",
 
-    forgotPasswordTitle: "Réinitialiser le Mot de passe",
-    forgotPasswordSubtitle: "Récupérez vos identifiants de compte en toute sécurité",
-    sendResetLink: "Envoyer le Code de Récupération",
-    enterOtpCode: "Saisissez le code envoyé à votre canal de récupération",
-    verifyOtpButton: "Vérifier le Code",
-    newPasswordLabel: "Nouveau Mot de passe",
-    newPasswordHint: "Les mots de passe générés ne contiennent que des lettres de l'alphabet",
-    resetPasswordBtn: "Réinitialiser mon Mot de passe",
-    backToLogin: "Retour à la Connexion",
+    forgotPasswordTitle: "Réinitialiser le mot de passe",
+    forgotPasswordSubtitle: "Récupérez vos identifiants en toute sécurité",
+    sendResetLink: "Envoyer le code de récupération",
+    enterOtpCode: "Entrez le code reçu",
+    verifyOtpButton: "Vérifier le code",
+    newPasswordLabel: "Nouveau mot de passe",
+    newPasswordHint: "Les mots de passe générés contiennent uniquement des lettres",
+    resetPasswordBtn: "Réinitialiser mon mot de passe",
+    backToLogin: "Retour à la connexion",
 
     userProfile: "Profil Utilisateur",
     pointsDashboard: "Tableau des Points",
     totalPoints: "Total des Points",
     activeTier: "Niveau Actuel",
-    pointsTransfer: "Partager des Points de Récompense",
-    receiverPlaceholder: "Entrez l'e-mail ou le nom du destinataire...",
+    pointsTransfer: "Transférer des Points de Récompense",
+    receiverPlaceholder: "Entrez l'email du destinataire...",
     transferAmount: "Montant du Transfert",
     submitTransferBtn: "Confirmer le Transfert",
     pointsTransferSuccess: "Points transférés avec succès !",
 
-    choosePlan: "Choisissez Votre Formule",
-    activePlanLabel: "Formule d'Abonnement Active",
-    billingHistory: "Historique de Facturation & Transactions",
-    downloadInvoice: "Télécharger le PDF",
+    choosePlan: "Choisissez votre Forfait",
+    activePlanLabel: "Forfait d'Abonnement Actif",
+    billingHistory: "Historique de Facturation",
+    downloadInvoice: "Télécharger la Facture PDF",
     subscribeBtn: "S'abonner Maintenant",
     timeGateWarning: "Les abonnements sont limités au créneau de 10h00 à 11h00 IST.",
+
+    topQuestions: "Meilleures Questions",
+    askQuestion: "Poser une Question",
+    searchQuestions: "Rechercher des questions...",
+    answersTitle: "Réponses",
+    yourAnswerLabel: "Votre Réponse",
+    submitAnswerBtn: "Soumettre la Réponse",
+    upvote: "Voter pour",
+    downvote: "Voter contre",
+    createPostTitle: "Créer une Publication",
+    sharePlaceholder: "Partagez vos idées ou téléchargez des fichiers...",
+    postBtn: "Publier",
+    friendsList: "Liste d'Amis",
+    acceptRequest: "Accepter",
+    rejectRequest: "Refuser",
+    memberSince: "Membre depuis",
+    editProfileBtn: "Modifier le Profil",
+    securityLogTitle: "Journal d'Audit de Sécurité",
+    browserCol: "Navigateur",
+    ipAddressCol: "Adresse IP",
+    deviceCol: "Type d'Appareil",
   },
 };
 
@@ -406,12 +481,9 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguageState] = useState<Language>("en");
   const [isVerifying, setIsVerifying] = useState(false);
   const [targetLanguage, setTargetLanguage] = useState<Language | null>(null);
-  const [otpCode, setOtpCode] = useState("");
   const [userEnteredOtp, setUserEnteredOtp] = useState("");
-  const [otpExpiry, setOtpExpiry] = useState<Date | null>(null);
   
   const [resendTimer, setResendTimer] = useState(0);
-  const [attemptCount, setAttemptCount] = useState(0);
   const [otpError, setOtpError] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -424,87 +496,79 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // Cooldown countdown
-  useEffect(() => {
-    if (resendTimer > 0) {
-      const timer = setTimeout(() => setResendTimer(resendTimer - 1), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [resendTimer]);
-
-  const generateAndDispatchOtp = (targetLang: Language) => {
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiry = new Date(Date.now() + 5 * 60 * 1000); // 5 mins
-    setOtpCode(code);
-    setOtpExpiry(expiry);
-    setAttemptCount(0);
-    setOtpError(null);
-    setUserEnteredOtp("");
-
-    const uEmail = session?.user?.email || "developer@stacksphere.com";
-    const uPhone = (session?.user as any)?.phoneNumber || "+15551234567";
-
-    if (targetLang === "fr") {
-      // Route OTP verification to Email
-      console.log(`[SECURE LANGUAGE EMAIL OTP] Sent language switcher verification code "${code}" to email "${uEmail}"`);
-    } else {
-      // Route OTP verification to Phone/SMS
-      console.log(`[SECURE LANGUAGE SMS OTP] Sent language switcher verification code "${code}" via SMS to phone "${uPhone}"`);
+  const requestLanguageOtp = async (lang: Language): Promise<boolean> => {
+    try {
+      setOtpError(null);
+      const res = await fetch("/api/user/language-otp/request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ targetLanguage: lang }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setOtpError(data.error || "Failed to request verification code.");
+        return false;
+      }
+      setResendTimer(data.resendCooldown || 60);
+      return true;
+    } catch (err: any) {
+      setOtpError(err.message || "Failed to contact verification server.");
+      return false;
     }
   };
 
-  const setLanguage = (lang: Language) => {
+  const setLanguage = async (lang: Language) => {
     if (lang === language) return;
 
-    // Guest users (not logged in) don't trigger security OTP checks
     if (!session) {
       setLanguageState(lang);
       localStorage.setItem("stacksphere_lang", lang);
       return;
     }
 
-    // Trigger language change OTP verification flow
     setTargetLanguage(lang);
-    setIsVerifying(true);
-    generateAndDispatchOtp(lang);
-  };
-
-  const handleVerify = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!otpExpiry || otpExpiry.getTime() < Date.now()) {
-      setOtpError("The verification code has expired. Please request a new one.");
-      return;
-    }
-
-    if (attemptCount >= 3) {
-      setOtpError("Maximum verification attempts reached. Language change cancelled.");
-      setTimeout(() => handleCancel(), 2000);
-      return;
-    }
-
-    if (userEnteredOtp.trim() === otpCode) {
-      if (targetLanguage) {
-        setLanguageState(targetLanguage);
-        localStorage.setItem("stacksphere_lang", targetLanguage);
-      }
-      setIsVerifying(false);
-      setTargetLanguage(null);
-      setOtpError(null);
+    setUserEnteredOtp("");
+    const ok = await requestLanguageOtp(lang);
+    if (ok) {
+      setIsVerifying(true);
     } else {
-      const nextCount = attemptCount + 1;
-      setAttemptCount(nextCount);
-      if (nextCount >= 3) {
-        setOtpError("Maximum attempts reached. Resetting switcher.");
-        setTimeout(() => handleCancel(), 1500);
-      } else {
-        setOtpError(`Incorrect verification code. (${3 - nextCount} attempts remaining)`);
-      }
+      setIsVerifying(true);
     }
   };
 
-  const handleResend = () => {
+  const handleVerify = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!userEnteredOtp.trim()) return;
+
+    try {
+      setOtpError(null);
+      const res = await fetch("/api/user/language-otp/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: userEnteredOtp.trim() }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setOtpError(data.error || "Verification failed.");
+        return;
+      }
+
+      if (data.success && data.language) {
+        setLanguageState(data.language as Language);
+        localStorage.setItem("stacksphere_lang", data.language);
+        setIsVerifying(false);
+        setTargetLanguage(null);
+        setUserEnteredOtp("");
+      }
+    } catch (err: any) {
+      setOtpError(err.message || "Failed to verify verification code.");
+    }
+  };
+
+  const handleResend = async () => {
     if (resendTimer > 0 || !targetLanguage) return;
-    setResendTimer(60);
-    generateAndDispatchOtp(targetLanguage);
+    await requestLanguageOtp(targetLanguage);
   };
 
   const handleCancel = () => {

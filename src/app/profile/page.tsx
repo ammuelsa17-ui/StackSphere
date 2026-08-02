@@ -3,7 +3,6 @@ import { getServerSession } from "next-auth/next";
 import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import connectToDatabase from "@/lib/mongodb";
-import User from "@/models/User";
 import ProfileCard from "@/components/profile/ProfileCard";
 import EditProfileForm from "@/components/profile/EditProfileForm";
 import PointsDashboard from "@/components/profile/PointsDashboard";

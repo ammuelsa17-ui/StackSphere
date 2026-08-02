@@ -1,19 +1,18 @@
 /**
- * Email delivery utility.
- * Sends email receipts with invoice attachments using Nodemailer with a mock fallback.
+ * Production Email Delivery Utility
+ * Supports SMTP delivery (Nodemailer) with explicit production error reporting
+ * and a clearly labelled development mock mode.
  */
 
-interface SendReceiptOptions {
-  email: string;
-  name: string;
-  planName: string;
-  amount: number;
-  currency: string;
-  invoicePath: string; // public/invoices/invoice-*.pdf
+interface SendEmailOptions {
+  to: string;
+  subject: string;
+  html: string;
+  attachments?: Array<{ filename: string; path: string }>;
 }
 
-export async function sendReceiptEmail(options: SendReceiptOptions) {
-  const { email, name, planName, amount, currency, invoicePath } = options;
+export async function sendEmail(options: SendEmailOptions) {
+  const { to, subject, html, attachments } = options;
 
   let nodemailerInstance: any = null;
   try {
@@ -22,12 +21,67 @@ export async function sendReceiptEmail(options: SendReceiptOptions) {
     nodemailerInstance = null;
   }
 
-  // Load environment configurations
-  const host = process.env.EMAIL_HOST;
-  const port = parseInt(process.env.EMAIL_PORT || "2525", 10);
-  const user = process.env.EMAIL_USER;
-  const pass = process.env.EMAIL_PASSWORD;
-  const from = process.env.EMAIL_FROM || "noreply@stacksphere.com";
+  const host = process.env.SMTP_HOST || process.env.EMAIL_HOST;
+  const port = parseInt(process.env.SMTP_PORT || process.env.EMAIL_PORT || "587", 10);
+  const user = process.env.SMTP_USER || process.env.EMAIL_USER;
+  const pass = process.env.SMTP_PASS || process.env.EMAIL_PASSWORD;
+  const from = process.env.SMTP_FROM || process.env.EMAIL_FROM || "StackSphere <noreply@stacksphere.com>";
+
+  const isProduction = process.env.NODE_ENV === "production";
+
+  // Production Mode Enforcement
+  if (isProduction && (!host || !user || !pass)) {
+    throw new Error(
+      "Email Delivery Failed: SMTP environment variables (SMTP_HOST, SMTP_USER, SMTP_PASS) are not configured in production mode."
+    );
+  }
+
+  // Real SMTP Mail Dispatch
+  if (nodemailerInstance && host && user && pass) {
+    try {
+      const transporter = nodemailerInstance.createTransport({
+        host,
+        port,
+        secure: port === 465,
+        auth: { user, pass },
+      });
+
+      await transporter.sendMail({
+        from,
+        to,
+        subject,
+        html,
+        attachments,
+      });
+
+      if (!isProduction) {
+        console.log(`[SMTP EMAIL DISPATCH] Sent email "${subject}" to "${to}" successfully.`);
+      }
+      return { success: true, method: "smtp" };
+    } catch (err: any) {
+      if (isProduction) {
+        throw new Error(`SMTP Mail Delivery Error: ${err.message}`);
+      }
+      console.warn(`[SMTP DISPATCH WARN] ${err.message}. Falling back to dev mock logger.`);
+    }
+  }
+
+  // Development Mock Mode
+  console.log(`[MOCK EMAIL DISPATCH] Sent email to "${to}" | Subject: "${subject}"`);
+  return { success: true, method: "mock" };
+}
+
+interface SendReceiptOptions {
+  email: string;
+  name: string;
+  planName: string;
+  amount: number;
+  currency: string;
+  invoicePath: string; // e.g. public/invoices/invoice-*.pdf
+}
+
+export async function sendReceiptEmail(options: SendReceiptOptions) {
+  const { email, name, planName, amount, currency, invoicePath } = options;
 
   const emailSubject = `StackSphere Membership Upgrade: ${planName} Plan`;
   const emailHtml = `
@@ -56,41 +110,22 @@ export async function sendReceiptEmail(options: SendReceiptOptions) {
     </div>
   `;
 
-  // Attempt real SMTP mail delivery if nodemailer and environment variables are present
-  if (nodemailerInstance && host && user && pass) {
-    try {
-      const transporter = nodemailerInstance.createTransport({
-        host,
-        port,
-        auth: { user, pass },
-      });
+  const pathModule = require("path");
+  const attachmentPath = pathModule.isAbsolute(invoicePath)
+    ? invoicePath
+    : pathModule.join(process.cwd(), "public", invoicePath);
 
-      const pathModule = require("path");
-      const attachmentPath = pathModule.join(process.cwd(), "public", invoicePath);
+  const attachments = [
+    {
+      filename: pathModule.basename(attachmentPath),
+      path: attachmentPath,
+    },
+  ];
 
-      await transporter.sendMail({
-        from,
-        to: email,
-        subject: emailSubject,
-        html: emailHtml,
-        attachments: [
-          {
-            filename: pathModule.basename(attachmentPath),
-            path: attachmentPath,
-          },
-        ],
-      });
-
-      console.log(`[EMAIL RECEIPT] Receipt email dispatched successfully to "${email}".`);
-      return { success: true, method: "smtp" };
-    } catch (err: any) {
-      console.warn("SMTP mail delivery failed, falling back to mock logger:", err.message);
-    }
-  }
-
-  // Developer mock environment fallback
-  console.log(
-    `[MOCK EMAIL RECEIPT] Sent receipt email to "${email}" for ${planName} ($${amount.toFixed(2)} ${currency.toUpperCase()}) with invoice attachment: "${invoicePath}"`
-  );
-  return { success: true, method: "mock" };
+  return sendEmail({
+    to: email,
+    subject: emailSubject,
+    html: emailHtml,
+    attachments,
+  });
 }

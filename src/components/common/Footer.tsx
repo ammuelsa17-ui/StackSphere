@@ -12,7 +12,7 @@ export default function Footer() {
         
         {/* Left: Copyright */}
         <div>
-          <span>© 2026 StackSphere. All Rights Reserved.</span>
+          <span>{t("footerCopyright")}</span>
         </div>
 
         {/* Center: Guidelines Link */}

@@ -52,12 +52,6 @@ export default function FriendManager() {
   const [isLoadingFriends, setIsLoadingFriends] = useState(false);
   const [actioningId, setActioningId] = useState<string | null>(null);
 
-  // Initial data loading
-  useEffect(() => {
-    loadFriends();
-    loadRequests();
-  }, []);
-
   const loadFriends = async () => {
     setIsLoadingFriends(true);
     try {
@@ -89,6 +83,12 @@ export default function FriendManager() {
       setIsLoadingRequests(false);
     }
   };
+
+  // Initial data loading
+  useEffect(() => {
+    loadFriends();
+    loadRequests();
+  }, []);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();

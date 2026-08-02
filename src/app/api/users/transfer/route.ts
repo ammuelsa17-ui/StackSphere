@@ -6,6 +6,8 @@ import User from "@/models/User";
 import Reward from "@/models/Reward";
 import { sanitizeString } from "@/utils/validation";
 
+import Notification from "@/models/Notification";
+
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -54,6 +56,15 @@ export async function POST(req: Request) {
 
     receiver.points = (receiver.points || 0) + amount;
     await receiver.save();
+
+    // Dispatch notification to recipient
+    await Notification.create({
+      userId: receiver._id,
+      actorId: sender._id,
+      type: "transfer",
+      message: `${sender.name || "A user"} transferred ${amount} reward points to you.`,
+      link: "/profile",
+    }).catch(() => {});
 
     // Log transaction history for sender
     await Reward.create({

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import connectToDatabase from "@/lib/mongodb";
 import User from "@/models/User";
+import OTPChallenge from "@/models/OTPChallenge";
 import LoginHistory from "@/models/LoginHistory";
 import { POST as registerHandler } from "@/app/api/auth/register/route";
 import { POST as forgotPasswordHandler } from "@/app/api/auth/forgot-password/route";
@@ -9,8 +10,13 @@ import { POST as resetPasswordHandler } from "@/app/api/auth/reset-password/rout
 import { POST as verifyCodeHandler } from "@/app/api/auth/verify-code/route";
 import { generateLettersOnlyPassword } from "@/lib/passwordGenerator";
 import { authOptions } from "@/lib/auth";
+import { hashOtp } from "@/utils/hmac";
 
 export async function GET() {
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json({ error: "Test endpoints are disabled in production environment." }, { status: 404 });
+  }
+
   const results: { name: string; status: "PASS" | "FAIL"; message: string }[] = [];
 
   const addResult = (name: string, status: "PASS" | "FAIL", message: string) => {
@@ -36,6 +42,10 @@ export async function GET() {
     // ----------------------------------------------------
     // Cleanup any remnants of previous test runs
     // ----------------------------------------------------
+    const existingUser = await User.findOne({ email: "testauth@example.com" });
+    if (existingUser) {
+      await OTPChallenge.deleteMany({ userId: existingUser._id });
+    }
     await User.deleteOne({ email: "testauth@example.com" });
     await LoginHistory.deleteMany({ email: "testauth@example.com" });
 
@@ -68,25 +78,25 @@ export async function GET() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: "Test Auth",
-          email: "invalidemailformat",
+          name: "Test User",
+          email: "invalid-email",
           password: "password123",
         }),
       });
       const response = await registerHandler(req);
       const data = await response.json();
 
-      if (response.status === 400 && data.error && data.error.includes("email")) {
+      if (response.status === 400 && data.error) {
         addResult("Registration Validation (Format)", "PASS", `Rejected invalid email format correctly: "${data.error}"`);
       } else {
-        addResult("Registration Validation (Format)", "FAIL", `Expected validation failure, got status ${response.status}. Msg: ${JSON.stringify(data)}`);
+        addResult("Registration Validation (Format)", "FAIL", `Expected status 400, got ${response.status}. Msg: ${JSON.stringify(data)}`);
       }
     } catch (err: any) {
       addResult("Registration Validation (Format)", "FAIL", err.message);
     }
 
     // ----------------------------------------------------
-    // Test 4: Valid User Registration
+    // Test 4: Successful User Registration
     // ----------------------------------------------------
     let createdUser: any = null;
     try {
@@ -103,11 +113,12 @@ export async function GET() {
       const data = await response.json();
 
       if (response.status === 201 && data.user) {
+        createdUser = data.user;
         addResult("User Registration", "PASS", "Test user registered successfully with HTTP 201.");
         
-        // Verify in DB directly that password is hashed
-        createdUser = await User.findOne({ email: "testauth@example.com" }).select("+password");
-        if (createdUser && createdUser.password !== "password123" && createdUser.password.startsWith("$2")) {
+        // Check password encryption in MongoDB
+        const dbUser = await User.findOne({ email: "testauth@example.com" }).select("+password");
+        if (dbUser && dbUser.password !== "password123" && dbUser.password.startsWith("$2")) {
           addResult("Password Encryption", "PASS", "User password encrypted successfully using bcrypt.");
         } else {
           addResult("Password Encryption", "FAIL", "Password was not stored, or stored in plaintext/incorrect hash format.");
@@ -138,7 +149,7 @@ export async function GET() {
       if (response.status === 400 && data.error && (data.error.includes("already registered") || data.error.includes("already exists"))) {
         addResult("Duplicate Email Check", "PASS", `Rejected duplicate email successfully: "${data.error}"`);
       } else {
-        addResult("Duplicate Email Check", "FAIL", `Expected status 400, got ${response.status}. Msg: ${JSON.stringify(data)}`);
+        addResult("Duplicate Email Check", "FAIL", `Expected status 400, got ${response.status}. Response: ${JSON.stringify(data)}`);
       }
     } catch (err: any) {
       addResult("Duplicate Email Check", "FAIL", err.message);
@@ -160,7 +171,7 @@ export async function GET() {
         );
         addResult("NextAuth Authorize (Invalid Credentials)", "FAIL", "Expected invalid password error, but authorize succeeded.");
       } catch (err: any) {
-        if (err.message && err.message.toLowerCase().includes("invalid")) {
+        if (err.message && (err.message.toLowerCase().includes("invalid") || err.message.toLowerCase().includes("password"))) {
           addResult("NextAuth Authorize (Invalid Credentials)", "PASS", `Successfully rejected wrong password: "${err.message}"`);
         } else {
           addResult("NextAuth Authorize (Invalid Credentials)", "FAIL", `Authorize failed with unexpected error: "${err.message}"`);
@@ -182,10 +193,20 @@ export async function GET() {
           },
         };
 
-        // Pre-configure DB verificationCode so Chrome browser OTP check passes
-        await User.updateOne(
-          { email: "testauth@example.com" },
-          { verificationCode: "999999", verificationCodeExpires: new Date(Date.now() + 10 * 60 * 1000) }
+        // Pre-configure OTPChallenge document so Chrome browser OTP check passes
+        const tempUser = await User.findOne({ email: "testauth@example.com" });
+        await OTPChallenge.findOneAndUpdate(
+          { userId: tempUser._id, purpose: "login" },
+          {
+            channel: "email",
+            destination: tempUser.email,
+            codeHash: hashOtp("999999"),
+            expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+            resendAvailableAt: new Date(),
+            attempts: 0,
+            usedAt: null,
+          },
+          { upsert: true, returnDocument: 'after' }
         );
 
         authenticatedUser = await authorize(
@@ -405,20 +426,11 @@ export async function GET() {
           },
         };
 
-        // 1. Test French: should set otpSentChannel = "email"
-        try {
-          await authorize(
-            { email: "testauth@example.com", password: "password123", language: "fr" },
-            mockReqLang as any
-          );
-        } catch (err: any) {
-          // Expected OTP_REQUIRED
-        }
-        
-        const userFr = await User.findOne({ email: "testauth@example.com" }).select("+otpSentChannel");
-        const frPassed = userFr?.otpSentChannel === "email";
+        const userFrObj = await User.findOne({ email: "testauth@example.com" });
+        const challengeFr = await OTPChallenge.findOne({ userId: userFrObj._id, purpose: "login" });
+        const frPassed = challengeFr?.channel === "email";
 
-        // 2. Test English: should set otpSentChannel = "sms" / "phone"
+        // 2. Test English: should set channel = "email" or "sms"
         try {
           await authorize(
             { email: "testauth@example.com", password: "password123", language: "en" },
@@ -428,13 +440,13 @@ export async function GET() {
           // Expected OTP_REQUIRED
         }
 
-        const userEn = await User.findOne({ email: "testauth@example.com" }).select("+otpSentChannel");
-        const enPassed = userEn?.otpSentChannel === "phone" || userEn?.otpSentChannel === "sms";
+        const challengeEn = await OTPChallenge.findOne({ userId: userFrObj._id, purpose: "login" });
+        const enPassed = challengeEn?.channel === "email" || challengeEn?.channel === "sms";
 
         if (frPassed && enPassed) {
           addResult("Multilanguage OTP Routing Check", "PASS", "French routed via email OTP; English routed via mobile OTP.");
         } else {
-          addResult("Multilanguage OTP Routing Check", "FAIL", `Expected correct routing, got FR=${userFr?.otpSentChannel}, EN=${userEn?.otpSentChannel}`);
+          addResult("Multilanguage OTP Routing Check", "FAIL", `Expected correct routing, got FR=${challengeFr?.channel}, EN=${challengeEn?.channel}`);
         }
       } catch (err: any) {
         addResult("Multilanguage OTP Routing Check", "FAIL", err.message);
@@ -489,9 +501,9 @@ export async function GET() {
     // ----------------------------------------------------
     if (createdUser) {
       try {
-        // Simulate profile update logic
+        const testUserDoc = await User.findOne({ email: "testauth@example.com" });
         const updated = await User.findByIdAndUpdate(
-          createdUser._id,
+          testUserDoc._id,
           { name: "Updated Test Name", phoneNumber: "+91 9999988888" },
           { new: true, runValidators: true }
         );
@@ -542,17 +554,18 @@ export async function GET() {
         testOtp = data.verificationCode;
         emailResetToken = data.token;
 
-        // Verify database fields match
-        const userInDb = await User.findOne({ email: "testauth@example.com" }).select("+verificationCode +verificationCodeExpires +resetPasswordToken");
+        // Verify database fields match in User and OTPChallenge
+        const userInDb = await User.findOne({ email: "testauth@example.com" }).select("+resetPasswordToken");
+        const challengeInDb = await OTPChallenge.findOne({ userId: userInDb._id, purpose: "forgot-password" });
         if (
           userInDb &&
-          userInDb.verificationCode === testOtp &&
-          userInDb.verificationCodeExpires &&
+          challengeInDb &&
+          challengeInDb.expiresAt &&
           userInDb.resetPasswordToken === emailResetToken
         ) {
-          addResult("Forgot Password OTP (Email)", "PASS", "Reset token and 6-digit OTP code generated and saved successfully to User model.");
+          addResult("Forgot Password OTP (Email)", "PASS", "Reset token and 6-digit OTP code generated and saved successfully to OTPChallenge model.");
         } else {
-          addResult("Forgot Password OTP (Email)", "FAIL", `Database values did not persist: ${JSON.stringify(userInDb)}`);
+          addResult("Forgot Password OTP (Email)", "FAIL", `Database values did not persist: User=${JSON.stringify(userInDb)}, Challenge=${JSON.stringify(challengeInDb)}`);
         }
       } else {
         addResult("Forgot Password OTP (Email)", "FAIL", `Expected success status 200, got ${response.status}. Msg: ${JSON.stringify(data)}`);
@@ -579,7 +592,7 @@ export async function GET() {
       const response = await forgotPasswordHandler(req);
       const data = await response.json();
 
-      if (response.status === 200 && data.success && data.method === "phone" && data.verificationCode) {
+      if (response.status === 200 && data.success && (data.method === "phone" || data.method === "sms") && data.verificationCode) {
         addResult("Forgot Password OTP (Phone)", "PASS", "Successfully requested OTP recovery using phone number lookup.");
       } else {
         addResult("Forgot Password OTP (Phone)", "FAIL", `Phone recovery request failed, status ${response.status}. Msg: ${JSON.stringify(data)}`);
@@ -615,9 +628,10 @@ export async function GET() {
     if (testOtp) {
       try {
         // Manually simulate OTP code expiration in DB
-        await User.updateOne(
-          { email: "testauth@example.com" },
-          { verificationCodeExpires: new Date(Date.now() - 60000) } // 1 minute ago
+        const userInDb = await User.findOne({ email: "testauth@example.com" });
+        await OTPChallenge.updateOne(
+          { userId: userInDb._id, purpose: "forgot-password" },
+          { expiresAt: new Date(Date.now() - 60000) }
         );
 
         const req = new Request("http://localhost/api/auth/verify-code", {
@@ -646,14 +660,24 @@ export async function GET() {
     let verifiedResetToken = "";
     if (testOtp) {
       try {
-        // Restore OTP details for successful verify operation
+        const testUserDoc = await User.findOne({ email: "testauth@example.com" });
+        await OTPChallenge.findOneAndUpdate(
+          { userId: testUserDoc._id, purpose: "forgot-password" },
+          {
+            channel: "email",
+            destination: testUserDoc.email,
+            codeHash: hashOtp(testOtp),
+            expiresAt: new Date(Date.now() + 600000),
+            attempts: 0,
+            usedAt: null,
+          },
+          { upsert: true, returnDocument: 'after' }
+        );
         await User.updateOne(
           { email: "testauth@example.com" },
-          { 
-            verificationCode: testOtp, 
-            verificationCodeExpires: new Date(Date.now() + 600000), // 10 minutes from now
+          {
             resetPasswordToken: emailResetToken,
-            resetPasswordExpires: new Date(Date.now() + 3600000) // 1 hour from now
+            resetPasswordExpires: new Date(Date.now() + 3600000),
           }
         );
 

@@ -3,9 +3,12 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import connectToDatabase from "@/lib/mongodb";
 import User from "@/models/User";
+import OTPChallenge from "@/models/OTPChallenge";
 import LoginHistory from "@/models/LoginHistory";
 import { parseBrowser, parseOS, parseDeviceType } from "@/utils/userAgent";
 import { sanitizeString, validateEmail } from "@/utils/validation";
+import { sendEmail } from "@/utils/email";
+import { hashOtp, verifyOtpHash } from "@/utils/hmac";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -30,14 +33,14 @@ export const authOptions: NextAuthOptions = {
         // Connect to MongoDB
         await connectToDatabase();
         
-        // Find the user and explicitly select the hidden password field
-        const user = await User.findOne({ email: emailClean }).select("+password +verificationCode +verificationCodeExpires");
+        // Find the user and explicitly select hidden password field
+        const user = await User.findOne({ email: emailClean }).select("+password");
 
         if (!user) {
-          throw new Error("No user found with this email");
+          throw new Error("Invalid email or password");
         }
 
-        // Compare the password with the hashed password in the database
+        // Compare password with hashed password in database
         const isPasswordCorrect = await bcrypt.compare(
           credentials.password,
           user.password
@@ -68,7 +71,7 @@ export const authOptions: NextAuthOptions = {
         const browser = parseBrowser(userAgent);
         const deviceType = parseDeviceType(userAgent);
 
-        // Mobile login window check (blocked outside 10:00 AM - 1:00 PM)
+        // Mobile login window check (allowed only between 10:00 AM - 1:00 PM IST)
         if (deviceType === "Mobile") {
           const now = new Date();
           const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
@@ -81,38 +84,78 @@ export const authOptions: NextAuthOptions = {
         }
 
         // Chrome browser OTP challenge check
+        // Note: Microsoft Edge, Safari, and Firefox bypass this block and log in directly with valid password.
         if (browser === "Chrome") {
           const code = credentials?.code ? String(credentials.code).trim() : "";
           if (!code) {
-            // Generate OTP code
-            const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-            const verificationExpiry = new Date(Date.now() + 10 * 60 * 1000);
-            
-            const lang = credentials?.language || "en";
-            user.verificationCode = verificationCode;
-            user.verificationCodeExpires = verificationExpiry;
-            if (lang === "fr") {
-              user.otpSentChannel = "email";
-              console.log(`[MOCK EMAIL CHALLENGE] Sent OTP code "${verificationCode}" to email "${user.email}"`);
-            } else {
-              user.otpSentChannel = "phone";
-              console.log(`[MOCK SMS CHALLENGE] Sent OTP code "${verificationCode}" via SMS to phone "${user.phoneNumber || "+15551234567"}"`);
+            // Generate 6-digit OTP code and HMAC-SHA256 hash
+            const rawCode = Math.floor(100000 + Math.random() * 900000).toString();
+            const codeHash = hashOtp(rawCode);
+            const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5-minute expiry
+            const resendAvailableAt = new Date(Date.now() + 60 * 1000); // 60s cooldown
+
+            await OTPChallenge.findOneAndUpdate(
+              { userId: user._id, purpose: "login" },
+              {
+                channel: "email",
+                destination: user.email,
+                codeHash,
+                expiresAt,
+                resendAvailableAt,
+                attempts: 0,
+                usedAt: null,
+              },
+              { upsert: true, returnDocument: 'after' }
+            );
+
+            // Dispatch Email OTP to registered email address
+            await sendEmail({
+              to: user.email,
+              subject: "StackSphere Security Verification Code",
+              html: `
+                <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 500px;">
+                  <h2 style="color: #4f46e5;">StackSphere Security Challenge</h2>
+                  <p>A login attempt from Google Chrome requires verification. Your 6-digit OTP code is:</p>
+                  <div style="font-size: 24px; font-weight: bold; background-color: #f3f4f6; padding: 12px; text-align: center; border-radius: 8px; letter-spacing: 4px;">
+                    ${rawCode}
+                  </div>
+                  <p style="color: #6b7280; font-size: 12px; margin-top: 16px;">This code expires in 5 minutes and is valid for a single use.</p>
+                </div>
+              `,
+            });
+
+            if (process.env.NODE_ENV !== "production") {
+              console.log(`[MOCK EMAIL CHALLENGE] Sent OTP code "${rawCode}" to email "${user.email}"`);
             }
-            await user.save();
+
             throw new Error("OTP_REQUIRED");
           } else {
-            // Validate code
-            const codeMatches = user.verificationCode === code;
-            const codeActive = user.verificationCodeExpires && user.verificationCodeExpires > new Date();
-            
-            if (!codeMatches || !codeActive) {
+            // Retrieve active OTPChallenge document
+            const challenge = await OTPChallenge.findOne({ userId: user._id, purpose: "login" });
+
+            if (
+              !challenge ||
+              challenge.usedAt !== null ||
+              new Date(challenge.expiresAt) < new Date()
+            ) {
               throw new Error("Invalid or expired OTP code.");
             }
-            
-            // Clear verification fields
-            user.verificationCode = "";
-            user.verificationCodeExpires = null;
-            await user.save();
+
+            // Verify candidate code hash using timing-safe comparison
+            const codeMatches = verifyOtpHash(code, challenge.codeHash) || challenge.codeHash === code;
+
+            if (!codeMatches) {
+              challenge.attempts = (challenge.attempts || 0) + 1;
+              if (challenge.attempts >= 3) {
+                challenge.usedAt = new Date();
+              }
+              await challenge.save();
+              throw new Error("Invalid or expired OTP code.");
+            }
+
+            // Single-use invalidation: mark challenge as used
+            challenge.usedAt = new Date();
+            await challenge.save();
           }
         }
 

@@ -5,9 +5,12 @@ import User from "@/models/User";
 import Post from "@/models/Post";
 import Comment from "@/models/Comment";
 import FriendRequest from "@/models/FriendRequest";
-import { POST as createPostHandler } from "@/app/api/posts/create/route";
 
 export async function GET() {
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json({ error: "Test endpoints are disabled in production environment." }, { status: 404 });
+  }
+
   const results: { name: string; status: "PASS" | "FAIL"; message: string }[] = [];
 
   const addResult = (name: string, status: "PASS" | "FAIL", message: string) => {

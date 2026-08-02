@@ -107,6 +107,25 @@ const UserSchema = new Schema(
       default: "",
       select: false,
     },
+    otpAttempts: {
+      type: Number,
+      default: 0,
+      select: false,
+    },
+    otpLastRequestedAt: {
+      type: Date,
+      default: null,
+      select: false,
+    },
+    pendingLanguage: {
+      type: String,
+      default: "",
+      select: false,
+    },
+    preferredLanguage: {
+      type: String,
+      default: "en",
+    },
   },
   {
     timestamps: true, // Automatically creates createdAt and updatedAt fields

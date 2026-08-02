@@ -1,26 +1,22 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
-import { writeFile } from "fs/promises";
-import { join } from "path";
 import connectToDatabase from "@/lib/mongodb";
 import Upload from "@/models/Upload";
 import User from "@/models/User";
+import { uploadMedia, deleteMedia, validateMagicBytes } from "@/utils/cloudinary";
 
 export async function POST(req: Request) {
   try {
-    // 1. Get the current active session
     const session = await getServerSession(authOptions);
 
-    // 2. Reject if the user is unauthenticated
     if (!session || !session.user) {
       return NextResponse.json(
         { error: "Unauthorized access. Please log in." },
         { status: 401 }
       );
     }
- 
-    // 2.1 Connect to DB and verify premium plan check
+
     await connectToDatabase();
     const userId = (session.user as any).id;
     const dbUser = await User.findById(userId).select("subscription").lean();
@@ -39,11 +35,9 @@ export async function POST(req: Request) {
       );
     }
 
-    // 3. Parse form data
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
 
-    // 4. Validate file existence
     if (!file) {
       return NextResponse.json(
         { error: "No file was uploaded." },
@@ -51,7 +45,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // 5. Validate file type (image or video)
     const isImage = file.type.startsWith("image/");
     const isVideo = file.type.startsWith("video/");
 
@@ -62,56 +55,52 @@ export async function POST(req: Request) {
       );
     }
 
-    // 6. Enforce file size limits
-    const maxImageSize = 5 * 1024 * 1024; // 5MB
-    const maxVideoSize = 20 * 1024 * 1024; // 20MB
+    // Plan tier file size limits
+    const maxLimits: Record<string, number> = {
+      Bronze: 5 * 1024 * 1024,
+      Silver: 10 * 1024 * 1024,
+      Gold: 20 * 1024 * 1024,
+    };
+    const maxAllowed = maxLimits[plan] || 5 * 1024 * 1024;
 
-    if (isImage && file.size > maxImageSize) {
+    if (file.size > maxAllowed) {
       return NextResponse.json(
-        { error: "Image size exceeds the 5MB limit." },
+        { error: `File size exceeds your ${plan} plan limit of ${maxAllowed / (1024 * 1024)}MB.` },
         { status: 400 }
       );
     }
 
-    if (isVideo && file.size > maxVideoSize) {
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    // Magic-Byte Header Validation (prevent renamed executable payload files)
+    const isValidMagic = validateMagicBytes(buffer, file.type);
+    if (!isValidMagic) {
       return NextResponse.json(
-        { error: "Video size exceeds the 20MB limit." },
+        { error: "File validation failed: raw binary headers do not match declared file extension." },
         { status: 400 }
       );
     }
 
-    // 7. Generate a unique filename
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
+    // Upload to Cloudinary (or dev local fallback)
+    const uploadResult = await uploadMedia(buffer, file.name || "upload", file.type);
 
-    const originalName = file.name || "upload";
-    const extension = originalName.split(".").pop() || (isImage ? "png" : "mp4");
-    const uniqueFilename = `upload-${Date.now()}-${Math.floor(
-      Math.random() * 100000
-    )}.${extension}`;
-
-    // 8. Save the file to public/uploads/ directory
-    const publicDirectory = join(process.cwd(), "public", "uploads");
-    const filePath = join(publicDirectory, uniqueFilename);
-    
-    await writeFile(filePath, buffer);
-
-    // 9. Save media upload metadata log
     await Upload.create({
-      uploader: (session.user as any).id,
-      filename: uniqueFilename,
-      originalName,
+      uploader: userId,
+      filename: file.name || "upload",
+      originalName: file.name || "upload",
       mimeType: file.type,
       size: file.size,
-      url: `/uploads/${uniqueFilename}`,
+      url: uploadResult.secureUrl,
+      publicId: uploadResult.publicId,
       associatedPost: null,
     });
 
-    // 10. Respond with the saved URL path
     return NextResponse.json(
       {
         success: true,
-        url: `/uploads/${uniqueFilename}`,
+        url: uploadResult.secureUrl,
+        publicId: uploadResult.publicId,
         type: isImage ? "image" : "video",
       },
       { status: 201 }
@@ -119,8 +108,27 @@ export async function POST(req: Request) {
   } catch (error: any) {
     console.error("File upload error:", error);
     return NextResponse.json(
-      { error: "An unexpected error occurred during file upload." },
+      { error: error.message || "An unexpected error occurred during file upload." },
       { status: 500 }
     );
+  }
+}
+
+export async function DELETE(req: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { publicId } = await req.json();
+    if (!publicId) {
+      return NextResponse.json({ error: "publicId is required" }, { status: 400 });
+    }
+
+    const deleted = await deleteMedia(publicId);
+    return NextResponse.json({ success: deleted });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || "Deletion failed" }, { status: 500 });
   }
 }
