@@ -4,8 +4,10 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { UserPlus } from "lucide-react";
+import { useTranslation } from "@/components/providers/I18nProvider";
 
 export default function RegisterForm() {
+  const { t } = useTranslation();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -86,10 +88,10 @@ export default function RegisterForm() {
     <div className="w-full max-w-md mx-auto bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-6 md:p-8 shadow-sm">
       <div className="mb-6 text-center">
         <h2 className="font-sans font-bold text-2xl text-neutral-850 dark:text-neutral-100">
-          Create Account
+          {t("signUpTitle")}
         </h2>
         <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-2">
-          Join StackSphere and connect with developers
+          {t("signUpSubtitle")}
         </p>
       </div>
 
@@ -112,7 +114,7 @@ export default function RegisterForm() {
             htmlFor="name"
             className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400"
           >
-            Full Name *
+            {t("fullName")} *
           </label>
           <input
             required
@@ -131,7 +133,7 @@ export default function RegisterForm() {
             htmlFor="email"
             className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400"
           >
-            Email Address *
+            {t("emailAddress")} *
           </label>
           <input
             required
@@ -150,7 +152,7 @@ export default function RegisterForm() {
             htmlFor="phoneNumber"
             className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400"
           >
-            Phone Number (Optional)
+            {t("phoneNumber")}
           </label>
           <input
             type="tel"
@@ -168,7 +170,7 @@ export default function RegisterForm() {
             htmlFor="password"
             className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400"
           >
-            Password *
+            {t("password")} *
           </label>
           <input
             required
@@ -187,7 +189,7 @@ export default function RegisterForm() {
             htmlFor="confirmPassword"
             className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400"
           >
-            Confirm Password *
+            {t("confirmPassword")} *
           </label>
           <input
             required
@@ -207,18 +209,18 @@ export default function RegisterForm() {
           className="w-full h-11 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm rounded-xl disabled:opacity-50 transition-all duration-200 flex items-center justify-center gap-2"
         >
           <UserPlus className="h-4 w-4" />
-          <span>{isLoading ? "Creating Account..." : "Create Account"}</span>
+          <span>{isLoading ? t("loading") : t("signUpButton")}</span>
         </button>
       </form>
 
       <div className="mt-6 text-center border-t border-neutral-150 dark:border-neutral-700 pt-6">
         <p className="text-sm text-neutral-600 dark:text-neutral-400">
-          Already have an account?{" "}
+          {t("alreadyHaveAccount")}{" "}
           <Link
             href="/login"
             className="font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
           >
-            Sign In
+            {t("signInNow")}
           </Link>
         </p>
       </div>

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Search, Send, CheckCircle, AlertCircle, AlertTriangle, UserCheck, RefreshCw } from "lucide-react";
+import { useTranslation } from "@/components/providers/I18nProvider";
 
 interface SearchUser {
   _id: string;
@@ -16,6 +17,7 @@ interface PointTransferProps {
 }
 
 export default function PointTransfer({ currentBalance, onTransferSuccess }: PointTransferProps) {
+  const { t } = useTranslation();
   const [query, setQuery] = useState("");
   const [users, setUsers] = useState<SearchUser[]>([]);
   const [selectedUser, setSelectedUser] = useState<SearchUser | null>(null);
@@ -97,7 +99,7 @@ export default function PointTransfer({ currentBalance, onTransferSuccess }: Poi
       {/* Title */}
       <h3 className="text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2 border-b border-neutral-100 dark:border-neutral-700 pb-4">
         <Send className="h-5 w-5 text-indigo-650" />
-        Transfer Reward Points
+        {t("pointsTransfer")}
       </h3>
 
       {/* Constraints Indicator alert banner */}
@@ -200,7 +202,7 @@ export default function PointTransfer({ currentBalance, onTransferSuccess }: Poi
         {selectedUser && (
           <div className="flex flex-col gap-1.5 animate-fadeIn">
             <label className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-              Amount to Transfer (pts)
+              {t("transferAmount")} (pts)
             </label>
             <input
               required
@@ -226,7 +228,7 @@ export default function PointTransfer({ currentBalance, onTransferSuccess }: Poi
             className="w-full h-11 bg-indigo-650 hover:bg-indigo-550 text-white rounded-xl text-sm font-semibold transition-all shadow-sm flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99]"
           >
             <Send className="h-4 w-4" />
-            <span>Initiate Transfer</span>
+            <span>{t("submitTransferBtn")}</span>
           </button>
         )}
       </div>
@@ -235,7 +237,7 @@ export default function PointTransfer({ currentBalance, onTransferSuccess }: Poi
       {showConfirm && selectedUser && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fadeIn">
           <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-6 max-w-sm w-full space-y-4 shadow-xl">
-            <h4 className="text-sm font-bold text-neutral-900 dark:text-white uppercase tracking-wider">Confirm Point Transfer</h4>
+            <h4 className="text-sm font-bold text-neutral-900 dark:text-white uppercase tracking-wider">{t("pointsTransfer")}</h4>
             <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
               Are you sure you want to transfer <strong>{amount} points</strong> to <strong>{selectedUser.name}</strong> ({selectedUser.email})? This action is irreversible.
             </p>
@@ -253,7 +255,7 @@ export default function PointTransfer({ currentBalance, onTransferSuccess }: Poi
                 disabled={isLoading}
                 className="px-3.5 py-1.5 bg-indigo-650 hover:bg-indigo-550 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5"
               >
-                {isLoading ? "Transferring..." : "Confirm & Send"}
+                {isLoading ? t("loading") : t("submitTransferBtn")}
               </button>
             </div>
           </div>

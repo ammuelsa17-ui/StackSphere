@@ -32,8 +32,8 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-neutral-50 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100">
-        <I18nProvider>
-          <NextAuthSessionProvider>
+        <NextAuthSessionProvider>
+          <I18nProvider>
             <Navbar />
             <div className="flex-1 flex pt-16">
               <Sidebar />
@@ -43,8 +43,8 @@ export default function RootLayout({
                 </div>
               </main>
             </div>
-          </NextAuthSessionProvider>
-        </I18nProvider>
+          </I18nProvider>
+        </NextAuthSessionProvider>
       </body>
     </html>
   );

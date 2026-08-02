@@ -81,7 +81,7 @@ export default function Navbar() {
                   className="flex items-center gap-1.5 px-3 h-9 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-900 rounded-lg transition-all"
                 >
                   <LayoutDashboard className="h-4 w-4 text-indigo-600" />
-                  <span className="hidden md:inline">Dashboard</span>
+                  <span className="hidden md:inline">{t("dashboard")}</span>
                 </Link>
                 
                 <div className="flex items-center gap-2 px-3 h-9 rounded-lg bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-sm font-medium">
@@ -96,7 +96,7 @@ export default function Navbar() {
                   className="flex items-center gap-1.5 px-3 h-9 text-sm font-medium text-red-650 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg transition-all border border-transparent hover:border-red-200 dark:hover:border-red-900/30"
                 >
                   <LogOut className="h-4 w-4 text-red-600" />
-                  <span className="hidden sm:inline text-red-600">Logout</span>
+                  <span className="hidden sm:inline text-red-600">{t("logout")}</span>
                 </button>
               </div>
             ) : (
@@ -106,7 +106,7 @@ export default function Navbar() {
                   className="flex items-center gap-1.5 px-3 h-9 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-900 rounded-lg transition-all"
                 >
                   <LogIn className="h-4 w-4" />
-                  <span>Login</span>
+                  <span>{t("login")}</span>
                 </Link>
                 
                 <Link
@@ -114,7 +114,7 @@ export default function Navbar() {
                   className="flex items-center gap-1.5 px-3 h-9 text-sm font-medium bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg shadow-sm transition-all"
                 >
                   <UserPlus className="h-4 w-4" />
-                  <span>Sign Up</span>
+                  <span>{t("register")}</span>
                 </Link>
               </>
             )}

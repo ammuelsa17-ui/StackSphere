@@ -102,6 +102,11 @@ const UserSchema = new Schema(
       default: null,
       select: false,
     },
+    otpSentChannel: {
+      type: String,
+      default: "",
+      select: false,
+    },
   },
   {
     timestamps: true, // Automatically creates createdAt and updatedAt fields

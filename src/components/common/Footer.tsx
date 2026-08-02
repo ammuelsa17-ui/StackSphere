@@ -1,7 +1,11 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
+import { useTranslation } from "@/components/providers/I18nProvider";
 
 export default function Footer() {
+  const { t } = useTranslation();
   return (
     <footer className="w-full border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 py-6 mt-auto">
       <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-neutral-500 dark:text-neutral-400">
@@ -20,7 +24,7 @@ export default function Footer() {
             Privacy Policy
           </Link>
           <Link href="/settings" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-            Support
+            {t("settings")}
           </Link>
         </div>
 

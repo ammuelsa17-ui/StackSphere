@@ -393,6 +393,54 @@ export async function GET() {
       }
 
       // ----------------------------------------------------
+      // Test 25b: Multilanguage OTP Routing Check (Day 52)
+      // ----------------------------------------------------
+      try {
+        const mockReqLang = {
+          headers: {
+            get: (key: string) => {
+              if (key === "user-agent") return "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+              return null;
+            },
+          },
+        };
+
+        // 1. Test French: should set otpSentChannel = "email"
+        try {
+          await authorize(
+            { email: "testauth@example.com", password: "password123", language: "fr" },
+            mockReqLang as any
+          );
+        } catch (err: any) {
+          // Expected OTP_REQUIRED
+        }
+        
+        const userFr = await User.findOne({ email: "testauth@example.com" }).select("+otpSentChannel");
+        const frPassed = userFr?.otpSentChannel === "email";
+
+        // 2. Test English: should set otpSentChannel = "sms" / "phone"
+        try {
+          await authorize(
+            { email: "testauth@example.com", password: "password123", language: "en" },
+            mockReqLang as any
+          );
+        } catch (err: any) {
+          // Expected OTP_REQUIRED
+        }
+
+        const userEn = await User.findOne({ email: "testauth@example.com" }).select("+otpSentChannel");
+        const enPassed = userEn?.otpSentChannel === "phone" || userEn?.otpSentChannel === "sms";
+
+        if (frPassed && enPassed) {
+          addResult("Multilanguage OTP Routing Check", "PASS", "French routed via email OTP; English routed via mobile OTP.");
+        } else {
+          addResult("Multilanguage OTP Routing Check", "FAIL", `Expected correct routing, got FR=${userFr?.otpSentChannel}, EN=${userEn?.otpSentChannel}`);
+        }
+      } catch (err: any) {
+        addResult("Multilanguage OTP Routing Check", "FAIL", err.message);
+      }
+
+      // ----------------------------------------------------
       // Test 26: Strict Registration Validations (Day 33)
       // ----------------------------------------------------
       try {

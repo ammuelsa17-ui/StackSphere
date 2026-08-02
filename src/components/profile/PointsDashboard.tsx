@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Award, ArrowUpRight, ArrowDownRight, RefreshCw, Trophy, Zap, AlertCircle } from "lucide-react";
+import { useTranslation } from "@/components/providers/I18nProvider";
 
 interface RewardItem {
   _id: string;
@@ -16,6 +17,7 @@ interface PointsDashboardProps {
 }
 
 export default function PointsDashboard({ initialPoints }: PointsDashboardProps) {
+  const { t } = useTranslation();
   const [points, setPoints] = useState(initialPoints);
   const [rewards, setRewards] = useState<RewardItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -102,7 +104,7 @@ export default function PointsDashboard({ initialPoints }: PointsDashboardProps)
       <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-700 pb-4">
         <h3 className="text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2">
           <Trophy className="h-5 w-5 text-amber-500" />
-          Points & Rewards Dashboard
+          {t("pointsDashboard")}
         </h3>
         <button
           onClick={fetchRewardHistory}
@@ -120,7 +122,7 @@ export default function PointsDashboard({ initialPoints }: PointsDashboardProps)
         <div className="md:col-span-1 border border-neutral-200 dark:border-neutral-750 rounded-xl p-5 flex flex-col justify-between bg-neutral-50/50 dark:bg-neutral-900/10">
           <div className="space-y-1">
             <span className="text-xs font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
-              Total Balance
+              {t("totalPoints")}
             </span>
             <h4 className="text-3xl font-extrabold text-neutral-900 dark:text-white tracking-tight">
               {points} pts

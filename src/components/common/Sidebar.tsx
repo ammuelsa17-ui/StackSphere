@@ -1,16 +1,21 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
 import { Home, HelpCircle, MessageSquare, CreditCard, Settings, ShieldAlert } from "lucide-react";
+import { useTranslation } from "@/components/providers/I18nProvider";
 
 export default function Sidebar() {
+  const { t } = useTranslation();
+
   // Navigation items representing our core features
   const menuItems = [
-    { name: "Home Dashboard", href: "/dashboard", icon: Home },
-    { name: "Q&A Forum", href: "/", icon: HelpCircle },
-    { name: "Social Feed", href: "/social", icon: MessageSquare },
-    { name: "Subscriptions", href: "/subscription", icon: CreditCard },
-    { name: "Login History", href: "/login-history", icon: ShieldAlert },
-    { name: "Settings", href: "/settings", icon: Settings },
+    { name: t("dashboard"), href: "/dashboard", icon: Home },
+    { name: t("qaForum"), href: "/", icon: HelpCircle },
+    { name: t("socialSpace"), href: "/social", icon: MessageSquare },
+    { name: t("subscription"), href: "/subscription", icon: CreditCard },
+    { name: t("loginHistory"), href: "/login-history", icon: ShieldAlert },
+    { name: t("settings"), href: "/settings", icon: Settings },
   ];
 
   return (
@@ -19,7 +24,7 @@ export default function Sidebar() {
       {/* Top Section: Navigation Links */}
       <div className="px-4 space-y-1">
         <p className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider px-3 mb-3">
-          Menu Navigation
+          {t("menuNavigation")}
         </p>
         
         <nav className="space-y-1">

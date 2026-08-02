@@ -73,10 +73,10 @@ export default function LoginForm() {
     <div className="w-full max-w-md mx-auto bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-6 md:p-8 shadow-sm">
       <div className="mb-6 text-center">
         <h2 className="font-sans font-bold text-2xl text-neutral-850 dark:text-neutral-100">
-          Sign In to StackSphere
+          {t("signInTitle")}
         </h2>
         <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-2">
-          Enter your details below to log into your account
+          {t("signInSubtitle")}
         </p>
       </div>
 
@@ -98,7 +98,7 @@ export default function LoginForm() {
             htmlFor="email"
             className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400"
           >
-            Email Address
+            {t("emailAddress")}
           </label>
           <input
             required
@@ -118,13 +118,13 @@ export default function LoginForm() {
               htmlFor="password"
               className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400"
             >
-              Password
+              {t("password")}
             </label>
             <Link
               href="/forgot-password"
               className="text-xs font-semibold text-indigo-600 dark:text-indigo-450 hover:underline"
             >
-              Forgot Password?
+              {t("forgotPasswordLink")}
             </Link>
           </div>
           <input
@@ -145,7 +145,7 @@ export default function LoginForm() {
               htmlFor="otpCode"
               className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400"
             >
-              Verification Code (OTP)
+              {t("otpCode")}
             </label>
             <input
               required
@@ -166,18 +166,18 @@ export default function LoginForm() {
           className="w-full h-11 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm rounded-xl disabled:opacity-50 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
         >
           <LogIn className="h-4 w-4" />
-          <span>{isLoading ? "Processing..." : showOtpInput ? "Verify & Sign In" : "Sign In"}</span>
+          <span>{isLoading ? t("loading") : showOtpInput ? t("verifyOtpButton") : t("signInButton")}</span>
         </button>
       </form>
 
       <div className="mt-6 text-center border-t border-neutral-150 dark:border-neutral-700 pt-6">
         <p className="text-sm text-neutral-600 dark:text-neutral-400">
-          Don&apos;t have an account?{" "}
+          {t("noAccount")}{" "}
           <Link
             href="/register"
             className="font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
           >
-            Create account
+            {t("signUpNow")}
           </Link>
         </p>
       </div>

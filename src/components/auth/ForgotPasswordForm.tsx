@@ -255,10 +255,10 @@ export default function ForgotPasswordForm() {
         <div className="mb-6 text-center">
           <h2 className="font-sans font-bold text-2xl text-neutral-850 dark:text-neutral-100 flex items-center justify-center gap-2">
             <Lock className="h-5 w-5 text-indigo-600" />
-            <span>Recover Password</span>
+            <span>{t("forgotPasswordTitle")}</span>
           </h2>
           <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-2 leading-relaxed">
-            Choose your recovery method below to receive a verification code
+            {t("forgotPasswordSubtitle")}
           </p>
         </div>
 
@@ -290,7 +290,7 @@ export default function ForgotPasswordForm() {
                 htmlFor="email"
                 className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400"
               >
-                Email Address
+                {t("emailAddress")}
               </label>
               <div className="relative">
                 <input
@@ -313,7 +313,7 @@ export default function ForgotPasswordForm() {
                 htmlFor="phone"
                 className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400"
               >
-                Phone Number
+                {t("phoneNumber")}
               </label>
               <div className="relative">
                 <input
@@ -340,10 +340,10 @@ export default function ForgotPasswordForm() {
             {isLoading ? (
               <>
                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                <span>Sending Code...</span>
+                <span>{t("loading")}</span>
               </>
             ) : (
-              <span>Send Verification Code</span>
+              <span>{t("sendResetLink")}</span>
             )}
           </button>
 
@@ -353,7 +353,7 @@ export default function ForgotPasswordForm() {
               className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-500 hover:text-neutral-850 dark:hover:text-neutral-200 transition-colors"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
-              <span>Back to Sign In</span>
+              <span>{t("backToLogin")}</span>
             </Link>
           </div>
         </form>
@@ -370,16 +370,16 @@ export default function ForgotPasswordForm() {
         <div className="mb-6 text-center">
           <h2 className="font-sans font-bold text-2xl text-neutral-850 dark:text-neutral-100 flex items-center justify-center gap-2">
             <Shield className="h-5 w-5 text-indigo-600" />
-            <span>Verify Code</span>
+            <span>{t("verifyOtpButton")}</span>
           </h2>
           <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-2 leading-relaxed">
-            Enter the 6-digit verification code sent to your {method === "email" ? "email" : "phone number"}
+            {t("enterOtpCode")} ({method === "email" ? "Email" : "Phone"})
           </p>
         </div>
 
         <form onSubmit={handleVerifyCode} className="space-y-4">
           {error && (
-            <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 p-3 rounded-lg text-sm text-center font-medium">
+            <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-650 dark:text-red-400 p-3 rounded-lg text-sm text-center font-medium">
               {error}
             </div>
           )}
@@ -389,7 +389,7 @@ export default function ForgotPasswordForm() {
               htmlFor="otp"
               className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 text-center"
             >
-              6-Digit Code
+              {t("otpCode")}
             </label>
             <input
               required
@@ -411,10 +411,10 @@ export default function ForgotPasswordForm() {
             {isLoading ? (
               <>
                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                <span>Verifying...</span>
+                <span>{t("loading")}</span>
               </>
             ) : (
-              <span>Verify Code</span>
+              <span>{t("verifyOtpButton")}</span>
             )}
           </button>
 
@@ -425,7 +425,7 @@ export default function ForgotPasswordForm() {
               className="font-semibold text-neutral-500 hover:text-neutral-850 dark:hover:text-neutral-200 transition-colors flex items-center gap-1"
             >
               <ArrowLeft className="h-3 w-3" />
-              <span>Change details</span>
+              <span>{t("backToLogin")}</span>
             </button>
 
             <button
@@ -434,7 +434,7 @@ export default function ForgotPasswordForm() {
               onClick={handleResendOTP}
               className="font-semibold text-indigo-650 hover:text-indigo-550 transition-colors disabled:opacity-50 disabled:text-neutral-400"
             >
-              {resendTimer > 0 ? `Resend Code (${resendTimer}s)` : "Resend Code"}
+              {resendTimer > 0 ? `Resend (${resendTimer}s)` : "Resend Code"}
             </button>
           </div>
         </form>
@@ -451,10 +451,10 @@ export default function ForgotPasswordForm() {
         <div className="mb-6 text-center">
           <h2 className="font-sans font-bold text-2xl text-neutral-850 dark:text-neutral-100 flex items-center justify-center gap-2">
             <Lock className="h-5 w-5 text-indigo-600" />
-            <span>New Password</span>
+            <span>{t("newPasswordLabel")}</span>
           </h2>
           <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-2 leading-relaxed">
-            Enter and confirm your new secure account password
+            {t("newPasswordHint")}
           </p>
         </div>
 
@@ -473,7 +473,7 @@ export default function ForgotPasswordForm() {
               className="text-[11px] font-bold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 flex items-center gap-1 bg-indigo-50 dark:bg-indigo-950/40 py-1 px-2.5 rounded-lg border border-indigo-100 dark:border-indigo-900/50 hover:scale-[1.01] active:scale-[0.99] transition-all"
             >
               <Sparkles className="h-3 w-3" />
-              <span>Generate Letters-Only Password</span>
+              <span>Générer un mot de passe</span>
             </button>
           </div>
 
@@ -481,7 +481,7 @@ export default function ForgotPasswordForm() {
           {generatedPassword && (
             <div className="bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl p-3 flex justify-between items-center text-xs animate-fadeIn">
               <div className="min-w-0">
-                <span className="text-neutral-400 block mb-0.5 text-[10px] font-semibold uppercase tracking-wider">Generated password (Letters only)</span>
+                <span className="text-neutral-400 block mb-0.5 text-[10px] font-semibold uppercase tracking-wider">Generated password</span>
                 <span className="font-mono text-neutral-850 dark:text-neutral-100 select-all font-semibold tracking-wide break-all text-sm">{generatedPassword}</span>
               </div>
               <button
@@ -501,7 +501,7 @@ export default function ForgotPasswordForm() {
               htmlFor="password"
               className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400"
             >
-              New Password
+              {t("newPasswordLabel")}
             </label>
             <div className="relative">
               <input
@@ -537,7 +537,7 @@ export default function ForgotPasswordForm() {
               htmlFor="confirmPassword"
               className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400"
             >
-              Confirm Password
+              {t("confirmPassword")}
             </label>
             <div className="relative">
               <input
@@ -575,10 +575,10 @@ export default function ForgotPasswordForm() {
             {isLoading ? (
               <>
                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                <span>Resetting Password...</span>
+                <span>{t("loading")}</span>
               </>
             ) : (
-              <span>Reset Password</span>
+              <span>{t("resetPasswordBtn")}</span>
             )}
           </button>
         </form>
@@ -599,10 +599,10 @@ export default function ForgotPasswordForm() {
       
       <div className="space-y-2">
         <h2 className="font-sans font-bold text-2xl text-neutral-850 dark:text-neutral-100">
-          Password Updated
+          {t("success")}
         </h2>
         <p className="text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed max-w-sm mx-auto">
-          Your account password has been successfully updated. You can now log in using your new credentials.
+          Your account credentials have been successfully updated.
         </p>
       </div>
 
@@ -612,7 +612,7 @@ export default function ForgotPasswordForm() {
           className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-neutral-550 hover:text-neutral-800 dark:hover:text-neutral-200 transition-colors py-1.5 px-3 hover:bg-neutral-50 dark:hover:bg-neutral-900 rounded-lg"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
-          <span>Go to Sign In</span>
+          <span>{t("backToLogin")}</span>
         </Link>
       </div>
     </div>

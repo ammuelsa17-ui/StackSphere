@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Check, Sparkles, Zap, HelpCircle, AlertCircle } from "lucide-react";
 import CheckoutModal from "./CheckoutModal";
+import { useTranslation } from "@/components/providers/I18nProvider";
 
 interface PlanConfig {
   name: string;
@@ -28,6 +29,7 @@ export default function SubscriptionPlanGrid({
   currentPlan,
   userEmail,
 }: SubscriptionPlanGridProps) {
+  const { t } = useTranslation();
   const [selectedPlan, setSelectedPlan] = useState<PlanConfig | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [bypassGate, setBypassGate] = useState(false);
@@ -57,8 +59,8 @@ export default function SubscriptionPlanGrid({
           <div className="flex gap-2.5 items-center">
             <AlertCircle className="h-5 w-5 shrink-0 text-amber-500" />
             <div>
-              <span className="font-bold block">Upgrade Gateway Locked</span>
-              Upgrades are permitted only between **10:00 AM and 11:00 AM IST**.
+              <span className="font-bold block">{t("error")}</span>
+              {t("timeGateWarning")}
             </div>
           </div>
           <button
@@ -141,7 +143,7 @@ export default function SubscriptionPlanGrid({
                       : plan.buttonStyle
                   }`}
                 >
-                  {isCurrent ? "Your Current Plan" : plan.cta}
+                  {isCurrent ? t("activePlanLabel") : t("subscribeBtn")}
                 </button>
               </div>
             </div>

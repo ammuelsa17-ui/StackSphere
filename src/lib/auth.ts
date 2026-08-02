@@ -88,16 +88,17 @@ export const authOptions: NextAuthOptions = {
             const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
             const verificationExpiry = new Date(Date.now() + 10 * 60 * 1000);
             
+            const lang = credentials?.language || "en";
             user.verificationCode = verificationCode;
             user.verificationCodeExpires = verificationExpiry;
-            await user.save();
-            
-            const lang = credentials?.language || "en";
             if (lang === "fr") {
+              user.otpSentChannel = "email";
               console.log(`[MOCK EMAIL CHALLENGE] Sent OTP code "${verificationCode}" to email "${user.email}"`);
             } else {
+              user.otpSentChannel = "phone";
               console.log(`[MOCK SMS CHALLENGE] Sent OTP code "${verificationCode}" via SMS to phone "${user.phoneNumber || "+15551234567"}"`);
             }
+            await user.save();
             throw new Error("OTP_REQUIRED");
           } else {
             // Validate code

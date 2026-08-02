@@ -1,6 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { Shield, Mail, Phone, Clock, AlertCircle } from "lucide-react";
 
 export type Language = "en" | "es" | "hi" | "pt" | "zh" | "fr";
 
@@ -25,6 +27,11 @@ const translations: Record<Language, Record<string, string>> = {
     loading: "Loading...",
     error: "Error",
     success: "Success",
+    backToHome: "Back to Home",
+    qaForum: "Q&A Forum",
+    loginHistory: "Login History",
+    settings: "Settings",
+    menuNavigation: "Menu Navigation",
     
     // Login
     signInTitle: "Sign In to StackSphere",
@@ -67,6 +74,7 @@ const translations: Record<Language, Record<string, string>> = {
     receiverPlaceholder: "Enter receiver email or name...",
     transferAmount: "Transfer Amount",
     submitTransferBtn: "Confirm Transfer",
+    pointsTransferSuccess: "Points transferred successfully!",
 
     // Subscription
     choosePlan: "Choose Your Plan",
@@ -87,6 +95,11 @@ const translations: Record<Language, Record<string, string>> = {
     loading: "Cargando...",
     error: "Error",
     success: "Éxito",
+    backToHome: "Volver al inicio",
+    qaForum: "Foro de preguntas y respuestas",
+    loginHistory: "Historial de inicio de sesión",
+    settings: "Ajustes",
+    menuNavigation: "Menú de Navegación",
     
     signInTitle: "Iniciar sesión en StackSphere",
     signInSubtitle: "Ingrese sus datos a continuación para iniciar sesión",
@@ -125,6 +138,7 @@ const translations: Record<Language, Record<string, string>> = {
     receiverPlaceholder: "Ingrese correo o nombre del receptor...",
     transferAmount: "Monto de Transferencia",
     submitTransferBtn: "Confirmar Transferencia",
+    pointsTransferSuccess: "¡Puntos transferidos con éxito!",
 
     choosePlan: "Elige tu Plan",
     activePlanLabel: "Plan de Membresía Activo",
@@ -144,6 +158,11 @@ const translations: Record<Language, Record<string, string>> = {
     loading: "लोड हो रहा है...",
     error: "त्रुटि",
     success: "सफलता",
+    backToHome: "होमपेज पर वापस",
+    qaForum: "प्रश्न और उत्तर मंच",
+    loginHistory: "लॉगिन इतिहास",
+    settings: "सेटिंग्स",
+    menuNavigation: "मेनू नेविगेशन",
     
     signInTitle: "स्टैकस्फीयर में लॉगिन करें",
     signInSubtitle: "अपने खाते में लॉग इन करने के लिए नीचे अपना विवरण दर्ज करें",
@@ -182,6 +201,7 @@ const translations: Record<Language, Record<string, string>> = {
     receiverPlaceholder: "प्राप्तकर्ता का ईमेल या नाम दर्ज करें...",
     transferAmount: "अन्तरण राशि",
     submitTransferBtn: "स्थानांतरण की पुष्टि करें",
+    pointsTransferSuccess: "अंक सफलतापूर्वक स्थानांतरित कर दिए गए!",
 
     choosePlan: "अपना प्लान चुनें",
     activePlanLabel: "सक्रिय सदस्यता योजना",
@@ -201,6 +221,11 @@ const translations: Record<Language, Record<string, string>> = {
     loading: "Carregando...",
     error: "Erro",
     success: "Sucesso",
+    backToHome: "Voltar ao Início",
+    qaForum: "Fórum de Q&A",
+    loginHistory: "Histórico de Login",
+    settings: "Configurações",
+    menuNavigation: "Menu de Navegação",
     
     signInTitle: "Entrar no StackSphere",
     signInSubtitle: "Insira seus dados abaixo para fazer login na sua conta",
@@ -239,6 +264,7 @@ const translations: Record<Language, Record<string, string>> = {
     receiverPlaceholder: "Insira e-mail ou nome do destinatário...",
     transferAmount: "Valor de Transferência",
     submitTransferBtn: "Confirmar Transferência",
+    pointsTransferSuccess: "Pontos transferidos com sucesso!",
 
     choosePlan: "Escolha seu Plano",
     activePlanLabel: "Plano de Assinatura Ativo",
@@ -258,6 +284,11 @@ const translations: Record<Language, Record<string, string>> = {
     loading: "加载中...",
     error: "错误",
     success: "成功",
+    backToHome: "返回首页",
+    qaForum: "问答论坛",
+    loginHistory: "登录历史",
+    settings: "设置",
+    menuNavigation: "菜单导航",
     
     signInTitle: "登录 StackSphere",
     signInSubtitle: "在下方输入您的详细信息以登录您的账户",
@@ -296,6 +327,7 @@ const translations: Record<Language, Record<string, string>> = {
     receiverPlaceholder: "输入接收者邮箱或姓名...",
     transferAmount: "划转金额",
     submitTransferBtn: "确认划转",
+    pointsTransferSuccess: "积分划转成功！",
 
     choosePlan: "选择您的订阅计划",
     activePlanLabel: "有效会员计划",
@@ -305,7 +337,6 @@ const translations: Record<Language, Record<string, string>> = {
     timeGateWarning: "订阅受限于 10:00 AM - 11:00 AM IST 窗口。",
   },
   fr: {
-    // Nav & Common
     socialSpace: "Espace Social",
     dashboard: "Tableau de Bord",
     profile: "Profil",
@@ -316,8 +347,12 @@ const translations: Record<Language, Record<string, string>> = {
     loading: "Chargement...",
     error: "Erreur",
     success: "Succès",
+    backToHome: "Retour à l'Accueil",
+    qaForum: "Forum Q&R",
+    loginHistory: "Historique de Connexion",
+    settings: "Paramètres",
+    menuNavigation: "Navigation Menu",
     
-    // Login
     signInTitle: "Se connecter à StackSphere",
     signInSubtitle: "Saisissez vos identifiants pour vous connecter",
     emailAddress: "Adresse E-mail",
@@ -328,7 +363,6 @@ const translations: Record<Language, Record<string, string>> = {
     noAccount: "Pas encore de compte ?",
     signUpNow: "Créer un compte",
     
-    // Registration
     signUpTitle: "Créer votre Compte",
     signUpSubtitle: "Rejoignez la communauté de développeurs aujourd'hui",
     fullName: "Nom Complet",
@@ -338,7 +372,6 @@ const translations: Record<Language, Record<string, string>> = {
     alreadyHaveAccount: "Vous avez déjà un compte ?",
     signInNow: "Se connecter",
 
-    // Forgot Password
     forgotPasswordTitle: "Réinitialiser le Mot de passe",
     forgotPasswordSubtitle: "Récupérez vos identifiants de compte en toute sécurité",
     sendResetLink: "Envoyer le Code de Récupération",
@@ -349,7 +382,6 @@ const translations: Record<Language, Record<string, string>> = {
     resetPasswordBtn: "Réinitialiser mon Mot de passe",
     backToLogin: "Retour à la Connexion",
 
-    // Profile & Rewards
     userProfile: "Profil Utilisateur",
     pointsDashboard: "Tableau des Points",
     totalPoints: "Total des Points",
@@ -358,8 +390,8 @@ const translations: Record<Language, Record<string, string>> = {
     receiverPlaceholder: "Entrez l'e-mail ou le nom du destinataire...",
     transferAmount: "Montant du Transfert",
     submitTransferBtn: "Confirmer le Transfert",
+    pointsTransferSuccess: "Points transférés avec succès !",
 
-    // Subscription
     choosePlan: "Choisissez Votre Formule",
     activePlanLabel: "Formule d'Abonnement Active",
     billingHistory: "Historique de Facturation & Transactions",
@@ -370,7 +402,17 @@ const translations: Record<Language, Record<string, string>> = {
 };
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
+  const { data: session } = useSession();
   const [language, setLanguageState] = useState<Language>("en");
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [targetLanguage, setTargetLanguage] = useState<Language | null>(null);
+  const [otpCode, setOtpCode] = useState("");
+  const [userEnteredOtp, setUserEnteredOtp] = useState("");
+  const [otpExpiry, setOtpExpiry] = useState<Date | null>(null);
+  
+  const [resendTimer, setResendTimer] = useState(0);
+  const [attemptCount, setAttemptCount] = useState(0);
+  const [otpError, setOtpError] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -381,19 +423,198 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  // Cooldown countdown
+  useEffect(() => {
+    if (resendTimer > 0) {
+      const timer = setTimeout(() => setResendTimer(resendTimer - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendTimer]);
+
+  const generateAndDispatchOtp = (targetLang: Language) => {
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiry = new Date(Date.now() + 5 * 60 * 1000); // 5 mins
+    setOtpCode(code);
+    setOtpExpiry(expiry);
+    setAttemptCount(0);
+    setOtpError(null);
+    setUserEnteredOtp("");
+
+    const uEmail = session?.user?.email || "developer@stacksphere.com";
+    const uPhone = (session?.user as any)?.phoneNumber || "+15551234567";
+
+    if (targetLang === "fr") {
+      // Route OTP verification to Email
+      console.log(`[SECURE LANGUAGE EMAIL OTP] Sent language switcher verification code "${code}" to email "${uEmail}"`);
+    } else {
+      // Route OTP verification to Phone/SMS
+      console.log(`[SECURE LANGUAGE SMS OTP] Sent language switcher verification code "${code}" via SMS to phone "${uPhone}"`);
+    }
+  };
+
   const setLanguage = (lang: Language) => {
-    setLanguageState(lang);
-    localStorage.setItem("stacksphere_lang", lang);
+    if (lang === language) return;
+
+    // Guest users (not logged in) don't trigger security OTP checks
+    if (!session) {
+      setLanguageState(lang);
+      localStorage.setItem("stacksphere_lang", lang);
+      return;
+    }
+
+    // Trigger language change OTP verification flow
+    setTargetLanguage(lang);
+    setIsVerifying(true);
+    generateAndDispatchOtp(lang);
+  };
+
+  const handleVerify = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!otpExpiry || otpExpiry.getTime() < Date.now()) {
+      setOtpError("The verification code has expired. Please request a new one.");
+      return;
+    }
+
+    if (attemptCount >= 3) {
+      setOtpError("Maximum verification attempts reached. Language change cancelled.");
+      setTimeout(() => handleCancel(), 2000);
+      return;
+    }
+
+    if (userEnteredOtp.trim() === otpCode) {
+      if (targetLanguage) {
+        setLanguageState(targetLanguage);
+        localStorage.setItem("stacksphere_lang", targetLanguage);
+      }
+      setIsVerifying(false);
+      setTargetLanguage(null);
+      setOtpError(null);
+    } else {
+      const nextCount = attemptCount + 1;
+      setAttemptCount(nextCount);
+      if (nextCount >= 3) {
+        setOtpError("Maximum attempts reached. Resetting switcher.");
+        setTimeout(() => handleCancel(), 1500);
+      } else {
+        setOtpError(`Incorrect verification code. (${3 - nextCount} attempts remaining)`);
+      }
+    }
+  };
+
+  const handleResend = () => {
+    if (resendTimer > 0 || !targetLanguage) return;
+    setResendTimer(60);
+    generateAndDispatchOtp(targetLanguage);
+  };
+
+  const handleCancel = () => {
+    setIsVerifying(false);
+    setTargetLanguage(null);
+    setOtpError(null);
+    setUserEnteredOtp("");
   };
 
   const t = (key: string): string => {
     return translations[language]?.[key] || translations["en"]?.[key] || key;
   };
 
-  // Prevent flash or hydration error: render children normally once mounted
   return (
     <I18nContext.Provider value={{ language, setLanguage, t }}>
       {children}
+
+      {/* Global Language Change Security OTP Verification Modal */}
+      {isVerifying && targetLanguage && (
+        <div className="fixed inset-0 bg-neutral-900/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 w-full max-w-md rounded-2xl p-6 shadow-xl animate-fadeIn">
+            <div className="text-center space-y-3 mb-5">
+              <div className="w-12 h-12 rounded-full bg-indigo-50 dark:bg-indigo-900/20 text-indigo-650 flex items-center justify-center mx-auto">
+                <Shield className="h-6 w-6" />
+              </div>
+              <h3 className="text-lg font-bold text-neutral-900 dark:text-white">
+                Security Verification Required
+              </h3>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                Confirm your request to change the application language to{" "}
+                <strong className="text-indigo-600 dark:text-indigo-400 uppercase">
+                  {targetLanguage}
+                </strong>
+              </p>
+            </div>
+
+            <form onSubmit={handleVerify} className="space-y-4">
+              {otpError && (
+                <div className="bg-rose-50 dark:bg-rose-900/30 border border-rose-250 dark:border-rose-800 text-rose-650 dark:text-rose-400 p-3 rounded-xl text-xs font-semibold flex items-center gap-2">
+                  <AlertCircle className="h-4.5 w-4.5 shrink-0" />
+                  <span>{otpError}</span>
+                </div>
+              )}
+
+              <div className="bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-4 rounded-xl space-y-2.5">
+                <div className="flex items-center gap-2 text-xs font-medium text-neutral-600 dark:text-neutral-400">
+                  {targetLanguage === "fr" ? (
+                    <>
+                      <Mail className="h-4 w-4 text-indigo-650" />
+                      <span>Sending OTP code to email: <strong>{session?.user?.email || "developer@stacksphere.com"}</strong></span>
+                    </>
+                  ) : (
+                    <>
+                      <Phone className="h-4 w-4 text-indigo-650" />
+                      <span>Sending OTP code via SMS to: <strong>{(session?.user as any)?.phoneNumber || "+15551234567"}</strong></span>
+                    </>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-1.5 text-xs text-neutral-450 dark:text-neutral-500">
+                  <Clock className="h-3.5 w-3.5" />
+                  <span>Code expires in 5 minutes</span>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">
+                  Enter 6-Digit OTP Verification Code
+                </label>
+                <input
+                  required
+                  type="text"
+                  maxLength={6}
+                  value={userEnteredOtp}
+                  onChange={(e) => setUserEnteredOtp(e.target.value)}
+                  placeholder="000000"
+                  className="w-full text-center bg-neutral-50 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-xl p-3 text-lg font-bold tracking-widest text-neutral-850 dark:text-neutral-100 placeholder:text-neutral-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                />
+              </div>
+
+              <div className="flex justify-between items-center text-xs">
+                <button
+                  type="button"
+                  disabled={resendTimer > 0}
+                  onClick={handleResend}
+                  className="font-bold text-indigo-650 hover:underline disabled:text-neutral-400"
+                >
+                  {resendTimer > 0 ? `Resend Code (${resendTimer}s)` : "Resend Verification Code"}
+                </button>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={handleCancel}
+                  className="flex-1 px-4 py-2 bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-200 text-xs font-bold rounded-xl hover:bg-neutral-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-4 py-2 bg-indigo-600 text-white text-xs font-bold rounded-xl hover:bg-indigo-500 shadow-sm"
+                >
+                  Confirm Language
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </I18nContext.Provider>
   );
 }
