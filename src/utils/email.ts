@@ -111,9 +111,12 @@ export async function sendReceiptEmail(options: SendReceiptOptions) {
   `;
 
   const pathModule = require("path");
-  const attachmentPath = pathModule.isAbsolute(invoicePath)
-    ? invoicePath
-    : pathModule.join(process.cwd(), "public", invoicePath);
+  const fsModule = require("fs");
+  let attachmentPath = invoicePath;
+  if (!fsModule.existsSync(attachmentPath)) {
+    const cleanRelative = invoicePath.replace(/^\//, "");
+    attachmentPath = pathModule.join(process.cwd(), "public", cleanRelative);
+  }
 
   const attachments = [
     {
