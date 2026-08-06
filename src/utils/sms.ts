@@ -37,22 +37,31 @@ export async function sendSms(options: SendSmsOptions) {
 
       if (twilioModule) {
         const client = twilioModule(accountSid, authToken);
-        await client.messages.create({
+        const msgResult = await client.messages.create({
           body: message,
           from: fromNumber,
           to,
         });
 
         if (!isProduction) {
-          console.log(`[TWILIO SMS DISPATCH] Sent SMS to "${to}" successfully.`);
+          console.log(`[TWILIO SMS DISPATCH] Sent SMS to "${to}" successfully (SID: ${msgResult.sid}, Status: ${msgResult.status}).`);
         }
-        return { success: true, method: "twilio" };
+        return {
+          success: true,
+          method: "twilio",
+          sid: msgResult.sid,
+          status: msgResult.status,
+        };
       }
     } catch (err: any) {
-      if (isProduction) {
-        throw new Error(`SMS Provider Error: ${err.message}`);
-      }
       console.warn(`[SMS DISPATCH WARN] ${err.message}. Falling back to dev mock logger.`);
+      return {
+        success: false,
+        method: "twilio",
+        error: true,
+        errorCode: err.code || err.status || "UNKNOWN",
+        errorMessage: err.message,
+      };
     }
   }
 
