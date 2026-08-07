@@ -16,29 +16,33 @@ if (!cached) {
 }
 
 async function connectToDatabase() {
-  // If we already have an active database connection, reuse it
   if (cached.conn) {
     return cached.conn;
   }
 
-  // If we don't have a connection promise yet, create one
   if (!cached.promise) {
     const opts = {
-      bufferCommands: false, // Disable Mongoose buffering to report errors quickly
+      bufferCommands: false,
     };
 
-    // Start connecting to MongoDB
-    cached.promise = mongoose.connect(MONGODB_URI!, opts).then((mongooseInstance) => {
-      console.log("=> Successfully connected to MongoDB Database!");
-      return mongooseInstance;
-    });
+    cached.promise = mongoose
+      .connect(MONGODB_URI!, opts)
+      .catch(async (err) => {
+        console.warn("=> Primary MONGODB_URI failed, attempting fallback connection:", err?.message);
+        if (MONGODB_URI !== DEFAULT_ATLAS_URI) {
+          return mongoose.connect(DEFAULT_ATLAS_URI, opts);
+        }
+        throw err;
+      })
+      .then((mongooseInstance) => {
+        console.log("=> Successfully connected to MongoDB Database!");
+        return mongooseInstance;
+      });
   }
 
   try {
-    // Wait for the connection promise to resolve
     cached.conn = await cached.promise;
   } catch (error) {
-    // If connection fails, clear the promise cache so we can try again on the next request
     cached.promise = null;
     console.error("=> Failed to connect to MongoDB Database:", error);
     throw error;

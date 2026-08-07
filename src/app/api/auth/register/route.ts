@@ -113,7 +113,7 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json(
-      { error: "Unable to create account. Please check your information and try again.", details: error.message || String(error) },
+      { error: "Unable to create account. Please check your information and try again." },
       { status: 500 }
     );
   }
