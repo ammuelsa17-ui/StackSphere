@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import connectToDatabase from "@/lib/mongodb";
 import User from "@/models/User";
-import { sanitizeString, validatePhone } from "@/utils/validation";
+import { sanitizeString, validatePhone, normalizePhone } from "@/utils/validation";
 
 export async function POST(req: Request) {
   try {
@@ -34,11 +34,16 @@ export async function POST(req: Request) {
       );
     }
 
-    if (phoneClean && !validatePhone(phoneClean)) {
-      return NextResponse.json(
-        { error: "Please provide a valid phone number" },
-        { status: 400 }
-      );
+    let normalizedPhone = "";
+    if (phoneClean) {
+      const normalized = normalizePhone(phoneClean);
+      if (normalized === null) {
+        return NextResponse.json(
+          { error: "Please enter a valid phone number." },
+          { status: 400 }
+        );
+      }
+      normalizedPhone = normalized;
     }
 
     // 5. Connect to the database
@@ -49,7 +54,7 @@ export async function POST(req: Request) {
       (session.user as any).id,
       {
         name: nameClean,
-        phoneNumber: phoneClean || "",
+        phoneNumber: normalizedPhone || "",
         avatarUrl: avatarClean || "",
       },
       { new: true, runValidators: true } // Returns the modified document & checks model constraints

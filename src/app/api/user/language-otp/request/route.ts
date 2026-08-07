@@ -8,6 +8,7 @@ import { sendEmail } from "@/utils/email";
 import { sendSms } from "@/utils/sms";
 import { hashOtp } from "@/utils/hmac";
 import { checkOtpRateLimits } from "@/utils/rateLimit";
+import { normalizePhone } from "@/utils/validation";
 
 export async function POST(req: Request) {
   try {
@@ -52,7 +53,7 @@ export async function POST(req: Request) {
     // Determine verification channel based on target language rule
     // French -> Email OTP; English, Spanish, Hindi, Portuguese, Chinese -> Mobile SMS OTP
     const channel = targetLanguage === "fr" ? "email" : "sms";
-    const destination = channel === "email" ? user.email : user.phoneNumber || "+15551234567";
+    const destination = channel === "email" ? user.email : (normalizePhone(user.phoneNumber) || user.phoneNumber || "+15551234567");
 
     // Generate 6-digit OTP code and HMAC-SHA256 hash
     const rawCode = Math.floor(100000 + Math.random() * 900000).toString();

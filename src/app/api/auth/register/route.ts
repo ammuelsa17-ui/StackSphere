@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import connectToDatabase from "@/lib/mongodb";
 import User from "@/models/User";
-import { sanitizeString, validateEmail, validatePhone, validatePassword } from "@/utils/validation";
+import { sanitizeString, validateEmail, validatePhone, validatePassword, normalizePhone } from "@/utils/validation";
 
 export async function POST(req: Request) {
   try {
@@ -34,11 +34,16 @@ export async function POST(req: Request) {
       );
     }
 
-    if (phoneClean && !validatePhone(phoneClean)) {
-      return NextResponse.json(
-        { error: "Please provide a valid phone number" },
-        { status: 400 }
-      );
+    let normalizedPhone = "";
+    if (phoneClean) {
+      const normalized = normalizePhone(phoneClean);
+      if (normalized === null) {
+        return NextResponse.json(
+          { error: "Please enter a valid phone number." },
+          { status: 400 }
+        );
+      }
+      normalizedPhone = normalized;
     }
 
     // Connect to database
@@ -53,8 +58,15 @@ export async function POST(req: Request) {
       );
     }
 
-    if (phoneClean) {
-      const existingPhone = await User.findOne({ phoneNumber: phoneClean });
+    if (normalizedPhone) {
+      const rawDigits = phoneClean.replace(/\D/g, "");
+      const existingPhone = await User.findOne({
+        $or: [
+          { phoneNumber: normalizedPhone },
+          { phoneNumber: phoneClean },
+          { phoneNumber: rawDigits ? { $regex: rawDigits + "$" } : normalizedPhone },
+        ],
+      });
       if (existingPhone) {
         return NextResponse.json(
           { error: "A user with this phone number is already registered." },
@@ -71,7 +83,7 @@ export async function POST(req: Request) {
       name: nameClean,
       email: emailClean.toLowerCase(),
       password: hashedPassword,
-      phoneNumber: phoneClean || "",
+      phoneNumber: normalizedPhone || "",
       points: 0, // Set initial rewards points to 0
       subscription: {
         plan: "Free",

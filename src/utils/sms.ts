@@ -9,8 +9,11 @@ interface SendSmsOptions {
   message: string;
 }
 
+import { normalizePhone } from "./validation";
+
 export async function sendSms(options: SendSmsOptions) {
   const { to, message } = options;
+  const destination = normalizePhone(to) || to;
 
   const isProduction = process.env.NODE_ENV === "production";
   const provider = process.env.SMS_PROVIDER || "twilio";
@@ -40,11 +43,11 @@ export async function sendSms(options: SendSmsOptions) {
         const msgResult = await client.messages.create({
           body: message,
           from: fromNumber,
-          to,
+          to: destination,
         });
 
         if (!isProduction) {
-          console.log(`[TWILIO SMS DISPATCH] Sent SMS to "${to}" successfully (SID: ${msgResult.sid}, Status: ${msgResult.status}).`);
+          console.log(`[TWILIO SMS DISPATCH] Sent SMS to "${destination}" successfully (SID: ${msgResult.sid}, Status: ${msgResult.status}).`);
         }
         return {
           success: true,

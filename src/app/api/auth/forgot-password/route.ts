@@ -3,7 +3,7 @@ import crypto from "crypto";
 import connectToDatabase from "@/lib/mongodb";
 import User from "@/models/User";
 import OTPChallenge from "@/models/OTPChallenge";
-import { sanitizeString, validateEmail, validatePhone } from "@/utils/validation";
+import { sanitizeString, validateEmail, validatePhone, normalizePhone } from "@/utils/validation";
 import { sendEmail } from "@/utils/email";
 import { sendSms } from "@/utils/sms";
 import { hashOtp } from "@/utils/hmac";
@@ -40,13 +40,21 @@ export async function POST(req: Request) {
         "+resetPasswordToken +resetPasswordExpires +lastForgotPasswordRequestedAt"
       );
     } else {
-      if (!validatePhone(phoneClean)) {
+      const normalizedPhone = normalizePhone(phoneClean);
+      if (!normalizedPhone) {
         return NextResponse.json(
-          { error: "Please provide a valid phone number." },
+          { error: "Please enter a valid phone number." },
           { status: 400 }
         );
       }
-      user = await User.findOne({ phoneNumber: phoneClean }).select(
+      const rawDigits = phoneClean.replace(/\D/g, "");
+      user = await User.findOne({
+        $or: [
+          { phoneNumber: normalizedPhone },
+          { phoneNumber: phoneClean },
+          { phoneNumber: rawDigits ? { $regex: rawDigits + "$" } : normalizedPhone },
+        ],
+      }).select(
         "+resetPasswordToken +resetPasswordExpires +lastForgotPasswordRequestedAt"
       );
     }
