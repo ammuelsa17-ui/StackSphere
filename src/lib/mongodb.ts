@@ -1,14 +1,8 @@
 import mongoose from "mongoose";
 
-// Retrieve the MongoDB Connection URI from environment variables
-const MONGODB_URI = process.env.MONGODB_URI;
-
-// Throw an error if the environment variable is missing
-if (!MONGODB_URI) {
-  throw new Error(
-    "Please define the MONGODB_URI environment variable inside .env.local"
-  );
-}
+const DEFAULT_ATLAS_URI = "mongodb+srv://swipeharsh2001_db_user:mYi1ybEpO4wpARj7@stacksphere-cluster.r5nqte1.mongodb.net/stacksphere?retryWrites=true&w=majority&appName=stacksphere-cluster";
+const rawUri = process.env.MONGODB_URI || DEFAULT_ATLAS_URI;
+const MONGODB_URI = rawUri.trim().replace(/^["']|["']$/g, "");
 
 /**
  * Next.js uses serverless routes which run on-demand. In development, hot-reloading
