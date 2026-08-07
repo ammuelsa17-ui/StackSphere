@@ -1,20 +1,9 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/common/Navbar";
 import Sidebar from "@/components/common/Sidebar";
 import NextAuthSessionProvider from "@/components/providers/SessionProvider";
 import { I18nProvider } from "@/components/providers/I18nProvider";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "StackSphere",
@@ -29,7 +18,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className="h-full antialiased font-sans"
     >
       <body className="min-h-full flex flex-col bg-neutral-50 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100">
         <NextAuthSessionProvider>
@@ -37,7 +26,7 @@ export default function RootLayout({
             <Navbar />
             <div className="flex-1 flex pt-16">
               <Sidebar />
-              <main className="flex-1 md:pl-64 flex flex-col min-h-[calc(100vh-4rem)]">
+              <main className="flex-1 md:pl-64 flex flex-col min-h-[calc(100vh-4rem)] pb-16 md:pb-0">
                 <div className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6">
                   {children}
                 </div>
