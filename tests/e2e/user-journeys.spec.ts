@@ -40,7 +40,7 @@ test.describe("StackSphere Real-Time Complete User Journeys", () => {
     const inputField = page.locator('input[id="email"], input[id="phone"], input[type="tel"], input[type="email"]').first();
     await expect(inputField).toBeVisible();
 
-    await inputField.fill("+15551234567");
+    await inputField.fill("testauth@example.com");
     await page.click('button[type="submit"]');
 
     // Verify transition to verification step
