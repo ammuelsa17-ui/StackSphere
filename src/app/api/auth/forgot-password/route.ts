@@ -47,12 +47,10 @@ export async function POST(req: Request) {
           { status: 400 }
         );
       }
-      const rawDigits = phoneClean.replace(/\D/g, "");
       user = await User.findOne({
         $or: [
           { phoneNumber: normalizedPhone },
           { phoneNumber: phoneClean },
-          { phoneNumber: rawDigits ? { $regex: rawDigits + "$" } : normalizedPhone },
         ],
       }).select(
         "+resetPasswordToken +resetPasswordExpires +lastForgotPasswordRequestedAt"

@@ -59,12 +59,10 @@ export async function POST(req: Request) {
     }
 
     if (normalizedPhone) {
-      const rawDigits = phoneClean.replace(/\D/g, "");
       const existingPhone = await User.findOne({
         $or: [
           { phoneNumber: normalizedPhone },
           { phoneNumber: phoneClean },
-          { phoneNumber: rawDigits ? { $regex: rawDigits + "$" } : normalizedPhone },
         ],
       });
       if (existingPhone) {
