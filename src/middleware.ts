@@ -18,6 +18,7 @@ export default withAuth(
     return response;
   },
   {
+    secret: process.env.NEXTAUTH_SECRET || "stacksphere_production_nextauth_jwt_secret_32_chars",
     pages: {
       signIn: "/login",
     },
