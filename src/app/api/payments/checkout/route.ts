@@ -4,7 +4,8 @@ import { authOptions } from "@/lib/auth";
 import connectToDatabase from "@/lib/mongodb";
 import Transaction from "@/models/Transaction";
 import User from "@/models/User";
-import { createStripeCheckoutSession, SUBSCRIPTION_PLANS } from "@/lib/stripe";
+import { SUBSCRIPTION_PLANS } from "@/lib/stripe";
+import { getRazorpayClient } from "@/lib/razorpay";
 import { sanitizeString } from "@/utils/validation";
 
 export async function POST(req: Request) {
@@ -13,8 +14,8 @@ export async function POST(req: Request) {
     const bypassTimeGate = req.headers.get("x-bypass-time-gate") === "true";
     if (!bypassTimeGate) {
       const now = new Date();
-      const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
-      const istTime = new Date(utcTime + (3600000 * 5.5));
+      const utcTime = now.getTime() + now.getTimezoneOffset() * 60000;
+      const istTime = new Date(utcTime + 3600000 * 5.5);
       const istHour = istTime.getHours();
 
       if (istHour !== 10) {
@@ -35,25 +36,24 @@ export async function POST(req: Request) {
     }
 
     const userId = (session.user as any).id;
-    const userEmail = session.user.email || "";
 
-    // 2. Parse request payload
+    // 3. Parse and sanitize payload
     const body = await req.json().catch(() => ({}));
     const rawPlanName = body.planName;
     const planName = sanitizeString(rawPlanName);
 
-    // 3. Validate requested plan
+    // 4. Validate requested plan
     const planConfig = SUBSCRIPTION_PLANS[planName];
     if (!planConfig || planConfig.name === "Free") {
       return NextResponse.json(
-        { error: "Invalid plan selected for payment checkout. Please choose Bronze, Silver, or Gold." },
+        { error: "Invalid plan selected for checkout. Please choose Bronze, Silver, or Gold." },
         { status: 400 }
       );
     }
 
     await connectToDatabase();
 
-    // 4. Verify user exists in database
+    // 5. Verify user exists in database
     const dbUser = await User.findById(userId);
     if (!dbUser) {
       return NextResponse.json(
@@ -62,59 +62,60 @@ export async function POST(req: Request) {
       );
     }
 
-    // Check if user is already on the exact same plan
-    if (dbUser.subscription?.plan === planConfig.name && dbUser.subscription?.paymentStatus === "active") {
+    // 6. Calculate amount in paise (₹1 = 100 paise)
+    // Bronze: ₹100 = 10000 paise | Silver: ₹300 = 30000 paise | Gold: ₹1000 = 100000 paise
+    const amountPaise = planConfig.priceINR * 100;
+    const receipt = `rcpt_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+
+    // 7. Create real Razorpay order via official Node SDK
+    let order: any = null;
+    try {
+      const razorpay = getRazorpayClient();
+      order = await razorpay.orders.create({
+        amount: amountPaise,
+        currency: "INR",
+        receipt,
+        notes: {
+          userId,
+          planName,
+          userEmail: dbUser.email,
+        },
+      });
+    } catch (razorpayErr: any) {
+      console.error("[Razorpay Order Creation Failed]:", razorpayErr.message);
       return NextResponse.json(
-        { error: `You are already subscribed to the ${planConfig.name} plan.` },
-        { status: 400 }
+        { error: `Payment gateway order creation failed: ${razorpayErr.message}` },
+        { status: 502 }
       );
     }
 
-    // 5. Build base URLs for checkout redirection
-    const origin = req.headers.get("origin") || req.headers.get("referer") || "http://localhost:3000";
-    const successUrl = `${origin}/subscription?status=success`;
-    const cancelUrl = `${origin}/subscription?status=cancel`;
-
-    // 6. Create Stripe checkout session
-    const checkoutSession = await createStripeCheckoutSession({
+    // 8. Store Razorpay order in Transaction model as pending
+    const transaction = new Transaction({
       userId,
-      userEmail,
       planName: planConfig.name,
-      successUrl,
-      cancelUrl,
-    });
-
-    // 7. Log transaction record in database
-    await Transaction.create({
-      userId,
-      amount: planConfig.priceUSD,
-      currency: planConfig.currency.toUpperCase(),
-      paymentId: checkoutSession.sessionId,
-      planName: planConfig.name,
+      amount: planConfig.priceINR,
+      currency: "INR",
       status: "pending",
-      invoiceUrl: "",
+      paymentId: order.id, // Store razorpayOrderId
+      createdAt: new Date(),
     });
+    await transaction.save();
 
-    // 8. Return checkout payload
+    const keyId =
+      process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID || "";
+
+    return NextResponse.json({
+      success: true,
+      orderId: order.id,
+      amount: order.amount,
+      currency: order.currency,
+      keyId,
+      transactionId: transaction._id,
+    });
+  } catch (err: any) {
+    console.error("Payment Checkout API Error:", err);
     return NextResponse.json(
-      {
-        success: true,
-        message: `Checkout session created for ${planConfig.name} plan.`,
-        sessionId: checkoutSession.sessionId,
-        checkoutUrl: checkoutSession.url,
-        plan: {
-          name: planConfig.name,
-          priceUSD: planConfig.priceUSD,
-          currency: planConfig.currency,
-        },
-        isMock: checkoutSession.isMock,
-      },
-      { status: 200 }
-    );
-  } catch (error: any) {
-    console.error("Payment checkout API error:", error);
-    return NextResponse.json(
-      { error: error.message || "An unexpected error occurred while initiating checkout." },
+      { error: "An unexpected error occurred during payment checkout." },
       { status: 500 }
     );
   }

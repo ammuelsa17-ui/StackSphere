@@ -1,144 +1,86 @@
 import { NextResponse } from "next/server";
 import connectToDatabase from "@/lib/mongodb";
 import Transaction from "@/models/Transaction";
-import User from "@/models/User";
-import { stripe } from "@/lib/stripe";
+import { verifyRazorpayWebhookSignature, fulfillSubscription } from "@/lib/razorpay";
 
 export async function POST(req: Request) {
-  let event: any = null;
-
   try {
-    const payload = await req.text();
-    const signature = req.headers.get("stripe-signature") || "";
+    const rawBody = await req.text();
+    const signature = req.headers.get("x-razorpay-signature") || "";
+    const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET || "whsec_mockwebhook123";
 
-    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || "whsec_mockwebhook123";
-
-    // Attempt real signature verification if real Stripe configuration is present
+    // 1. Webhook Signature Verification
+    const isValidSignature = verifyRazorpayWebhookSignature(rawBody, signature, webhookSecret);
+    
+    // In strict mode, if signature is invalid, reject with 400
     if (
-      stripe &&
-      signature &&
-      process.env.STRIPE_SECRET_KEY &&
-      !process.env.STRIPE_SECRET_KEY.startsWith("sk_test_mock") &&
-      !webhookSecret.startsWith("whsec_mock")
+      process.env.RAZORPAY_WEBHOOK_SECRET &&
+      !process.env.RAZORPAY_WEBHOOK_SECRET.startsWith("whsec_mock") &&
+      !isValidSignature
     ) {
-      try {
-        event = stripe.webhooks.constructEvent(payload, signature, webhookSecret);
-      } catch (err: any) {
-        console.error("Stripe webhook signature verification failed:", err.message);
-        return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
-      }
-    } else {
-      // Mock/Test mode payload parsing
-      try {
-        event = JSON.parse(payload);
-      } catch (err) {
-        return NextResponse.json({ error: "Invalid payload format" }, { status: 400 });
-      }
+      console.error("[Razorpay Webhook Error] Invalid x-razorpay-signature");
+      return NextResponse.json({ error: "Invalid webhook signature" }, { status: 400 });
     }
 
-    if (!event || !event.type) {
-      return NextResponse.json({ error: "Invalid event data structure" }, { status: 400 });
+    // 2. Parse event JSON payload
+    let event: any = null;
+    try {
+      event = JSON.parse(rawBody);
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
     }
 
-    // Handle session completion event
-    if (event.type === "checkout.session.completed") {
-      const session = event.data.object;
-      const sessionId = session.id;
-      const userId = session.client_reference_id || session.metadata?.userId;
-      const planName = session.metadata?.planName;
+    if (!event || !event.event) {
+      return NextResponse.json({ error: "Missing event type in webhook payload" }, { status: 400 });
+    }
 
-      if (!sessionId) {
-        return NextResponse.json({ error: "Session ID missing in event payload" }, { status: 400 });
-      }
+    const eventType = event.event;
+
+    // 3. Process supported events: payment.captured or order.paid
+    if (eventType === "payment.captured" || eventType === "order.paid") {
+      const paymentEntity = event.payload?.payment?.entity || {};
+      const orderEntity = event.payload?.order?.entity || {};
+
+      const paymentId = paymentEntity.id || "";
+      const orderId = paymentEntity.order_id || orderEntity.id || "";
+      const notes = paymentEntity.notes || orderEntity.notes || {};
+
+      const userId = notes.userId;
+      const planName = notes.planName;
 
       await connectToDatabase();
 
-      // 1. Locate and update transaction
-      const transaction = await Transaction.findOne({ paymentId: sessionId });
-      
-      let finalPlanName = planName;
-      let finalUserId = userId;
-
-      if (transaction) {
-        transaction.status = "success";
-        await transaction.save();
-        
-        finalPlanName = finalPlanName || transaction.planName;
-        finalUserId = finalUserId || transaction.userId;
-      } else {
-        // Create transactional log if webhook arrived before redirect verification
-        if (finalUserId && finalPlanName) {
-          await Transaction.create({
-            userId: finalUserId,
-            amount: session.amount_total ? session.amount_total / 100 : 0,
-            currency: session.currency?.toUpperCase() || "USD",
-            paymentId: sessionId,
-            planName: finalPlanName,
-            status: "success",
-            invoiceUrl: "",
-          });
-        }
+      // Find transaction matching orderId or paymentId
+      let transaction: any = null;
+      if (orderId) {
+        transaction = await Transaction.findOne({ paymentId: orderId });
+      }
+      if (!transaction && paymentId) {
+        transaction = await Transaction.findOne({ razorpayPaymentId: paymentId });
       }
 
-      // 2. Fulfill subscription upgrade on User model
-      if (finalUserId && finalPlanName) {
-        const user = await User.findById(finalUserId);
-        if (user) {
-          const startDate = new Date();
-          const expiryDate = new Date(startDate.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days validity
+      const targetUserId = userId || (transaction ? transaction.userId.toString() : null);
+      const targetPlanName = planName || (transaction ? transaction.planName : "Bronze");
 
-          user.subscription = {
-            plan: finalPlanName,
-            paymentStatus: "active",
-            startDate,
-            expiryDate,
-          };
-          await user.save();
-
-          // 3. Generate and save PDF Invoice (Day 42: Add automated PDF invoice/receipt generation)
-          try {
-            const currentTx = transaction || await Transaction.findOne({ paymentId: sessionId });
-            if (currentTx) {
-              const { generateInvoicePDF, saveInvoicePDF } = require("@/utils/invoice");
-              const pdfBuffer = generateInvoicePDF({
-                orderId: currentTx._id.toString(),
-                date: startDate.toLocaleDateString("en-US"),
-                planName: `${currentTx.planName} Plan Subscription`,
-                amount: currentTx.amount,
-                currency: currentTx.currency || "USD",
-                email: user.email,
-                name: user.name,
-              });
-
-              const invoiceUrl = saveInvoicePDF(currentTx._id.toString(), pdfBuffer);
-              currentTx.invoiceUrl = invoiceUrl;
-              await currentTx.save();
-
-              // 4. Send purchase receipt email (Day 43: Integrate email delivery for purchase receipts)
-              const { sendReceiptEmail } = require("@/utils/email");
-              await sendReceiptEmail({
-                email: user.email,
-                name: user.name,
-                planName: currentTx.planName,
-                amount: currentTx.amount,
-                currency: currentTx.currency || "USD",
-                invoicePath: invoiceUrl,
-              });
-            }
-          } catch (pdfErr: any) {
-            console.error("Webhook fulfillment processing failed:", pdfErr.message);
-          }
-
-          console.log(`[WEBHOOK] Upgraded User ${finalUserId} to ${finalPlanName} subscription successfully.`);
-        }
+      if (targetUserId) {
+        // Execute single shared idempotent fulfillment
+        await fulfillSubscription({
+          userId: targetUserId,
+          planName: targetPlanName,
+          transactionId: transaction ? transaction._id.toString() : undefined,
+          orderId,
+          paymentId,
+          paymentMethod: "razorpay_webhook",
+        });
       }
     }
 
-    return NextResponse.json({ received: true });
-  } catch (error: any) {
-    console.error("Stripe webhook processing error:", error);
+    // 4. Always return 200 OK for valid webhooks
+    return NextResponse.json({ received: true, status: "success" });
+  } catch (err: any) {
+    console.error("Razorpay Webhook Error:", err.message);
     return NextResponse.json(
-      { error: error.message || "An unexpected error occurred processing webhook." },
+      { error: "Internal server error during webhook processing" },
       { status: 500 }
     );
   }

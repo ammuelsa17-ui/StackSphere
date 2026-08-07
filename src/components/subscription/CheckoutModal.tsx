@@ -8,7 +8,8 @@ interface CheckoutModalProps {
   onClose: () => void;
   plan: {
     name: string;
-    priceUSD: number;
+    priceINR?: number;
+    priceUSD?: number;
     description: string;
     features: string[];
   };
@@ -23,16 +24,27 @@ export default function CheckoutModal({
   userEmail,
   onSuccess,
 }: CheckoutModalProps) {
-  const [cardName, setCardName] = useState("Developer Account");
-  const [cardNumber, setCardNumber] = useState("4242 •••• •••• 4242");
-  const [expiry, setExpiry] = useState("12/28");
-  const [cvc, setCvc] = useState("123");
-  
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
 
   if (!isOpen) return null;
+
+  const displayPrice = plan.priceINR ?? plan.priceUSD ?? 100;
+
+  // Helper script loader for Razorpay checkout.js
+  const loadRazorpayScript = (): Promise<boolean> => {
+    return new Promise((resolve) => {
+      if (typeof window !== "undefined" && (window as any).Razorpay) {
+        return resolve(true);
+      }
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
 
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +53,13 @@ export default function CheckoutModal({
     setError(null);
 
     try {
-      // 1. Call Payment Checkout API
+      // 1. Load Razorpay SDK Script
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded) {
+        throw new Error("Could not load Razorpay payment SDK. Please check your internet connection.");
+      }
+
+      // 2. Call Payment Checkout API to create Razorpay Order
       const res = await fetch("/api/payments/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -54,34 +72,63 @@ export default function CheckoutModal({
         throw new Error(data.error || "Failed to initiate payment checkout.");
       }
 
-      // 2. Simulate payment processing delay (Stripe checkout redirection simulation)
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // 3. Configure Razorpay Options
+      const options = {
+        key: data.keyId || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: data.amount,
+        currency: data.currency || "INR",
+        name: "StackSphere",
+        description: `${plan.name} Plan Membership Upgrade`,
+        image: "/logo.png",
+        order_id: data.orderId,
+        handler: async function (response: any) {
+          try {
+            // 4. Send Razorpay response for backend verification
+            const verifyRes = await fetch("/api/payments/verify", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature,
+                transactionId: data.transactionId,
+              }),
+            });
 
-      // 3. Call Verification endpoint to update active user subscription details in DB
-      const verifyRes = await fetch("/api/payments/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId: data.sessionId }),
-      });
+            const verifyData = await verifyRes.json();
 
-      const verifyData = await verifyRes.json();
-      if (!verifyRes.ok) {
-        throw new Error(verifyData.error || "Payment verification failed.");
-      }
+            if (!verifyRes.ok) {
+              throw new Error(verifyData.error || "Payment verification failed.");
+            }
 
-      setIsSuccess(true);
-      setIsLoading(false);
+            setIsSuccess(true);
+            setIsLoading(false);
 
-      if (onSuccess) {
-        onSuccess();
-      }
+            if (onSuccess) {
+              setTimeout(() => {
+                onSuccess();
+              }, 1200);
+            }
+          } catch (verifyErr: any) {
+            setError(verifyErr.message || "Payment verification failed.");
+            setIsLoading(false);
+          }
+        },
+        prefill: {
+          email: userEmail,
+        },
+        theme: {
+          color: "#4f46e5",
+        },
+        modal: {
+          ondismiss: function () {
+            setIsLoading(false);
+          },
+        },
+      };
 
-      // Close modal after brief success presentation
-      setTimeout(() => {
-        setIsSuccess(false);
-        onClose();
-        window.location.reload();
-      }, 2000);
+      const razorpayWindow = new (window as any).Razorpay(options);
+      razorpayWindow.open();
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred during checkout.");
       setIsLoading(false);
@@ -89,174 +136,90 @@ export default function CheckoutModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-        
-        {/* Modal Header */}
-        <div className="bg-gradient-to-r from-indigo-600 to-violet-600 p-6 text-white relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+      <div className="relative w-full max-w-lg overflow-hidden bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-slate-800 bg-slate-900/50">
+          <div className="flex items-center space-x-3">
+            <div className="p-2.5 bg-indigo-500/10 rounded-xl border border-indigo-500/20 text-indigo-400">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-white">Upgrade to {plan.name}</h3>
+              <p className="text-xs text-slate-400">Secure Payment Checkout via Razorpay</p>
+            </div>
+          </div>
           <button
             onClick={onClose}
-            className="absolute top-5 right-5 text-white/80 hover:text-white p-1 rounded-full hover:bg-white/10 transition-colors"
+            disabled={isLoading}
+            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
           >
-            <X className="h-5 w-5" />
+            <X className="w-5 h-5" />
           </button>
-          
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-indigo-200 mb-1">
-            <Sparkles className="h-3.5 w-3.5" />
-            <span>Secure Checkout</span>
-          </div>
-          <h3 className="text-2xl font-extrabold font-sans">
-            Upgrade to {plan.name} Plan
-          </h3>
-          <p className="text-xs text-indigo-100 mt-1">
-            {plan.description}
-          </p>
         </div>
 
-        {/* Modal Body */}
-        <div className="p-6 md:p-8 space-y-6">
+        {/* Content */}
+        <div className="p-6 space-y-6">
+          {error && (
+            <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-start space-x-3 text-red-400 text-sm">
+              <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+              <span>{error}</span>
+            </div>
+          )}
+
           {isSuccess ? (
-            <div className="text-center py-8 space-y-4">
-              <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto animate-bounce">
-                <CheckCircle2 className="h-10 w-10" />
+            <div className="py-8 text-center space-y-4">
+              <div className="inline-flex p-4 bg-emerald-500/10 text-emerald-400 rounded-full border border-emerald-500/20 animate-bounce">
+                <CheckCircle2 className="w-10 h-10" />
               </div>
-              <div className="space-y-1">
-                <h4 className="text-xl font-bold text-neutral-900 dark:text-white">
-                  Payment Successful!
-                </h4>
-                <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                  Your membership has been upgraded to <strong>{plan.name}</strong>.
-                </p>
-              </div>
+              <h4 className="text-xl font-bold text-white">Subscription Activated!</h4>
+              <p className="text-sm text-slate-300">
+                You have successfully upgraded to the <strong>{plan.name} Plan</strong>. PDF invoice has been emailed to {userEmail}.
+              </p>
             </div>
           ) : (
-            <form onSubmit={handleCheckout} className="space-y-6">
-              
-              {/* Error Alert */}
-              {error && (
-                <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 p-3.5 rounded-xl flex items-start gap-3 text-xs text-red-600 dark:text-red-400">
-                  <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-                  <span>{error}</span>
+            <>
+              {/* Summary Card */}
+              <div className="p-4 bg-slate-850 border border-slate-800 rounded-xl space-y-3">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-slate-400">{plan.name} Membership (Monthly)</span>
+                  <span className="font-bold text-white">₹{displayPrice} / mo</span>
                 </div>
-              )}
-
-              {/* Order Summary Box */}
-              <div className="bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700/80 rounded-2xl p-4 space-y-3">
-                <div className="flex justify-between items-center text-sm font-semibold text-neutral-800 dark:text-neutral-200">
-                  <span>{plan.name} Subscription (Monthly)</span>
-                  <span>${plan.priceUSD}.00</span>
-                </div>
-                <div className="flex justify-between items-center text-xs text-neutral-500 dark:text-neutral-400 border-b border-neutral-200 dark:border-neutral-700/60 pb-3">
-                  <span>Account Email</span>
-                  <span className="font-mono text-neutral-700 dark:text-neutral-300">{userEmail}</span>
-                </div>
-                <div className="flex justify-between items-center text-base font-bold text-neutral-900 dark:text-white pt-1">
-                  <span>Total Amount Due</span>
-                  <span className="text-indigo-600 dark:text-indigo-400">${plan.priceUSD}.00 USD</span>
-                </div>
-              </div>
-
-              {/* Payment Method Inputs (Stripe Developer Mock Mode) */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 flex items-center gap-1.5">
-                    <CreditCard className="h-4 w-4 text-indigo-600" />
-                    <span>Card Information</span>
-                  </label>
-                  <span className="text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 py-0.5 px-2 rounded-md border border-indigo-100 dark:border-indigo-900/50">
-                    Stripe Test Mode
+                <div className="flex justify-between items-center text-xs text-slate-500 pt-2 border-t border-slate-800">
+                  <span>Payment Gateway</span>
+                  <span className="text-emerald-400 flex items-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5" /> Razorpay Test Mode
                   </span>
                 </div>
-
-                {/* Cardholder Name */}
-                <div className="space-y-1">
-                  <label className="text-[11px] font-semibold text-neutral-600 dark:text-neutral-400">
-                    Cardholder Name
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={cardName}
-                    onChange={(e) => setCardName(e.target.value)}
-                    className="w-full bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-xl px-3.5 py-2.5 text-sm text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-                  />
-                </div>
-
-                {/* Card Number */}
-                <div className="space-y-1">
-                  <label className="text-[11px] font-semibold text-neutral-600 dark:text-neutral-400">
-                    Card Number
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={cardNumber}
-                    onChange={(e) => setCardNumber(e.target.value)}
-                    className="w-full bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-xl px-3.5 py-2.5 text-sm text-neutral-800 dark:text-neutral-100 font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-                  />
-                </div>
-
-                {/* Expiry & CVC */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="text-[11px] font-semibold text-neutral-600 dark:text-neutral-400">
-                      Expiration Date
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={expiry}
-                      onChange={(e) => setExpiry(e.target.value)}
-                      placeholder="MM/YY"
-                      className="w-full bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-xl px-3.5 py-2.5 text-sm text-neutral-800 dark:text-neutral-100 font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[11px] font-semibold text-neutral-600 dark:text-neutral-400">
-                      CVC / CVV
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={cvc}
-                      onChange={(e) => setCvc(e.target.value)}
-                      placeholder="123"
-                      className="w-full bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-xl px-3.5 py-2.5 text-sm text-neutral-800 dark:text-neutral-100 font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-                    />
-                  </div>
-                </div>
               </div>
 
-              {/* Submit Pay Button */}
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full h-12 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm rounded-xl shadow-md hover:shadow-lg disabled:opacity-50 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>Processing Payment...</span>
-                  </>
-                ) : (
-                  <>
-                    <Lock className="h-4 w-4" />
-                    <span>Pay ${plan.priceUSD}.00 USD</span>
-                  </>
-                )}
-              </button>
+              {/* Action Buttons */}
+              <form onSubmit={handleCheckout} className="space-y-4">
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full py-3.5 px-4 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-semibold rounded-xl shadow-lg shadow-indigo-600/25 flex items-center justify-center space-x-2 transition-all"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <span>Opening Secure Checkout...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CreditCard className="w-5 h-5" />
+                      <span>Proceed to Pay ₹{displayPrice}</span>
+                    </>
+                  )}
+                </button>
 
-              {/* Security reassurance footer */}
-              <div className="flex items-center justify-center gap-2 text-[11px] text-neutral-400 dark:text-neutral-500 pt-1">
-                <ShieldCheck className="h-4 w-4 text-emerald-500" />
-                <span>256-bit SSL encrypted connection • Developer sandbox environment</span>
-              </div>
-
-            </form>
+                <p className="text-center text-xs text-slate-500 flex items-center justify-center gap-1">
+                  <Lock className="w-3.5 h-3.5" /> 256-Bit SSL Encrypted Razorpay Test Payment
+                </p>
+              </form>
+            </>
           )}
         </div>
-
       </div>
     </div>
   );

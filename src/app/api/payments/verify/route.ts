@@ -3,8 +3,12 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import connectToDatabase from "@/lib/mongodb";
 import Transaction from "@/models/Transaction";
-import User from "@/models/User";
-import { verifyStripeCheckoutSession } from "@/lib/stripe";
+import {
+  verifyRazorpaySignature,
+  getRazorpayClient,
+  fulfillSubscription,
+} from "@/lib/razorpay";
+import { SUBSCRIPTION_PLANS } from "@/lib/stripe";
 import { sanitizeString } from "@/utils/validation";
 
 export async function POST(req: Request) {
@@ -18,120 +22,111 @@ export async function POST(req: Request) {
       );
     }
 
+    const userId = (session.user as any).id;
+
     // 2. Parse payload
     const body = await req.json().catch(() => ({}));
-    const rawSessionId = body.sessionId;
-    const sessionId = sanitizeString(rawSessionId);
+    const razorpayPaymentId = sanitizeString(body.razorpay_payment_id || body.paymentId);
+    const clientOrderId = sanitizeString(body.razorpay_order_id || body.orderId);
+    const razorpaySignature = sanitizeString(body.razorpay_signature || body.signature);
+    const transactionId = sanitizeString(body.transactionId);
 
-    if (!sessionId) {
+    if (!razorpayPaymentId || !razorpaySignature) {
       return NextResponse.json(
-        { error: "Session ID is required for verification." },
+        { error: "Payment ID and Razorpay signature are required for verification." },
         { status: 400 }
       );
     }
 
     await connectToDatabase();
 
-    // 3. Find matching transaction log
-    const transaction = await Transaction.findOne({ paymentId: sessionId });
+    // 3. Locate transaction in MongoDB Atlas (Database-stored order is source of truth)
+    let transaction: any = null;
+    if (transactionId) {
+      transaction = await Transaction.findById(transactionId);
+    } else if (clientOrderId) {
+      transaction = await Transaction.findOne({ paymentId: clientOrderId });
+    }
+
     if (!transaction) {
       return NextResponse.json(
-        { error: "No transaction found matching this payment session." },
+        { error: "No pending transaction log found matching this payment order." },
         { status: 404 }
       );
     }
 
-    // Return success early if already processed
-    if (transaction.status === "success") {
+    // 4. Cross-user order verification check
+    if (transaction.userId.toString() !== userId) {
+      return NextResponse.json(
+        { error: "Forbidden access: Transaction belongs to a different user account." },
+        { status: 403 }
+      );
+    }
+
+    // Single-fulfillment check: Return early if already completed
+    if (transaction.status === "success" && transaction.isFulfilled) {
       return NextResponse.json({
         success: true,
+        alreadyFulfilled: true,
         message: "Payment transaction already verified and fulfilled successfully.",
         plan: transaction.planName,
       });
     }
 
-    // 4. Verify checkout session via Stripe API helper
-    const verification = await verifyStripeCheckoutSession(sessionId);
+    // 5. Signature verification using DATABASE-stored order ID (never trust raw client order ID)
+    const databaseOrderId = transaction.paymentId; // razorpayOrderId stored at checkout
+    const isValidSignature = verifyRazorpaySignature(
+      databaseOrderId,
+      razorpayPaymentId,
+      razorpaySignature
+    );
 
-    if (!verification.success) {
-      // Mark transaction status as failed if payment was not successfully completed
+    if (!isValidSignature) {
       transaction.status = "failed";
       await transaction.save();
 
       return NextResponse.json(
-        { error: "Payment verification failed. Session is not completed or paid." },
+        { error: "Invalid Razorpay payment signature verification failed." },
         { status: 400 }
       );
     }
 
-    // 5. Update transaction status to success
-    transaction.status = "success";
-    await transaction.save();
-
-    // 6. Update user subscription status (Day 40: Manage active subscription states on User model)
-    const user = await User.findById(transaction.userId);
-    if (!user) {
-      return NextResponse.json(
-        { error: "Associated user profile could not be found." },
-        { status: 404 }
-      );
-    }
-
-    // Set 30 days subscription duration
-    const startDate = new Date();
-    const expiryDate = new Date(startDate.getTime() + 30 * 24 * 60 * 60 * 1000);
-
-    user.subscription = {
-      plan: transaction.planName,
-      paymentStatus: "active",
-      startDate,
-      expiryDate,
-    };
-
-    await user.save();
-
-    // 7. Generate and save PDF Invoice (Day 42: Add automated PDF invoice/receipt generation)
+    // 6. Verify payment state on Razorpay API (Confirm payment is captured/authorized)
     try {
-      const { generateInvoicePDF, saveInvoicePDF } = require("@/utils/invoice");
-      const pdfBuffer = generateInvoicePDF({
-        orderId: transaction._id.toString(),
-        date: startDate.toLocaleDateString("en-US"),
-        planName: `${transaction.planName} Plan Subscription`,
-        amount: transaction.amount,
-        currency: transaction.currency || "USD",
-        email: user.email,
-        name: user.name,
-      });
-
-      const invoiceUrl = saveInvoicePDF(transaction._id.toString(), pdfBuffer);
-      transaction.invoiceUrl = invoiceUrl;
-      await transaction.save();
-
-      // 8. Send purchase receipt email (Day 43: Integrate email delivery for purchase receipts)
-      const { sendReceiptEmail } = require("@/utils/email");
-      await sendReceiptEmail({
-        email: user.email,
-        name: user.name,
-        planName: transaction.planName,
-        amount: transaction.amount,
-        currency: transaction.currency || "USD",
-        invoicePath: invoiceUrl,
-      });
-    } catch (pdfErr: any) {
-      console.error("Invoice fulfillment processing failed:", pdfErr.message);
+      const razorpay = getRazorpayClient();
+      const paymentDetails = await razorpay.payments.fetch(razorpayPaymentId);
+      
+      if (!paymentDetails || (paymentDetails.status !== "captured" && paymentDetails.status !== "authorized")) {
+        return NextResponse.json(
+          { error: `Payment verification failed: Razorpay payment status is '${paymentDetails?.status || "unknown"}'` },
+          { status: 400 }
+        );
+      }
+    } catch (razorpayFetchErr: any) {
+      console.warn("[Razorpay Payment Fetch Warning]:", razorpayFetchErr.message);
     }
+
+    // 7. Execute single shared idempotent fulfillment
+    const fulfillment = await fulfillSubscription({
+      userId,
+      planName: transaction.planName,
+      transactionId: transaction._id.toString(),
+      orderId: databaseOrderId,
+      paymentId: razorpayPaymentId,
+      paymentMethod: "razorpay",
+    });
 
     return NextResponse.json({
       success: true,
-      message: `Payment successfully verified. Upgraded to ${transaction.planName} plan.`,
+      message: "Payment verified successfully. Subscription updated.",
       plan: transaction.planName,
-      expiryDate: expiryDate.toISOString(),
-      invoiceUrl: transaction.invoiceUrl,
+      alreadyFulfilled: fulfillment.alreadyFulfilled,
+      invoicePath: fulfillment.invoicePath,
     });
-  } catch (error: any) {
-    console.error("Payment verification API error:", error);
+  } catch (err: any) {
+    console.error("Payment Verification API Error:", err);
     return NextResponse.json(
-      { error: error.message || "An unexpected error occurred during payment verification." },
+      { error: "An unexpected error occurred during payment verification." },
       { status: 500 }
     );
   }
