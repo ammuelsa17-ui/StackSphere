@@ -75,7 +75,7 @@ export async function POST(req: Request) {
       user.lastForgotPasswordRequestedAt &&
       now.getTime() - new Date(user.lastForgotPasswordRequestedAt).getTime() < 24 * 60 * 60 * 1000
     ) {
-      return NextResponse.json({ error: "Password reset already requested today." }, { status: 429 });
+      return NextResponse.json({ error: "You can use this option only one time per day." }, { status: 429 });
     }
 
     // Generate secure recovery token (32 bytes) for password reset step
