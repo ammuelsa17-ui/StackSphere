@@ -106,7 +106,12 @@ export async function POST(req: Request) {
     console.error("Registration error:", error);
 
     // Catch Mongo duplicate key errors (code 11000)
-    if (error.code === 11000) {
+    if (
+      error.code === 11000 ||
+      error.cause?.code === 11000 ||
+      error.name === "MongoServerError" ||
+      (error.message && error.message.includes("E11000"))
+    ) {
       return NextResponse.json(
         { error: "A user with this email address or phone number is already registered." },
         { status: 400 }
