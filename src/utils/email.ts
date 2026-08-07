@@ -36,6 +36,14 @@ export async function sendEmail(options: SendEmailOptions) {
     );
   }
 
+  // Bypass real SMTP dispatch for dummy test domains to avoid bounce emails
+  if (to.endsWith("@example.com") || to.includes("@example")) {
+    if (!isProduction) {
+      console.log(`[MOCK EMAIL DISPATCH] Mocked email "${subject}" to test user "${to}".`);
+    }
+    return { success: true, method: "mock" };
+  }
+
   // Real SMTP Mail Dispatch
   if (nodemailerInstance && host && user && pass) {
     try {
