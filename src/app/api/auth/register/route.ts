@@ -44,13 +44,23 @@ export async function POST(req: Request) {
     // Connect to database
     await connectToDatabase();
 
-    // 2. Check if a user already exists with this email
-    const existingUser = await User.findOne({ email: emailClean });
+    // 2. Check if a user already exists with this email or phone number
+    const existingUser = await User.findOne({ email: emailClean.toLowerCase() });
     if (existingUser) {
       return NextResponse.json(
-        { error: "A user with this email already exists" },
+        { error: "A user with this email address is already registered." },
         { status: 400 }
       );
+    }
+
+    if (phoneClean) {
+      const existingPhone = await User.findOne({ phoneNumber: phoneClean });
+      if (existingPhone) {
+        return NextResponse.json(
+          { error: "A user with this phone number is already registered." },
+          { status: 400 }
+        );
+      }
     }
 
     // 3. Hash the user's password using bcrypt (salt factor 12)
@@ -59,7 +69,7 @@ export async function POST(req: Request) {
     // 4. Create and save the new user record in MongoDB
     const newUser = await User.create({
       name: nameClean,
-      email: emailClean,
+      email: emailClean.toLowerCase(),
       password: hashedPassword,
       phoneNumber: phoneClean || "",
       points: 0, // Set initial rewards points to 0
@@ -84,9 +94,17 @@ export async function POST(req: Request) {
     );
   } catch (error: any) {
     console.error("Registration error:", error);
+
+    // Catch Mongo duplicate key errors (code 11000)
+    if (error.code === 11000) {
+      return NextResponse.json(
+        { error: "A user with this email address or phone number is already registered." },
+        { status: 400 }
+      );
+    }
     
     // Catch Mongoose validation errors (like invalid email structure)
-    if (error.name === "ValidationError") {
+    if (error.name === "ValidationError" && error.errors) {
       const messages = Object.values(error.errors).map((err: any) => err.message);
       return NextResponse.json(
         { error: messages[0] || "Validation failed" },
@@ -95,7 +113,7 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json(
-      { error: "An unexpected error occurred during registration" },
+      { error: "Unable to create account. Please check your information and try again." },
       { status: 500 }
     );
   }
