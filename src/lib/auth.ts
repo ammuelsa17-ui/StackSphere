@@ -222,5 +222,5 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: "/login", // Custom login page URL
   },
-  secret: process.env.NEXTAUTH_SECRET || "stacksphere_production_nextauth_jwt_secret_32_chars", // Secret key used to encrypt the JWT session cookie
+  secret: process.env.NEXTAUTH_SECRET, // Secret key used to encrypt the JWT session cookie
 };
