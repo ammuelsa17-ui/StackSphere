@@ -1,7 +1,11 @@
 import mongoose from "mongoose";
 
-const DEFAULT_ATLAS_URI = "mongodb+srv://swipeharsh2001_db_user:mYi1ybEpO4wpARj7@stacksphere-cluster.r5nqte1.mongodb.net/stacksphere?retryWrites=true&w=majority&appName=stacksphere-cluster";
-const rawUri = process.env.MONGODB_URI || DEFAULT_ATLAS_URI;
+const rawUri = process.env.MONGODB_URI;
+
+if (!rawUri) {
+  throw new Error("Please define the MONGODB_URI environment variable inside .env.local");
+}
+
 const MONGODB_URI = rawUri.trim().replace(/^["']|["']$/g, "");
 
 /**
@@ -25,26 +29,16 @@ async function connectToDatabase() {
       bufferCommands: false,
     };
 
-    cached.promise = mongoose
-      .connect(MONGODB_URI!, opts)
-      .catch(async (err) => {
-        console.warn("=> Primary MONGODB_URI failed, attempting fallback connection:", err?.message);
-        if (MONGODB_URI !== DEFAULT_ATLAS_URI) {
-          return mongoose.connect(DEFAULT_ATLAS_URI, opts);
-        }
-        throw err;
-      })
-      .then((mongooseInstance) => {
-        console.log("=> Successfully connected to MongoDB Database!");
-        return mongooseInstance;
-      });
+    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongooseInstance) => {
+      return mongooseInstance;
+    });
   }
 
   try {
     cached.conn = await cached.promise;
   } catch (error) {
     cached.promise = null;
-    console.error("=> Failed to connect to MongoDB Database:", error);
+    console.error("=> Failed to connect to MongoDB Database");
     throw error;
   }
 
