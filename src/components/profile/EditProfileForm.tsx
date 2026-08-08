@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { User, Phone, Mail, Save, Edit2, X } from "lucide-react";
+import PhoneInput from "@/components/common/PhoneInput";
 
 interface EditProfileFormProps {
   initialUser: {
@@ -140,24 +141,13 @@ export default function EditProfileForm({ initialUser }: EditProfileFormProps) {
         </div>
 
         {/* Phone Number Field */}
-        <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-bold uppercase tracking-wider text-neutral-450 dark:text-neutral-500">
-            Phone Number
-          </label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-neutral-400">
-              <Phone className="h-4 w-4" />
-            </div>
-            <input
-              disabled={!isEditing || isLoading}
-              type="tel"
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
-              placeholder="e.g. +91 98765 43210"
-              className="w-full h-11 pl-10 pr-4 rounded-xl border border-neutral-300 dark:border-neutral-705 bg-neutral-50 dark:bg-neutral-900/50 disabled:opacity-75 disabled:bg-neutral-100/50 dark:disabled:bg-neutral-900/20 text-sm text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-            />
-          </div>
-        </div>
+        <PhoneInput
+          disabled={!isEditing || isLoading}
+          value={phoneNumber}
+          onChange={(normalized) => setPhoneNumber(normalized)}
+          label="PHONE NUMBER"
+          helperText="We'll use this number for account verification and security."
+        />
 
         {/* Editing Actions */}
         {isEditing && (

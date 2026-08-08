@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Mail, Phone, ArrowLeft, CheckCircle2, Shield, Lock, Eye, EyeOff, Sparkles, Copy, Check } from "lucide-react";
+import PhoneInput from "@/components/common/PhoneInput";
 
 type RecoveryStep = "REQUEST" | "VERIFY" | "RESET" | "SUCCESS";
 type RecoveryMethod = "email" | "phone";
@@ -308,28 +309,12 @@ export default function ForgotPasswordForm() {
               </div>
             </div>
           ) : (
-            <div className="flex flex-col gap-1.5">
-              <label
-                htmlFor="phone"
-                className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400"
-              >
-                {t("phoneNumber")}
-              </label>
-              <div className="relative">
-                <input
-                  required
-                  type="text"
-                  id="phone"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  placeholder="+1 (555) 000-0000"
-                  className="w-full bg-neutral-50 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-xl py-3 pl-10 pr-4 text-sm text-neutral-800 dark:text-neutral-100 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200"
-                />
-                <div className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-neutral-400">
-                  <Phone className="h-4 w-4" />
-                </div>
-              </div>
-            </div>
+            <PhoneInput
+              value={phoneNumber}
+              onChange={(normalized) => setPhoneNumber(normalized)}
+              label={t("phoneNumber")}
+              helperText="We'll send a 6-digit verification code via Twilio SMS."
+            />
           )}
 
           <button

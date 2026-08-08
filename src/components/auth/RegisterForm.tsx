@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { UserPlus } from "lucide-react";
 import { useTranslation } from "@/components/providers/I18nProvider";
+import PhoneInput from "@/components/common/PhoneInput";
 
 export default function RegisterForm() {
   const { t } = useTranslation();
@@ -146,23 +147,13 @@ export default function RegisterForm() {
           />
         </div>
 
-        {/* Phone Number Input (Optional) */}
-        <div className="flex flex-col gap-1.5">
-          <label
-            htmlFor="phoneNumber"
-            className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400"
-          >
-            {t("phoneNumber")}
-          </label>
-          <input
-            type="tel"
-            id="phoneNumber"
-            value={phoneNumber}
-            onChange={(e) => setPhoneNumber(e.target.value)}
-            placeholder="+1 (555) 000-0000"
-            className="bg-neutral-50 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-xl p-3 text-sm text-neutral-800 dark:text-neutral-100 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200"
-          />
-        </div>
+        {/* International Phone Input */}
+        <PhoneInput
+          value={phoneNumber}
+          onChange={(normalized) => setPhoneNumber(normalized)}
+          label={t("phoneNumber")}
+          helperText="We'll use this number for account verification and security."
+        />
 
         {/* Password Input */}
         <div className="flex flex-col gap-1.5">
