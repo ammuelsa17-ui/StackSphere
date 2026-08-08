@@ -1,4 +1,4 @@
-import { CountryCode } from "libphonenumber-js";
+import { getCountries, getCountryCallingCode, CountryCode } from "libphonenumber-js";
 
 export interface CountryInfo {
   code: CountryCode;
@@ -7,39 +7,57 @@ export interface CountryInfo {
   flag: string;
 }
 
-export const COUNTRIES: CountryInfo[] = [
-  { code: "IN", name: "India", dialCode: "+91", flag: "🇮🇳" },
-  { code: "US", name: "United States", dialCode: "+1", flag: "🇺🇸" },
-  { code: "GB", name: "United Kingdom", dialCode: "+44", flag: "🇬🇧" },
-  { code: "CA", name: "Canada", dialCode: "+1", flag: "🇨🇦" },
-  { code: "AU", name: "Australia", dialCode: "+61", flag: "🇦🇺" },
-  { code: "DE", name: "Germany", dialCode: "+49", flag: "🇩🇪" },
-  { code: "FR", name: "France", dialCode: "+33", flag: "🇫🇷" },
-  { code: "AE", name: "United Arab Emirates", dialCode: "+971", flag: "🇦🇪" },
-  { code: "SG", name: "Singapore", dialCode: "+65", flag: "🇸🇬" },
-  { code: "SA", name: "Saudi Arabia", dialCode: "+966", flag: "🇸🇦" },
-  { code: "ES", name: "Spain", dialCode: "+34", flag: "🇪🇸" },
-  { code: "IT", name: "Italy", dialCode: "+39", flag: "🇮🇹" },
-  { code: "BR", name: "Brazil", dialCode: "+55", flag: "🇧🇷" },
-  { code: "JP", name: "Japan", dialCode: "+81", flag: "🇯🇵" },
-  { code: "CN", name: "China", dialCode: "+86", flag: "🇨🇳" },
-  { code: "MX", name: "Mexico", dialCode: "+52", flag: "🇲🇽" },
-  { code: "NL", name: "Netherlands", dialCode: "+31", flag: "🇳🇱" },
-  { code: "SE", name: "Sweden", dialCode: "+46", flag: "🇸🇪" },
-  { code: "CH", name: "Switzerland", dialCode: "+41", flag: "🇨🇭" },
-  { code: "ZA", name: "South Africa", dialCode: "+27", flag: "🇿🇦" },
-  { code: "NZ", name: "New Zealand", dialCode: "+64", flag: "🇳🇿" },
-  { code: "PK", name: "Pakistan", dialCode: "+92", flag: "🇵🇰" },
-  { code: "BD", name: "Bangladesh", dialCode: "+880", flag: "🇧🇩" },
-  { code: "LK", name: "Sri Lanka", dialCode: "+94", flag: "🇱🇰" },
-  { code: "NP", name: "Nepal", dialCode: "+977", flag: "🇳🇵" },
-  { code: "MY", name: "Malaysia", dialCode: "+60", flag: "🇲🇾" },
-  { code: "ID", name: "Indonesia", dialCode: "+62", flag: "🇮🇩" },
-  { code: "PH", name: "Philippines", dialCode: "+63", flag: "🇵🇭" },
-  { code: "VN", name: "Vietnam", dialCode: "+84", flag: "🇻🇳" },
-  { code: "TH", name: "Thailand", dialCode: "+66", flag: "🇹🇭" },
-  { code: "KW", name: "Kuwait", dialCode: "+965", flag: "🇰🇼" },
-  { code: "QA", name: "Qatar", dialCode: "+974", flag: "🇶🇦" },
-  { code: "OM", name: "Oman", dialCode: "+968", flag: "🇴🇲" },
-  { code: "BH", name: "Bahrain", dialCode: "+973", flag: "🇧🇭" },
-];
+/**
+ * Converts a 2-letter ISO country code into a unicode flag emoji.
+ * e.g., 'IN' -> '🇮🇳', 'US' -> '🇺🇸', 'GB' -> '🇬🇧'
+ */
+export function getFlagEmoji(countryCode: string): string {
+  const codePoints = countryCode
+    .toUpperCase()
+    .split("")
+    .map((char) => 127397 + char.charCodeAt(0));
+  return String.fromCodePoint(...codePoints);
+}
+
+const regionNames = new Intl.DisplayNames(["en"], { type: "region" });
+
+/**
+ * Dynamically generates the complete international country list for all 240+ ISO countries/territories.
+ * Keeps India (IN) at index 0 as the default.
+ */
+function generateAllCountries(): CountryInfo[] {
+  const countryCodes = getCountries();
+  const list: CountryInfo[] = [];
+
+  for (const code of countryCodes) {
+    try {
+      const dialCode = `+${getCountryCallingCode(code)}`;
+      const name = regionNames.of(code) || code;
+      const flag = getFlagEmoji(code);
+
+      list.push({
+        code,
+        name,
+        dialCode,
+        flag,
+      });
+    } catch {
+      // Ignore any unsupported codes
+    }
+  }
+
+  // Sort alphabetically by country name
+  list.sort((a, b) => a.name.localeCompare(b.name));
+
+  // Find India and place it at index 0
+  const indiaIndex = list.findIndex((c) => c.code === "IN");
+  if (indiaIndex > 0) {
+    const [india] = list.splice(indiaIndex, 1);
+    list.unshift(india);
+  }
+
+  return list;
+}
+
+export const ALL_COUNTRIES: CountryInfo[] = generateAllCountries();
+export const DEFAULT_COUNTRY: CountryInfo = ALL_COUNTRIES[0]; // India (+91)

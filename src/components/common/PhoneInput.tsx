@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { parsePhoneNumberFromString, CountryCode } from "libphonenumber-js";
-import { COUNTRIES, CountryInfo } from "@/utils/countryCodes";
+import { ALL_COUNTRIES, DEFAULT_COUNTRY, CountryInfo } from "@/utils/countryCodes";
 import { ChevronDown, Search, Phone, Check } from "lucide-react";
 
 interface PhoneInputProps {
@@ -26,7 +26,7 @@ export default function PhoneInput({
   required = false,
   className = "",
 }: PhoneInputProps) {
-  const [selectedCountry, setSelectedCountry] = useState<CountryInfo>(COUNTRIES[0]); // India (+91) default
+  const [selectedCountry, setSelectedCountry] = useState<CountryInfo>(DEFAULT_COUNTRY); // India (+91) default
   const [localNumber, setLocalNumber] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -45,21 +45,23 @@ export default function PhoneInput({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Sync initial incoming value
+  // Sync initial incoming value or pasted E.164 string
   useEffect(() => {
     if (!value) {
       setLocalNumber("");
       return;
     }
 
-    // Try parsing as full E.164
-    const parsed = parsePhoneNumberFromString(value);
-    if (parsed && parsed.country) {
-      const match = COUNTRIES.find((c) => c.code === parsed.country);
-      if (match) {
-        setSelectedCountry(match);
-        setLocalNumber(parsed.nationalNumber);
-        return;
+    // Try parsing full E.164 if value starts with '+'
+    if (value.trim().startsWith("+")) {
+      const parsed = parsePhoneNumberFromString(value.trim());
+      if (parsed && parsed.country) {
+        const match = ALL_COUNTRIES.find((c) => c.code === parsed.country);
+        if (match) {
+          setSelectedCountry(match);
+          setLocalNumber(parsed.nationalNumber);
+          return;
+        }
       }
     }
 
@@ -73,28 +75,46 @@ export default function PhoneInput({
 
   // Handle local number change or country selection
   const handlePhoneChange = (numStr: string, country: CountryInfo = selectedCountry) => {
+    const trimmed = numStr.trim();
     setLocalNumber(numStr);
 
-    if (!numStr.trim()) {
+    if (!trimmed) {
       setInternalError(null);
       onChange("", !required, "");
       return;
     }
 
-    // Combine country dial code and typed local number
-    const combined = numStr.trim().startsWith("+")
-      ? numStr.trim()
-      : `${country.dialCode}${numStr.trim().replace(/\D/g, "")}`;
+    let activeCountry = country;
+    let targetDigits = trimmed;
 
-    const parsed = parsePhoneNumberFromString(combined, country.code);
+    // Intelligent Pasted Number Detection: If user pastes number starting with '+'
+    if (trimmed.startsWith("+")) {
+      const parsedPasted = parsePhoneNumberFromString(trimmed);
+      if (parsedPasted && parsedPasted.country) {
+        const matchedCountry = ALL_COUNTRIES.find((c) => c.code === parsedPasted.country);
+        if (matchedCountry) {
+          activeCountry = matchedCountry;
+          setSelectedCountry(matchedCountry);
+          targetDigits = parsedPasted.nationalNumber;
+          setLocalNumber(targetDigits);
+        }
+      }
+    }
+
+    // Combine country dial code and typed local number
+    const combined = targetDigits.startsWith("+")
+      ? targetDigits
+      : `${activeCountry.dialCode}${targetDigits.replace(/\D/g, "")}`;
+
+    const parsed = parsePhoneNumberFromString(combined, activeCountry.code);
 
     if (parsed && parsed.isValid()) {
-      const normalizedE164 = parsed.number; // e.g. +919876543210
+      const normalizedE164 = parsed.number; // e.g. +919876543210, +447911123456
       setInternalError(null);
-      onChange(normalizedE164, true, numStr);
+      onChange(normalizedE164, true, targetDigits);
     } else {
-      setInternalError(`Invalid phone number for ${country.name} (${country.dialCode})`);
-      onChange("", false, numStr);
+      setInternalError(`Invalid phone number for ${activeCountry.name} (${activeCountry.dialCode})`);
+      onChange("", false, targetDigits);
     }
   };
 
@@ -105,10 +125,11 @@ export default function PhoneInput({
     handlePhoneChange(localNumber, country);
   };
 
-  const filteredCountries = COUNTRIES.filter((c) =>
-    c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    c.dialCode.includes(searchQuery) ||
-    c.code.toLowerCase().includes(searchQuery.toLowerCase())
+  const searchClean = searchQuery.toLowerCase().trim().replace(/^\+/, "");
+  const filteredCountries = ALL_COUNTRIES.filter((c) =>
+    c.name.toLowerCase().includes(searchClean) ||
+    c.dialCode.replace(/^\+/, "").includes(searchClean) ||
+    c.code.toLowerCase().includes(searchClean)
   );
 
   const displayError = error || internalError;
@@ -159,7 +180,7 @@ export default function PhoneInput({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search country or code..."
+                placeholder="Search country, code or +91..."
                 className="w-full h-8 pl-8 pr-3 bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg text-xs text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 focus:outline-none"
                 autoFocus
               />
