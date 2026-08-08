@@ -135,11 +135,11 @@ export default function PublicPricingView() {
       </div>
 
       {/* Pricing Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-6 xl:gap-8">
         {plans.map((plan) => (
           <div
             key={plan.name}
-            className={`bg-white dark:bg-neutral-800 rounded-3xl p-6 border flex flex-col justify-between space-y-6 shadow-sm relative transition-all ${
+            className={`bg-white dark:bg-neutral-800 rounded-3xl p-6 sm:p-7 border flex flex-col justify-between space-y-6 shadow-sm relative transition-all hover:shadow-md ${
               plan.popular
                 ? "border-indigo-500 ring-2 ring-indigo-500/20 dark:border-indigo-500"
                 : "border-neutral-200 dark:border-neutral-700"
