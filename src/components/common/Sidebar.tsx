@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signOut } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import {
   Home,
   HelpCircle,
@@ -21,15 +21,42 @@ import {
   X,
   LogOut,
   Globe,
+  LogIn,
+  UserPlus,
+  Sparkles,
 } from "lucide-react";
 import { useTranslation } from "@/components/providers/I18nProvider";
 
 export default function Sidebar() {
   const { t } = useTranslation();
   const pathname = usePathname();
+  const { data: session, status } = useSession();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
-  // Grouped Navigation Structure
+  const isAuthenticated = status === "authenticated" && session?.user;
+
+  // Navigation for GUESTS / NEW USERS
+  const guestGroups = [
+    {
+      title: "EXPLORE PLATFORM",
+      items: [
+        { name: "Home Overview", href: "/", icon: Home },
+        { name: "Q&A Community", href: "/dashboard", icon: HelpCircle },
+        { name: "Social Space Preview", href: "/social", icon: MessageSquare },
+        { name: "Plans & Pricing", href: "/subscription", icon: CreditCard },
+        { name: "Rewards System", href: "/profile", icon: Award },
+      ],
+    },
+    {
+      title: "GET STARTED",
+      items: [
+        { name: "Sign In", href: "/login", icon: LogIn },
+        { name: "Create Account", href: "/register", icon: UserPlus },
+      ],
+    },
+  ];
+
+  // Grouped Navigation Structure for AUTHENTICATED USERS
   const menuGroups = [
     {
       title: "GENERAL",
@@ -71,12 +98,21 @@ export default function Sidebar() {
     },
   ];
 
-  const bottomBarItems = [
-    { name: "Home", href: "/", icon: Home },
-    { name: "Q&A", href: "/dashboard", icon: HelpCircle },
-    { name: "Social", href: "/social", icon: MessageSquare },
-    { name: "Plans", href: "/subscription", icon: CreditCard },
-  ];
+  const activeGroups = isAuthenticated ? menuGroups : guestGroups;
+
+  const bottomBarItems = isAuthenticated
+    ? [
+        { name: "Home", href: "/", icon: Home },
+        { name: "Q&A", href: "/dashboard", icon: HelpCircle },
+        { name: "Social", href: "/social", icon: MessageSquare },
+        { name: "Plans", href: "/subscription", icon: CreditCard },
+      ]
+    : [
+        { name: "Home", href: "/", icon: Home },
+        { name: "Q&A", href: "/dashboard", icon: HelpCircle },
+        { name: "Pricing", href: "/subscription", icon: CreditCard },
+        { name: "Login", href: "/login", icon: LogIn },
+      ];
 
   return (
     <>
@@ -84,7 +120,7 @@ export default function Sidebar() {
       <aside className="fixed top-16 left-0 bottom-0 w-64 border-r border-neutral-200 dark:border-neutral-800 bg-white/95 dark:bg-neutral-950/95 backdrop-blur-sm hidden md:flex flex-col justify-between py-5 z-40 overflow-y-auto">
         {/* Grouped Navigation Links */}
         <div className="px-4 space-y-5">
-          {menuGroups.map((group) => (
+          {activeGroups.map((group) => (
             <div key={group.title} className="space-y-1">
               <p className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest px-3 mb-1.5">
                 {group.title}
@@ -185,7 +221,7 @@ export default function Sidebar() {
               </div>
 
               <div className="space-y-4">
-                {menuGroups.map((group) => (
+                {activeGroups.map((group) => (
                   <div key={group.title} className="space-y-1">
                     <p className="text-[9px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest px-2 mb-1">
                       {group.title}
@@ -210,17 +246,38 @@ export default function Sidebar() {
             </div>
 
             <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800 space-y-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setIsDrawerOpen(false);
-                  signOut({ callbackUrl: "/login" });
-                }}
-                className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400 rounded-xl hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-all cursor-pointer"
-              >
-                <LogOut className="h-4 w-4" />
-                <span>Log Out</span>
-              </button>
+              {isAuthenticated ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsDrawerOpen(false);
+                    signOut({ callbackUrl: "/login" });
+                  }}
+                  className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400 rounded-xl hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-all cursor-pointer"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>Log Out</span>
+                </button>
+              ) : (
+                <div className="space-y-2">
+                  <Link
+                    href="/login"
+                    onClick={() => setIsDrawerOpen(false)}
+                    className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-bold border border-neutral-200 dark:border-neutral-700 text-neutral-800 dark:text-neutral-200 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-all"
+                  >
+                    <LogIn className="h-4 w-4" />
+                    <span>Sign In</span>
+                  </Link>
+                  <Link
+                    href="/register"
+                    onClick={() => setIsDrawerOpen(false)}
+                    className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all shadow-sm"
+                  >
+                    <UserPlus className="h-4 w-4" />
+                    <span>Create Account</span>
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         </div>

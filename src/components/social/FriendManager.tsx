@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { UserPlus, UserCheck, UserMinus, Search, Check, X, Star, Users, UserRoundPlus } from "lucide-react";
 
 interface UserType {
@@ -40,6 +41,7 @@ interface FriendType {
 }
 
 export default function FriendManager() {
+  const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState<"friends" | "requests" | "search">("friends");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<UserType[]>([]);
@@ -53,6 +55,7 @@ export default function FriendManager() {
   const [actioningId, setActioningId] = useState<string | null>(null);
 
   const loadFriends = async () => {
+    if (!session || !session.user) return;
     setIsLoadingFriends(true);
     try {
       const response = await fetch("/api/friends?type=list");
@@ -69,6 +72,7 @@ export default function FriendManager() {
   };
 
   const loadRequests = async () => {
+    if (!session || !session.user) return;
     setIsLoadingRequests(true);
     try {
       const response = await fetch("/api/friends?type=requests");
@@ -88,7 +92,37 @@ export default function FriendManager() {
   useEffect(() => {
     loadFriends();
     loadRequests();
-  }, []);
+  }, [session]);
+
+  if (!session || !session.user) {
+    return (
+      <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-8 shadow-sm space-y-4 text-center max-w-md mx-auto my-8">
+        <div className="w-14 h-14 rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-2xl mx-auto">
+          🤝
+        </div>
+        <h3 className="text-lg font-extrabold text-neutral-900 dark:text-white">
+          Sign In to Manage Friends
+        </h3>
+        <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
+          Connecting with friends unlocks higher daily posting allowances in the Social Space! Create an account or sign in to build your developer network.
+        </p>
+        <div className="flex items-center justify-center gap-3 pt-2">
+          <a
+            href="/register"
+            className="px-5 py-2.5 text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-sm transition-all"
+          >
+            Create Account
+          </a>
+          <a
+            href="/login"
+            className="px-5 py-2.5 text-xs font-bold border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-all"
+          >
+            Sign In
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -36,6 +36,36 @@ export default function CreatePostCard({ currentUser, onPostCreated }: CreatePos
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
 
+  if (!session || !session.user) {
+    return (
+      <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-6 shadow-sm space-y-3 text-center">
+        <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-xl mx-auto">
+          👥
+        </div>
+        <h3 className="text-base font-extrabold text-neutral-900 dark:text-white">
+          Join the StackSphere Social Space
+        </h3>
+        <p className="text-xs text-neutral-500 dark:text-neutral-400 max-w-md mx-auto">
+          Create an account or sign in to connect with fellow developers, share media updates, and participate in community discussions!
+        </p>
+        <div className="flex items-center justify-center gap-3 pt-2">
+          <a
+            href="/register"
+            className="px-4 py-2 text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-sm transition-all"
+          >
+            Create Account
+          </a>
+          <a
+            href="/login"
+            className="px-4 py-2 text-xs font-bold border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-all"
+          >
+            Sign In
+          </a>
+        </div>
+      </div>
+    );
+  }
+
   const getInitials = (name: string) => {
     if (!name) return "?";
     return name

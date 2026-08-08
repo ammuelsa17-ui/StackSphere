@@ -33,6 +33,7 @@ export default function SubscriptionPlanGrid({
   const [selectedPlan, setSelectedPlan] = useState<PlanConfig | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [bypassGate, setBypassGate] = useState(false);
+  const [showGuestAuthModal, setShowGuestAuthModal] = useState(false);
 
   // Time Gate check (10:00 AM - 11:00 AM IST)
   const now = new Date();
@@ -43,6 +44,10 @@ export default function SubscriptionPlanGrid({
 
   const handleOpenCheckout = (plan: PlanConfig) => {
     if (plan.name.toLowerCase() === currentPlan.toLowerCase() || plan.name === "Free") {
+      return;
+    }
+    if (!userEmail) {
+      setShowGuestAuthModal(true);
       return;
     }
     if (isTimeGateBlocked) {
@@ -159,6 +164,46 @@ export default function SubscriptionPlanGrid({
           plan={selectedPlan}
           userEmail={userEmail}
         />
+      )}
+
+      {/* Guest Authentication Gate Modal */}
+      {showGuestAuthModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-900/60 backdrop-blur-xs">
+          <div className="bg-white dark:bg-neutral-950 rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4 border border-neutral-200 dark:border-neutral-800 animate-in fade-in zoom-in-95">
+            <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-xl">
+              🔒
+            </div>
+            <div>
+              <h3 className="text-lg font-extrabold text-neutral-900 dark:text-white">
+                Sign in to Upgrade Plan
+              </h3>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1.5 leading-relaxed">
+                Please create an account or sign in before purchasing a membership plan to unlock higher daily question allowances.
+              </p>
+            </div>
+            <div className="flex flex-col gap-2 pt-2">
+              <a
+                href="/register"
+                className="w-full py-2.5 text-center text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-sm transition-all"
+              >
+                Create Account
+              </a>
+              <a
+                href="/login"
+                className="w-full py-2.5 text-center text-xs font-bold border border-neutral-200 dark:border-neutral-700 text-neutral-800 dark:text-neutral-200 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-all"
+              >
+                Sign In
+              </a>
+              <button
+                type="button"
+                onClick={() => setShowGuestAuthModal(false)}
+                className="w-full py-2 text-center text-xs font-medium text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 mt-1 cursor-pointer"
+              >
+                Continue Exploring Pricing
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );

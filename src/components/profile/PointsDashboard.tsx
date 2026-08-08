@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { Award, ArrowUpRight, ArrowDownRight, RefreshCw, Trophy, Zap, AlertCircle } from "lucide-react";
 import { useTranslation } from "@/components/providers/I18nProvider";
 
@@ -18,12 +19,17 @@ interface PointsDashboardProps {
 
 export default function PointsDashboard({ initialPoints }: PointsDashboardProps) {
   const { t } = useTranslation();
+  const { data: session } = useSession();
   const [points, setPoints] = useState(initialPoints);
   const [rewards, setRewards] = useState<RewardItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchRewardHistory = async () => {
+    if (!session || !session.user) {
+      setIsLoading(false);
+      return;
+    }
     setIsLoading(true);
     setError(null);
     try {
@@ -46,7 +52,72 @@ export default function PointsDashboard({ initialPoints }: PointsDashboardProps)
 
   useEffect(() => {
     fetchRewardHistory();
-  }, []);
+  }, [session]);
+
+  if (!session || !session.user) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-6 shadow-sm space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-900/30 flex items-center justify-center">
+              <Trophy className="h-5 w-5 text-amber-500" />
+            </div>
+            <div>
+              <h3 className="text-base font-extrabold text-neutral-900 dark:text-white">
+                How StackSphere Rewards Work
+              </h3>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                Earn reputation points by helping developers answer technical questions!
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
+            <div className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 space-y-1">
+              <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400">+5 Points</p>
+              <p className="text-xs text-neutral-700 dark:text-neutral-300 font-semibold">Post an Answer</p>
+              <p className="text-[11px] text-neutral-400">Awarded for sharing technical solutions</p>
+            </div>
+            <div className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 space-y-1">
+              <p className="text-xs font-bold text-amber-600 dark:text-amber-400">+5 Bonus</p>
+              <p className="text-xs text-neutral-700 dark:text-neutral-300 font-semibold">5 Upvotes Reached</p>
+              <p className="text-[11px] text-neutral-400">Bonus for high-quality community answers</p>
+            </div>
+            <div className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 space-y-1">
+              <p className="text-xs font-bold text-rose-600 dark:text-rose-400">Point Deductions</p>
+              <p className="text-xs text-neutral-700 dark:text-neutral-300 font-semibold">Downvote or Deletion</p>
+              <p className="text-[11px] text-neutral-400">Deducted if answer is downvoted or deleted</p>
+            </div>
+            <div className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 space-y-1">
+              <p className="text-xs font-bold text-indigo-600 dark:text-indigo-400">Point Transfers</p>
+              <p className="text-xs text-neutral-700 dark:text-neutral-300 font-semibold">Balance &gt; 10 pts</p>
+              <p className="text-[11px] text-neutral-400">Transfer reputation points to other users</p>
+            </div>
+          </div>
+
+          <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800 flex flex-wrap items-center justify-between gap-4">
+            <p className="text-xs text-neutral-500 dark:text-neutral-400">
+              Create an account or sign in to start earning reputation points!
+            </p>
+            <div className="flex gap-2">
+              <a
+                href="/register"
+                className="px-4 py-2 text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-sm transition-all"
+              >
+                Create Account
+              </a>
+              <a
+                href="/login"
+                className="px-4 py-2 text-xs font-bold border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-all"
+              >
+                Sign In
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Determine user badge based on points
   const getBadgeName = (pts: number) => {
