@@ -31,6 +31,23 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
+  const startOfToday = new Date();
+  startOfToday.setUTCHours(0, 0, 0, 0);
+  const Question = (await import("@/models/Question")).default;
+  const questionsTodayCount = await Question.countDocuments({
+    author: userData._id,
+    createdAt: { $gte: startOfToday },
+  });
+
+  const plan = userData.subscription?.plan || "Free";
+  let dailyLimit: number | string = 1;
+  if (plan === "Bronze") dailyLimit = 5;
+  else if (plan === "Silver") dailyLimit = 10;
+  else if (plan === "Gold") dailyLimit = "Unlimited";
+
+  const remaining = typeof dailyLimit === "number" ? Math.max(0, dailyLimit - questionsTodayCount) : "Unlimited";
+  const limitReached = typeof dailyLimit === "number" && questionsTodayCount >= dailyLimit;
+
   return (
     <div className="space-y-8">
       {/* Welcome Banner */}
@@ -43,8 +60,61 @@ export default async function DashboardPage() {
         </p>
       </div>
 
+      {/* Question Allowance Status Banner */}
+      <div className={`p-4 rounded-2xl border flex flex-wrap items-center justify-between gap-4 ${
+        limitReached
+          ? "bg-amber-50 border-amber-200 text-amber-900 dark:bg-amber-950/30 dark:border-amber-800 dark:text-amber-200"
+          : "bg-indigo-50/70 border-indigo-100 text-indigo-900 dark:bg-indigo-950/30 dark:border-indigo-900 dark:text-indigo-200"
+      }`}>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-white dark:bg-neutral-800 flex items-center justify-center shadow-sm">
+            <Star className="h-5 w-5 text-indigo-600" />
+          </div>
+          <div>
+            <p className="text-xs uppercase tracking-wider font-semibold opacity-80">
+              Daily Question Allowance ({plan} Plan)
+            </p>
+            <p className="text-sm font-bold mt-0.5">
+              {limitReached ? (
+                <span className="text-amber-600 dark:text-amber-400 font-semibold">
+                  ⚠️ Daily question limit reached ({questionsTodayCount} / {dailyLimit} used)
+                </span>
+              ) : (
+                <span>
+                  Questions Today: <strong className="font-extrabold">{questionsTodayCount}</strong> / {dailyLimit} used ({remaining} remaining)
+                </span>
+              )}
+            </p>
+          </div>
+        </div>
+        <Link
+          href="/subscription"
+          className="px-4 py-2 text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-sm transition-all flex items-center gap-1.5"
+        >
+          Upgrade Plan
+        </Link>
+      </div>
+
       {/* Grid Layout for Stats cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        {/* Question Usage Card */}
+        <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-6 shadow-sm flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-violet-50 dark:bg-violet-900/30 flex items-center justify-center">
+            <Star className="h-6 w-6 text-violet-600" />
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
+              Questions Today
+            </p>
+            <h3 className="text-xl font-bold text-neutral-800 dark:text-neutral-100 mt-1">
+              {questionsTodayCount} / {dailyLimit}
+            </h3>
+            <p className="text-xs text-neutral-400 mt-0.5">
+              {remaining === "Unlimited" ? "Unlimited" : `${remaining} remaining`}
+            </p>
+          </div>
+        </div>
+
         {/* Points Card */}
         <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-6 shadow-sm flex items-center gap-4">
           <div className="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-900/30 flex items-center justify-center">
@@ -54,9 +124,10 @@ export default async function DashboardPage() {
             <p className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
               Reward Points
             </p>
-            <h3 className="text-2xl font-bold text-neutral-800 dark:text-neutral-100 mt-1">
+            <h3 className="text-xl font-bold text-neutral-800 dark:text-neutral-100 mt-1">
               {userData.points || 0} pts
             </h3>
+            <p className="text-xs text-neutral-400 mt-0.5">Reputation Level</p>
           </div>
         </div>
 
@@ -69,9 +140,12 @@ export default async function DashboardPage() {
             <p className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
               Membership Plan
             </p>
-            <h3 className="text-2xl font-bold text-neutral-800 dark:text-neutral-100 mt-1">
+            <h3 className="text-xl font-bold text-neutral-800 dark:text-neutral-100 mt-1">
               {userData.subscription?.plan || "Free"}
             </h3>
+            <p className="text-xs text-indigo-600 font-medium mt-0.5">
+              <Link href="/subscription">Manage →</Link>
+            </p>
           </div>
         </div>
 
@@ -84,11 +158,10 @@ export default async function DashboardPage() {
             <p className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
               Member Since
             </p>
-            <h3 className="text-sm font-bold text-neutral-850 dark:text-neutral-100 mt-2">
+            <h3 className="text-sm font-bold text-neutral-800 dark:text-neutral-100 mt-1">
               {new Date(userData.createdAt).toLocaleDateString("en-US", {
                 year: "numeric",
-                month: "long",
-                day: "numeric",
+                month: "short",
               })}
             </h3>
           </div>

@@ -16,7 +16,49 @@ export async function GET(req: Request) {
       .populate("author", "name email avatarUrl points")
       .sort({ createdAt: -1 });
 
-    return NextResponse.json({ success: true, questions }, { status: 200 });
+    const session = await getServerSession(authOptions);
+    let allowance: {
+      plan: string;
+      dailyLimit: number | string;
+      usedToday: number;
+      remaining: number | string;
+    } = {
+      plan: "Free",
+      dailyLimit: 1,
+      usedToday: 0,
+      remaining: 1,
+    };
+
+    if (session && session.user) {
+      const userId = (session.user as any).id;
+      const user = await checkAndUpdateSubscription(userId);
+      if (user) {
+        const currentPlan = user.subscription?.plan || "Free";
+        let limit: number | string = 1;
+        if (currentPlan === "Bronze") limit = 5;
+        else if (currentPlan === "Silver") limit = 10;
+        else if (currentPlan === "Gold") limit = "Unlimited";
+
+        const startOfToday = new Date();
+        startOfToday.setUTCHours(0, 0, 0, 0);
+
+        const questionCountToday = await Question.countDocuments({
+          author: userId,
+          createdAt: { $gte: startOfToday },
+        });
+
+        const remainingVal = typeof limit === "number" ? Math.max(0, limit - questionCountToday) : "Unlimited";
+
+        allowance = {
+          plan: currentPlan,
+          dailyLimit: limit,
+          usedToday: questionCountToday,
+          remaining: remainingVal,
+        };
+      }
+    }
+
+    return NextResponse.json({ success: true, questions, allowance }, { status: 200 });
   } catch (error: any) {
     return NextResponse.json({ error: error.message || "Failed to retrieve questions." }, { status: 500 });
   }

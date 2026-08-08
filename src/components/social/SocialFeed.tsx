@@ -104,6 +104,42 @@ export default function SocialFeed({ currentUser, initialPosts = [] }: SocialFee
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(initialPosts.length >= 10);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [socialAllowance, setSocialAllowance] = useState<{
+    friends: number;
+    postsToday: number;
+    dailyLimit: number | string;
+    remaining: number | string;
+    canPost: boolean;
+  }>({
+    friends: 0,
+    postsToday: 0,
+    dailyLimit: 0,
+    remaining: 0,
+    canPost: false,
+  });
+
+  const fetchPostsAndAllowance = async () => {
+    try {
+      const response = await fetch("/api/posts?page=1&limit=10");
+      if (response.ok) {
+        const resData = await response.json();
+        if (resData.success) {
+          if (resData.posts && resData.posts.length > 0) {
+            setPosts(resData.posts);
+          }
+          if (resData.socialAllowance) {
+            setSocialAllowance(resData.socialAllowance);
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching social feed and allowance:", err);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchPostsAndAllowance();
+  }, []);
 
   const loadMorePosts = async () => {
     if (isLoadingMore) return;
@@ -175,6 +211,7 @@ export default function SocialFeed({ currentUser, initialPosts = [] }: SocialFee
         };
 
         setPosts((prevPosts) => [createdPost, ...prevPosts]);
+        fetchPostsAndAllowance();
       }
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : "Something went wrong while posting.";
@@ -183,12 +220,48 @@ export default function SocialFeed({ currentUser, initialPosts = [] }: SocialFee
     }
   };
 
-
-
   return (
     <div className="grid grid-cols-1 md:grid-cols-12 gap-5 md:gap-6 lg:gap-8 items-start">
       {/* Left/Center Column: Post Creator and Feed List */}
       <div className="md:col-span-7 lg:col-span-8 space-y-6">
+        {/* Social Posting Status Card */}
+        <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-5 shadow-sm space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-sm">
+                👥
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                  Social Posting Status
+                </h3>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                  Friends: <strong className="font-semibold text-neutral-800 dark:text-neutral-200">{socialAllowance.friends}</strong> • Posts Today: <strong className="font-semibold text-neutral-800 dark:text-neutral-200">{socialAllowance.postsToday} / {socialAllowance.dailyLimit}</strong>
+                </p>
+              </div>
+            </div>
+            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
+              socialAllowance.friends === 0
+                ? "bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400"
+                : socialAllowance.canPost
+                ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400"
+                : "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400"
+            }`}>
+              {socialAllowance.friends === 0 ? "Posting Unavailable" : socialAllowance.remaining === "Unlimited" ? "Unlimited Posting" : `${socialAllowance.remaining} Remaining Today`}
+            </span>
+          </div>
+
+          {socialAllowance.friends === 0 ? (
+            <p className="text-xs text-rose-600 dark:text-rose-400 bg-rose-50/70 dark:bg-rose-950/20 p-2.5 rounded-xl border border-rose-100 dark:border-rose-900/30">
+              ⚠️ You need at least one friend to post publicly. Add friends in the Friends tab to unlock posting!
+            </p>
+          ) : (
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 bg-neutral-50 dark:bg-neutral-900/50 p-2.5 rounded-xl border border-neutral-100 dark:border-neutral-700/50">
+              💡 Rule: 1 friend = 1 post/day • 2–10 friends = 2 posts/day • &gt;10 friends = Unlimited posts
+            </p>
+          )}
+        </div>
+
         <CreatePostCard currentUser={currentUser} onPostCreated={handlePostCreated} />
 
         <div className="space-y-6">

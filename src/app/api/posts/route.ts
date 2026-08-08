@@ -53,10 +53,50 @@ export async function GET(req: Request) {
       createdAt: post.createdAt ? post.createdAt.toISOString() : new Date().toISOString(),
     }));
 
-    // 7. Respond with the posts list
+    let socialAllowance = {
+      friends: 0,
+      postsToday: 0,
+      dailyLimit: 0 as number | string,
+      remaining: 0 as number | string,
+      canPost: false,
+    };
+
+    if (session && session.user) {
+      const User = (await import("@/models/User")).default;
+      const userId = (session.user as any).id;
+      const dbUser = await User.findById(userId).select("friends").lean();
+      const friendCount = dbUser?.friends?.length || 0;
+
+      const startOfToday = new Date();
+      startOfToday.setUTCHours(0, 0, 0, 0);
+
+      const postsTodayCount = await Post.countDocuments({
+        author: userId,
+        createdAt: { $gte: startOfToday },
+      });
+
+      let limit: number | string = 0;
+      if (friendCount === 1) limit = 1;
+      else if (friendCount >= 2 && friendCount <= 10) limit = 2;
+      else if (friendCount > 10) limit = "Unlimited";
+
+      const remainingVal = typeof limit === "number" ? Math.max(0, limit - postsTodayCount) : "Unlimited";
+      const canPost = friendCount > 0 && (limit === "Unlimited" || postsTodayCount < (limit as number));
+
+      socialAllowance = {
+        friends: friendCount,
+        postsToday: postsTodayCount,
+        dailyLimit: limit,
+        remaining: remainingVal,
+        canPost,
+      };
+    }
+
+    // 7. Respond with the posts list and social allowance
     return NextResponse.json({
       success: true,
       posts,
+      socialAllowance,
     });
   } catch (error: any) {
     console.error("Feed retrieval error:", error);
