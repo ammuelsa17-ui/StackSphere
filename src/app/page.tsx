@@ -233,7 +233,7 @@ export default async function Home() {
                 Join StackSphere <ArrowRight className="w-5 h-5" />
               </Link>
               <Link
-                href="/dashboard"
+                href="/explore/questions"
                 className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold text-base transition-all flex items-center justify-center gap-2"
               >
                 Explore Questions

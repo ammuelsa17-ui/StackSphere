@@ -41,10 +41,11 @@ export default function Sidebar() {
       title: "EXPLORE PLATFORM",
       items: [
         { name: "Home Overview", href: "/", icon: Home },
-        { name: "Q&A Community", href: "/dashboard", icon: HelpCircle },
-        { name: "Social Space Preview", href: "/social", icon: MessageSquare },
-        { name: "Plans & Pricing", href: "/subscription", icon: CreditCard },
-        { name: "Rewards System", href: "/profile", icon: Award },
+        { name: "Q&A Community", href: "/explore/questions", icon: HelpCircle },
+        { name: "Social Space Preview", href: "/explore/social", icon: MessageSquare },
+        { name: "Plans & Pricing", href: "/pricing", icon: CreditCard },
+        { name: "Rewards System", href: "/explore/rewards", icon: Award },
+        { name: "Platform Features", href: "/explore/features", icon: Globe },
       ],
     },
     {
@@ -109,8 +110,8 @@ export default function Sidebar() {
       ]
     : [
         { name: "Home", href: "/", icon: Home },
-        { name: "Q&A", href: "/dashboard", icon: HelpCircle },
-        { name: "Pricing", href: "/subscription", icon: CreditCard },
+        { name: "Q&A", href: "/explore/questions", icon: HelpCircle },
+        { name: "Pricing", href: "/pricing", icon: CreditCard },
         { name: "Login", href: "/login", icon: LogIn },
       ];
 

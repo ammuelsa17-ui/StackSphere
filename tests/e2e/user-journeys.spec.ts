@@ -115,4 +115,30 @@ test.describe("StackSphere Real-Time Complete User Journeys", () => {
     await expect(page.locator("body")).toContainText(/(Login History|Device|Audit|Log)/i);
   });
 
+  test("Journey 9: Public Guest Explore Navigation & Friendly Auth Gates", async ({ page }) => {
+    // 1. Visit Homepage
+    await page.goto("/");
+    await expect(page.locator("body")).toContainText(/(Learn|Ask|Connect|StackSphere)/i);
+
+    // 2. Visit Public Q&A Community
+    await page.goto("/explore/questions");
+    await expect(page.locator("body")).toContainText(/(Public Q&A Community|Explore Technical Developer Q&A)/i);
+
+    // 3. Visit Public Social Space Preview
+    await page.goto("/explore/social");
+    await expect(page.locator("body")).toContainText(/(Social Space Preview|Connect|Share|Engage)/i);
+
+    // 4. Visit Public Pricing Page
+    await page.goto("/pricing");
+    await expect(page.locator("body")).toContainText(/(Public Membership Plans|Free|Bronze|Silver|Gold)/i);
+
+    // 5. Visit Public Rewards Page
+    await page.goto("/explore/rewards");
+    await expect(page.locator("body")).toContainText(/(How StackSphere Rewards Work|Community Rewards System)/i);
+
+    // 6. Visit Public Features Page
+    await page.goto("/explore/features");
+    await expect(page.locator("body")).toContainText(/(Platform Features Overview|StackSphere Ecosystem Features)/i);
+  });
+
 });
