@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { MessageSquare, Users, Heart, Share2, Image, Video, Sparkles, Lock, ArrowRight, ShieldAlert } from "lucide-react";
+import ExploreCrossNav from "./ExploreCrossNav";
 
 export default function PublicSocialView() {
   const [showAuthGateModal, setShowAuthGateModal] = useState(false);
@@ -136,6 +137,9 @@ export default function PublicSocialView() {
           </Link>
         </div>
       </div>
+
+      {/* Public Explore Cross Navigation */}
+      <ExploreCrossNav currentPath="/explore/social" />
 
       {/* Friendly Auth Gate Modal */}
       {showAuthGateModal && (

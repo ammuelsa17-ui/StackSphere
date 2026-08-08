@@ -98,8 +98,11 @@ export default async function DashboardPage() {
       {/* Grid Layout for Stats cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {/* Question Usage Card */}
-        <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-6 shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-violet-50 dark:bg-violet-900/30 flex items-center justify-center">
+        <Link
+          href="/subscription"
+          className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 hover:border-indigo-400 dark:hover:border-indigo-600 rounded-2xl p-6 shadow-sm flex items-center gap-4 transition-all group cursor-pointer"
+        >
+          <div className="w-12 h-12 rounded-xl bg-violet-50 dark:bg-violet-900/30 flex items-center justify-center group-hover:scale-105 transition-transform">
             <Star className="h-6 w-6 text-violet-600" />
           </div>
           <div>
@@ -109,15 +112,18 @@ export default async function DashboardPage() {
             <h3 className="text-xl font-bold text-neutral-800 dark:text-neutral-100 mt-1">
               {questionsTodayCount} / {dailyLimit}
             </h3>
-            <p className="text-xs text-neutral-400 mt-0.5">
-              {remaining === "Unlimited" ? "Unlimited" : `${remaining} remaining`}
+            <p className="text-xs text-indigo-600 dark:text-indigo-400 font-medium mt-0.5">
+              {remaining === "Unlimited" ? "Unlimited" : `${remaining} remaining →`}
             </p>
           </div>
-        </div>
+        </Link>
 
         {/* Points Card */}
-        <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-6 shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-900/30 flex items-center justify-center">
+        <Link
+          href="/profile"
+          className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 hover:border-amber-400 dark:hover:border-amber-600 rounded-2xl p-6 shadow-sm flex items-center gap-4 transition-all group cursor-pointer"
+        >
+          <div className="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-900/30 flex items-center justify-center group-hover:scale-105 transition-transform">
             <Award className="h-6 w-6 text-amber-500" />
           </div>
           <div>
@@ -127,13 +133,16 @@ export default async function DashboardPage() {
             <h3 className="text-xl font-bold text-neutral-800 dark:text-neutral-100 mt-1">
               {userData.points || 0} pts
             </h3>
-            <p className="text-xs text-neutral-400 mt-0.5">Reputation Level</p>
+            <p className="text-xs text-amber-600 dark:text-amber-400 font-medium mt-0.5">View Reputation →</p>
           </div>
-        </div>
+        </Link>
 
         {/* Subscription Plan Card */}
-        <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-6 shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center">
+        <Link
+          href="/subscription"
+          className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 hover:border-indigo-400 dark:hover:border-indigo-600 rounded-2xl p-6 shadow-sm flex items-center gap-4 transition-all group cursor-pointer"
+        >
+          <div className="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center group-hover:scale-105 transition-transform">
             <Star className="h-6 w-6 text-indigo-600" />
           </div>
           <div>
@@ -143,29 +152,30 @@ export default async function DashboardPage() {
             <h3 className="text-xl font-bold text-neutral-800 dark:text-neutral-100 mt-1">
               {userData.subscription?.plan || "Free"}
             </h3>
-            <p className="text-xs text-indigo-600 font-medium mt-0.5">
-              <Link href="/subscription">Manage →</Link>
+            <p className="text-xs text-indigo-600 dark:text-indigo-400 font-medium mt-0.5">
+              Manage Membership →
             </p>
           </div>
-        </div>
+        </Link>
 
-        {/* Joined Date Card */}
-        <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-6 shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-teal-50 dark:bg-teal-900/30 flex items-center justify-center">
-            <Calendar className="h-6 w-6 text-teal-600" />
+        {/* Security Audit Card */}
+        <Link
+          href="/login-history"
+          className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 hover:border-teal-400 dark:hover:border-teal-600 rounded-2xl p-6 shadow-sm flex items-center gap-4 transition-all group cursor-pointer"
+        >
+          <div className="w-12 h-12 rounded-xl bg-teal-50 dark:bg-teal-900/30 flex items-center justify-center group-hover:scale-105 transition-transform">
+            <ShieldAlert className="h-6 w-6 text-teal-600" />
           </div>
           <div>
             <p className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
-              Member Since
+              Security Audit
             </p>
-            <h3 className="text-sm font-bold text-neutral-800 dark:text-neutral-100 mt-1">
-              {new Date(userData.createdAt).toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "short",
-              })}
+            <h3 className="text-xs font-bold text-neutral-800 dark:text-neutral-100 mt-1">
+              View Login History
             </h3>
+            <p className="text-xs text-teal-600 dark:text-teal-400 font-medium mt-0.5">Audit Logs →</p>
           </div>
-        </div>
+        </Link>
       </div>
 
       {/* Account Info and Links Section */}

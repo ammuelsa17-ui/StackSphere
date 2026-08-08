@@ -104,12 +104,20 @@ export default function PointTransfer({ currentBalance, onTransferSuccess }: Poi
 
       {/* Constraints Indicator alert banner */}
       {currentBalance <= 10 ? (
-        <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-250 dark:border-amber-900 text-amber-700 dark:text-amber-400 p-4 rounded-xl flex gap-3 text-xs leading-normal">
-          <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5" />
-          <div>
-            <span className="font-bold block mb-1">Transfer Restrictions Active</span>
-            Points transfer requires a minimum balance of **more than 10 points**. Your current balance is <strong>{currentBalance} pts</strong>.
+        <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-250 dark:border-amber-900 text-amber-700 dark:text-amber-400 p-4 rounded-xl flex flex-wrap items-center justify-between gap-3 text-xs leading-normal">
+          <div className="flex gap-3 items-start">
+            <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5" />
+            <div>
+              <span className="font-bold block mb-0.5">Transfer Restrictions Active</span>
+              You need more than 10 points to transfer points. Your current balance is <strong>{currentBalance} pts</strong>.
+            </div>
           </div>
+          <a
+            href="/dashboard"
+            className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all shrink-0 inline-block"
+          >
+            Earn More Points →
+          </a>
         </div>
       ) : null}
 

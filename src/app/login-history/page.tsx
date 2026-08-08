@@ -4,7 +4,8 @@ import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import connectToDatabase from "@/lib/mongodb";
 import LoginHistory from "@/models/LoginHistory";
-import { Shield, Monitor, Smartphone, Tablet, Globe, AlertTriangle } from "lucide-react";
+import Link from "next/link";
+import { Shield, Monitor, Smartphone, Tablet, Globe, AlertTriangle, ArrowLeft } from "lucide-react";
 
 export const metadata = {
   title: "Login History - StackSphere",
@@ -53,6 +54,23 @@ export default async function LoginHistoryPage({
 
   return (
     <div className="space-y-6">
+      {/* Top Navigation Bar */}
+      <div className="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-700 pb-4">
+        <Link
+          href="/profile"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span>Back to Profile</span>
+        </Link>
+        <Link
+          href="/dashboard"
+          className="text-xs font-semibold text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors"
+        >
+          Dashboard →
+        </Link>
+      </div>
+
       {/* Header */}
       <div className="flex flex-col gap-2">
         <h1 className="text-2xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">

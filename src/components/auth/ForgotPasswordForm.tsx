@@ -599,20 +599,19 @@ export default function ForgotPasswordForm() {
       
       <div className="space-y-2">
         <h2 className="font-sans font-bold text-2xl text-neutral-850 dark:text-neutral-100">
-          {t("success")}
+          Password Reset Successful
         </h2>
         <p className="text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed max-w-sm mx-auto">
-          Your account credentials have been successfully updated.
+          Your account credentials have been successfully updated. You can now sign in with your new password.
         </p>
       </div>
 
-      <div className="pt-2 border-t border-neutral-100 dark:border-neutral-700/60">
+      <div className="pt-2">
         <Link
           href="/login"
-          className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-neutral-550 hover:text-neutral-800 dark:hover:text-neutral-200 transition-colors py-1.5 px-3 hover:bg-neutral-50 dark:hover:bg-neutral-900 rounded-lg"
+          className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md transition-all inline-block"
         >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          <span>{t("backToLogin")}</span>
+          Return to Sign In →
         </Link>
       </div>
     </div>

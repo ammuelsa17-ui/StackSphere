@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { CreditCard, Check, Clock, ShieldCheck, Sparkles, Lock, ArrowRight, Star, Zap } from "lucide-react";
+import ExploreCrossNav from "./ExploreCrossNav";
 
 export default function PublicPricingView() {
   const [showAuthGateModal, setShowAuthGateModal] = useState(false);
@@ -197,6 +198,9 @@ export default function PublicPricingView() {
           </div>
         ))}
       </div>
+
+      {/* Public Explore Cross Navigation */}
+      <ExploreCrossNav currentPath="/pricing" />
 
       {/* Friendly Auth Gate Modal */}
       {showAuthGateModal && (

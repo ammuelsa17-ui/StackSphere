@@ -252,9 +252,17 @@ export default function SocialFeed({ currentUser, initialPosts = [] }: SocialFee
           </div>
 
           {socialAllowance.friends === 0 ? (
-            <p className="text-xs text-rose-600 dark:text-rose-400 bg-rose-50/70 dark:bg-rose-950/20 p-2.5 rounded-xl border border-rose-100 dark:border-rose-900/30">
-              ⚠️ You need at least one friend to post publicly. Add friends in the Friends tab to unlock posting!
-            </p>
+            <div className="bg-rose-50/70 dark:bg-rose-950/20 p-3 rounded-xl border border-rose-100 dark:border-rose-900/30 flex flex-wrap items-center justify-between gap-3">
+              <p className="text-xs text-rose-600 dark:text-rose-400 font-medium">
+                ⚠️ You need at least one friend to post publicly.
+              </p>
+              <a
+                href="/social?tab=friends"
+                className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all inline-block"
+              >
+                Find Friends & Build Network →
+              </a>
+            </div>
           ) : (
             <p className="text-xs text-neutral-500 dark:text-neutral-400 bg-neutral-50 dark:bg-neutral-900/50 p-2.5 rounded-xl border border-neutral-100 dark:border-neutral-700/50">
               💡 Rule: 1 friend = 1 post/day • 2–10 friends = 2 posts/day • &gt;10 friends = Unlimited posts

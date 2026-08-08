@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { HelpCircle, PlusCircle, MessageSquare, Eye, Tag, Sparkles, Lock, ArrowRight, ShieldCheck } from "lucide-react";
+import ExploreCrossNav from "./ExploreCrossNav";
 
 interface PublicQuestion {
   _id: string;
@@ -160,6 +161,9 @@ export default function PublicQuestionsView({ initialQuestions }: PublicQuestion
         )}
       </div>
 
+      {/* Public Explore Cross Navigation */}
+      <ExploreCrossNav currentPath="/explore/questions" />
+
       {/* Friendly Auth Gate Modal */}
       {showAuthGateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-900/60 backdrop-blur-xs">
@@ -169,10 +173,10 @@ export default function PublicQuestionsView({ initialQuestions }: PublicQuestion
             </div>
             <div>
               <h3 className="text-lg font-extrabold text-neutral-900 dark:text-white">
-                Sign in to continue
+                Sign in Required
               </h3>
               <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1.5 leading-relaxed">
-                Create an account or sign in to {authGateAction}, participate in voting, and unlock custom developer features.
+                Please sign in or create an account to post technical questions, answer community challenges, and earn reputation points.
               </p>
             </div>
             <div className="flex flex-col gap-2 pt-2">
@@ -180,11 +184,11 @@ export default function PublicQuestionsView({ initialQuestions }: PublicQuestion
                 href="/register"
                 className="w-full py-2.5 text-center text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-sm transition-all"
               >
-                Create Account
+                Create Free Account
               </Link>
               <Link
                 href="/login"
-                className="w-full py-2.5 text-center text-xs font-bold border border-neutral-200 dark:border-neutral-700 text-neutral-800 dark:text-neutral-200 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-all"
+                className="w-full py-2.5 text-center text-xs font-bold bg-neutral-100 dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300 rounded-xl hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-all"
               >
                 Sign In
               </Link>

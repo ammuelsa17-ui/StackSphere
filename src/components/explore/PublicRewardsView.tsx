@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { Trophy, Award, Send, ArrowUpRight, ArrowDownRight, Sparkles, Lock, ArrowRight, CheckCircle2 } from "lucide-react";
+import ExploreCrossNav from "./ExploreCrossNav";
 
 export default function PublicRewardsView() {
   const [showAuthGateModal, setShowAuthGateModal] = useState(false);
@@ -111,6 +112,9 @@ export default function PublicRewardsView() {
           </div>
         </div>
       </div>
+
+      {/* Public Explore Cross Navigation */}
+      <ExploreCrossNav currentPath="/explore/rewards" />
 
       {/* Friendly Auth Gate Modal */}
       {showAuthGateModal && (

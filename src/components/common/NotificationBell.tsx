@@ -94,21 +94,35 @@ export default function NotificationBell() {
                 {t("noNotifications")}
               </div>
             ) : (
-              notifications.map((n) => (
-                <Link
-                  key={n._id}
-                  href={n.link || "#"}
-                  onClick={() => setIsOpen(false)}
-                  className={`block p-3 text-xs transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-750 ${
-                    !n.read ? "bg-indigo-50/40 dark:bg-indigo-950/20 font-medium" : ""
-                  }`}
-                >
-                  <p className="text-neutral-850 dark:text-neutral-200 leading-snug">{n.message}</p>
-                  <span className="text-[10px] text-neutral-400 dark:text-neutral-500 mt-1 block">
-                    {new Date(n.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                  </span>
-                </Link>
-              ))
+              notifications.map((n) => {
+                const resolveLink = (item: any) => {
+                  if (item.link && item.link !== "#") return item.link;
+                  const type = (item.type || "").toLowerCase();
+                  if (type.includes("friend")) return "/social?tab=friends";
+                  if (type.includes("answer") || type.includes("upvote")) return "/dashboard";
+                  if (type.includes("comment") || type.includes("like")) return "/social";
+                  if (type.includes("reward") || type.includes("point")) return "/profile";
+                  if (type.includes("subscription") || type.includes("plan")) return "/subscription";
+                  if (type.includes("security") || type.includes("login")) return "/login-history";
+                  return "/dashboard";
+                };
+
+                return (
+                  <Link
+                    key={n._id}
+                    href={resolveLink(n)}
+                    onClick={() => setIsOpen(false)}
+                    className={`block p-3 text-xs transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-750 ${
+                      !n.read ? "bg-indigo-50/40 dark:bg-indigo-950/20 font-medium" : ""
+                    }`}
+                  >
+                    <p className="text-neutral-850 dark:text-neutral-200 leading-snug">{n.message}</p>
+                    <span className="text-[10px] text-neutral-400 dark:text-neutral-500 mt-1 block">
+                      {new Date(n.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                  </Link>
+                );
+              })
             )}
           </div>
         </div>

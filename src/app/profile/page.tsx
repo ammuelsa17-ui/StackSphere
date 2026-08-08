@@ -16,7 +16,11 @@ export const metadata = {
   description: "View and update your personal StackSphere user profile and activity overview.",
 };
 
-export default async function ProfilePage() {
+export default async function ProfilePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string }>;
+}) {
   // 1. Get current user session on the server
   const session = await getServerSession(authOptions);
 

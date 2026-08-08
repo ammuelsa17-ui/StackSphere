@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { HelpCircle, MessageSquare, Award, Globe, ShieldAlert, CreditCard, Image, Bell, Sparkles, ArrowRight, Lock, Key } from "lucide-react";
+import ExploreCrossNav from "./ExploreCrossNav";
 
 export default function PublicFeaturesView() {
   const [showAuthGateModal, setShowAuthGateModal] = useState(false);
@@ -145,6 +146,9 @@ export default function PublicFeaturesView() {
           );
         })}
       </div>
+
+      {/* Public Explore Cross Navigation */}
+      <ExploreCrossNav currentPath="/explore/features" />
     </div>
   );
 }

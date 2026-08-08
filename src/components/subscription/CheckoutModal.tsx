@@ -168,7 +168,7 @@ export default function CheckoutModal({
           )}
 
           {isSuccess ? (
-            <div className="py-8 text-center space-y-4">
+            <div className="py-6 text-center space-y-5">
               <div className="inline-flex p-4 bg-emerald-500/10 text-emerald-400 rounded-full border border-emerald-500/20 animate-bounce">
                 <CheckCircle2 className="w-10 h-10" />
               </div>
@@ -176,6 +176,21 @@ export default function CheckoutModal({
               <p className="text-sm text-slate-300">
                 You have successfully upgraded to the <strong>{plan.name} Plan</strong>. PDF invoice has been emailed to {userEmail}.
               </p>
+
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                <a
+                  href="/dashboard"
+                  className="flex-1 py-3 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow-md text-center transition-all"
+                >
+                  Go to Dashboard
+                </a>
+                <a
+                  href="/dashboard?action=ask"
+                  className="flex-1 py-3 px-4 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs rounded-xl text-center transition-all"
+                >
+                  Ask a Question
+                </a>
+              </div>
             </div>
           ) : (
             <>

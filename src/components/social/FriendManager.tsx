@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
 import { UserPlus, UserCheck, UserMinus, Search, Check, X, Star, Users, UserRoundPlus } from "lucide-react";
 
 interface UserType {
@@ -42,7 +43,12 @@ interface FriendType {
 
 export default function FriendManager() {
   const { data: session } = useSession();
-  const [activeTab, setActiveTab] = useState<"friends" | "requests" | "search">("friends");
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab");
+
+  const [activeTab, setActiveTab] = useState<"friends" | "requests" | "search">(
+    tabParam === "search" ? "search" : tabParam === "requests" ? "requests" : "friends"
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<UserType[]>([]);
   const [pendingRequests, setPendingRequests] = useState<RequestType[]>([]);
