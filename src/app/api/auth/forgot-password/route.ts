@@ -3,7 +3,7 @@ import crypto from "crypto";
 import connectToDatabase from "@/lib/mongodb";
 import User from "@/models/User";
 import OTPChallenge from "@/models/OTPChallenge";
-import { sanitizeString, validateEmail, validatePhone, normalizePhone } from "@/utils/validation";
+import { sanitizeString, validateEmail, normalizePhone } from "@/utils/validation";
 import { sendEmail } from "@/utils/email";
 import { sendSms } from "@/utils/sms";
 import { hashOtp } from "@/utils/hmac";
@@ -11,10 +11,11 @@ import { checkOtpRateLimits } from "@/utils/rateLimit";
 
 export async function POST(req: Request) {
   try {
-    const { email, phoneNumber } = await req.json();
+    const body = await req.json();
+    const { email, phoneNumber, phone } = body;
 
     const emailClean = sanitizeString(email);
-    const phoneClean = sanitizeString(phoneNumber);
+    const phoneClean = sanitizeString(phoneNumber || phone);
 
     const emailProvided = emailClean !== "";
     const phoneProvided = phoneClean !== "";
@@ -57,8 +58,16 @@ export async function POST(req: Request) {
       );
     }
 
+    // 2. User Not Found handling
     if (!user) {
-      // Account enumeration mitigation: return generic success response without exposing user existence
+      if (!emailProvided) {
+        return NextResponse.json(
+          { error: "We couldn't start phone recovery for this account. Check the number or use email recovery." },
+          { status: 400 }
+        );
+      }
+
+      // Account enumeration mitigation for email
       return NextResponse.json(
         {
           success: true,
@@ -133,10 +142,25 @@ export async function POST(req: Request) {
         `,
       });
     } else {
-      await sendSms({
+      const smsRes = await sendSms({
         to: destination,
         message: `Your StackSphere password reset code is: ${rawCode}. Valid for 5 minutes.`,
       });
+
+      if (smsRes && smsRes.success === false) {
+        const isTrialRecipientErr = smsRes.errorMessage && (smsRes.errorMessage.includes("recipient") || smsRes.errorMessage.includes("verified"));
+        const userMsg = isTrialRecipientErr
+          ? "We couldn't send the SMS code. On Twilio trial accounts, the recipient number must be added as a verified caller ID in your Twilio Console."
+          : "We couldn't send the verification code via SMS right now. Please try email recovery or try again later.";
+
+        return NextResponse.json(
+          {
+            error: userMsg,
+            twilioErrorCode: smsRes.errorCode || 572002,
+          },
+          { status: 400 }
+        );
+      }
     }
 
     return NextResponse.json({
