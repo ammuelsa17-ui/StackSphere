@@ -41,20 +41,21 @@ async function connectToDatabase() {
     const errorName = error?.name || "MongoConnectionError";
     const errorCode = error?.code || "UNKNOWN";
     const rawMessage = error?.errmsg || error?.message || "Failed to establish database connection";
+    const category = errorName === "MongoServerError" && errorCode === 8000 ? "AuthenticationFailed" : errorName;
     const sanitizedMsg = rawMessage.replace(/mongodb(\+srv)?:\/\/[^@]+@/, "mongodb+srv://[REDACTED_CREDS]@");
 
     // Preserve useful diagnostic info in server logs without exposing secret credentials
     console.error("MongoDB connection failed:", {
       name: errorName,
       code: errorCode,
-      category: errorName === "MongoServerError" && errorCode === 8000 ? "AuthenticationFailed" : errorName,
+      category,
       message: sanitizedMsg,
     });
 
-    const customError: any = new Error("Database service is temporarily unavailable. Please try again shortly or use email recovery.");
+    const customError: any = new Error(`MongoDB Connection Error [${category}]: ${sanitizedMsg}`);
     customError.name = errorName;
     customError.code = errorCode;
-    customError.category = errorName === "MongoServerError" && errorCode === 8000 ? "AuthenticationFailed" : errorName;
+    customError.category = category;
     throw customError;
   }
 
