@@ -106,19 +106,19 @@ export async function GET() {
         body: JSON.stringify({
           name: "Test Auth User",
           email: "testauth@example.com",
-          password: "password123",
+          password: "StrongPass123!",
         }),
       });
       const response = await registerHandler(req);
       const data = await response.json();
 
-      if (response.status === 201 || (response.status === 400 && data.error?.includes("already exists"))) {
+      if (response.status === 201 || (response.status === 400 && data.error?.includes("already"))) {
         createdUser = await User.findOne({ email: "testauth@example.com" });
         addResult("User Registration", "PASS", "Test user registered or retrieved successfully.");
         
         // Check password encryption in MongoDB
         const dbUser = await User.findOne({ email: "testauth@example.com" }).select("+password");
-        if (dbUser && dbUser.password !== "password123" && dbUser.password.startsWith("$2")) {
+        if (dbUser && dbUser.password !== "StrongPass123!" && dbUser.password.startsWith("$2")) {
           addResult("Password Encryption", "PASS", "User password encrypted successfully using bcrypt.");
         } else {
           addResult("Password Encryption", "FAIL", "Password was not stored, or stored in plaintext/incorrect hash format.");
@@ -140,7 +140,7 @@ export async function GET() {
         body: JSON.stringify({
           name: "Duplicate User",
           email: "testauth@example.com",
-          password: "password456",
+          password: "StrongPass123!",
         }),
       });
       const response = await registerHandler(req);

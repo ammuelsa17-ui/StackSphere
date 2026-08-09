@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import connectToDatabase from "@/lib/mongodb";
 import User from "@/models/User";
-import { sanitizeString, validateEmail, validatePhone, validatePassword, normalizePhone } from "@/utils/validation";
+import { sanitizeString, validateEmail, validatePassword, normalizePhone, checkPasswordRequirements } from "@/utils/validation";
 
 export async function POST(req: Request) {
   try {
@@ -27,9 +27,10 @@ export async function POST(req: Request) {
       );
     }
 
-    if (!validatePassword(password)) {
+    const passwordPolicy = checkPasswordRequirements(password);
+    if (!passwordPolicy.isValid) {
       return NextResponse.json(
-        { error: "Password must be at least 6 characters long and contain both letters and numbers" },
+        { error: passwordPolicy.firstMissingError || "Password does not meet security requirements." },
         { status: 400 }
       );
     }
