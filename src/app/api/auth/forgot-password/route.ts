@@ -22,7 +22,11 @@ export async function POST(req: Request) {
 
     if (!emailProvided && !phoneProvided) {
       return NextResponse.json(
-        { error: "Either email address or phone number is required." },
+        {
+          success: false,
+          error: "Either email address or phone number is required.",
+          message: "Either email address or phone number is required.",
+        },
         { status: 400 }
       );
     }
@@ -33,7 +37,11 @@ export async function POST(req: Request) {
     if (emailProvided) {
       if (!validateEmail(emailClean)) {
         return NextResponse.json(
-          { error: "Please provide a valid email address." },
+          {
+            success: false,
+            error: "Please provide a valid email address.",
+            message: "Please provide a valid email address.",
+          },
           { status: 400 }
         );
       }
@@ -44,7 +52,11 @@ export async function POST(req: Request) {
       const normalizedPhone = normalizePhone(phoneClean);
       if (!normalizedPhone) {
         return NextResponse.json(
-          { error: "Please enter a valid phone number." },
+          {
+            success: false,
+            error: "Please enter a valid phone number.",
+            message: "Please enter a valid phone number.",
+          },
           { status: 400 }
         );
       }
@@ -62,7 +74,11 @@ export async function POST(req: Request) {
     if (!user) {
       if (!emailProvided) {
         return NextResponse.json(
-          { error: "We couldn't start phone recovery for this account. Check the number or use email recovery." },
+          {
+            success: false,
+            error: "We couldn't start phone recovery for this account. Check the number or use email recovery.",
+            message: "We couldn't start phone recovery for this account. Check the number or use email recovery.",
+          },
           { status: 400 }
         );
       }
@@ -81,7 +97,14 @@ export async function POST(req: Request) {
     // Rate-limit check
     const rateCheck = await checkOtpRateLimits({ userId: user._id.toString(), purpose: "forgot-password" });
     if (!rateCheck.allowed) {
-      return NextResponse.json({ error: rateCheck.reason }, { status: 429 });
+      return NextResponse.json(
+        {
+          success: false,
+          error: rateCheck.reason,
+          message: rateCheck.reason,
+        },
+        { status: 429 }
+      );
     }
 
     // Rate-limit: allow only 1 request per 24h
@@ -90,7 +113,14 @@ export async function POST(req: Request) {
       user.lastForgotPasswordRequestedAt &&
       now.getTime() - new Date(user.lastForgotPasswordRequestedAt).getTime() < 24 * 60 * 60 * 1000
     ) {
-      return NextResponse.json({ error: "You can use this option only one time per day." }, { status: 429 });
+      return NextResponse.json(
+        {
+          success: false,
+          error: "You can use this option only one time per day.",
+          message: "You can use this option only one time per day.",
+        },
+        { status: 429 }
+      );
     }
 
     // Generate secure recovery token (32 bytes) for password reset step
@@ -155,7 +185,9 @@ export async function POST(req: Request) {
 
         return NextResponse.json(
           {
+            success: false,
             error: userMsg,
+            message: userMsg,
             twilioErrorCode: smsRes.errorCode || 572002,
           },
           { status: 400 }
@@ -173,7 +205,11 @@ export async function POST(req: Request) {
   } catch (error: any) {
     console.error("Forgot password route error:", error);
     return NextResponse.json(
-      { error: "An unexpected error occurred while processing recovery request." },
+      {
+        success: false,
+        error: "An unexpected error occurred while processing recovery request.",
+        message: "An unexpected error occurred while processing recovery request.",
+      },
       { status: 500 }
     );
   }

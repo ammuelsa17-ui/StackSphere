@@ -106,8 +106,11 @@ export default function ForgotPasswordForm() {
 
       const resData = await response.json();
 
-      if (!response.ok) {
-        throw new Error(resData.error || "Failed to request verification code.");
+      if (!response.ok || resData.success === false) {
+        const backendMessage = resData.message || resData.error || "Failed to request verification code.";
+        setError(backendMessage);
+        setIsLoading(false);
+        return;
       }
 
       if (resData.success) {
@@ -119,7 +122,7 @@ export default function ForgotPasswordForm() {
         setStep("VERIFY");
       }
     } catch (err: unknown) {
-      const errMsg = err instanceof Error ? err.message : "An unexpected error occurred.";
+      const errMsg = err instanceof Error ? err.message : "A network error occurred. Please check your connection.";
       setError(errMsg);
     } finally {
       setIsLoading(false);
@@ -143,8 +146,12 @@ export default function ForgotPasswordForm() {
       });
 
       const resData = await response.json();
-      if (!response.ok) {
-        throw new Error(resData.error || "Failed to resend verification code.");
+      if (!response.ok || resData.success === false) {
+        const backendMessage = resData.message || resData.error || "Failed to resend verification code.";
+        setError(backendMessage);
+        setResendTimer(0);
+        setIsLoading(false);
+        return;
       }
 
       if (resData.success) {
