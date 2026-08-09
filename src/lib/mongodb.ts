@@ -36,10 +36,10 @@ async function connectToDatabase() {
 
   try {
     cached.conn = await cached.promise;
-  } catch (error) {
+  } catch (error: any) {
     cached.promise = null;
-    console.error("=> Failed to connect to MongoDB Database");
-    throw error;
+    console.error("=> Failed to connect to MongoDB Database:", error?.message || error);
+    throw new Error("Database service is temporarily unavailable. Please try again shortly or use email recovery.");
   }
 
   return cached.conn;
