@@ -49,28 +49,47 @@ export async function POST(req: Request) {
     // Connect to database
     await connectToDatabase();
 
-    // 2. Check if a user already exists with this email or phone number
-    const existingUser = await User.findOne({ email: emailClean.toLowerCase() });
-    if (existingUser) {
-      return NextResponse.json(
-        { error: "A user with this email address is already registered." },
-        { status: 400 }
-      );
-    }
+    // 2. Check if user already exists with this email or phone number independently
+    const existingEmail = await User.findOne({ email: emailClean.toLowerCase() });
+    let existingPhone = null;
 
     if (normalizedPhone) {
-      const existingPhone = await User.findOne({
+      existingPhone = await User.findOne({
         $or: [
           { phoneNumber: normalizedPhone },
           { phoneNumber: phoneClean },
         ],
       });
-      if (existingPhone) {
-        return NextResponse.json(
-          { error: "A user with this phone number is already registered." },
-          { status: 400 }
-        );
-      }
+    }
+
+    if (existingEmail && existingPhone) {
+      return NextResponse.json(
+        {
+          error: "An account with this email address and phone number already exists. Please sign in.",
+          duplicateField: "both",
+        },
+        { status: 400 }
+      );
+    }
+
+    if (existingEmail) {
+      return NextResponse.json(
+        {
+          error: "This email address is already registered. Sign in or use a different email.",
+          duplicateField: "email",
+        },
+        { status: 400 }
+      );
+    }
+
+    if (existingPhone) {
+      return NextResponse.json(
+        {
+          error: "This phone number is already registered. Use a different number or sign in.",
+          duplicateField: "phone",
+        },
+        { status: 400 }
+      );
     }
 
     // 3. Hash the user's password using bcrypt (salt factor 12)

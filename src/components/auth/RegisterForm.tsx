@@ -16,6 +16,7 @@ export default function RegisterForm() {
   const [phoneNumber, setPhoneNumber] = useState("");
   
   const [error, setError] = useState<string | null>(null);
+  const [duplicateField, setDuplicateField] = useState<"email" | "phone" | "both" | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -24,6 +25,7 @@ export default function RegisterForm() {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
+    setDuplicateField(null);
     setSuccess(null);
 
     // 1. Basic Client validations
@@ -69,6 +71,9 @@ export default function RegisterForm() {
       const data = await res.json();
 
       if (!res.ok) {
+        if (data.duplicateField) {
+          setDuplicateField(data.duplicateField);
+        }
         throw new Error(data.error || "Something went wrong. Please try again.");
       }
 
@@ -143,8 +148,15 @@ export default function RegisterForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
-            className="bg-neutral-50 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-xl p-3 text-sm text-neutral-800 dark:text-neutral-100 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200"
+            className={`bg-neutral-50 dark:bg-neutral-900 border rounded-xl p-3 text-sm text-neutral-800 dark:text-neutral-100 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 ${
+              duplicateField === "email" || duplicateField === "both"
+                ? "border-rose-500 ring-1 ring-rose-500/30"
+                : "border-neutral-300 dark:border-neutral-700"
+            }`}
           />
+          {(duplicateField === "email" || duplicateField === "both") && (
+            <span className="text-xs text-rose-500 font-medium">This email address is already registered.</span>
+          )}
         </div>
 
         {/* International Phone Input */}
@@ -152,6 +164,11 @@ export default function RegisterForm() {
           value={phoneNumber}
           onChange={(normalized) => setPhoneNumber(normalized)}
           label={t("phoneNumber")}
+          error={
+            duplicateField === "phone" || duplicateField === "both"
+              ? "This phone number is already registered."
+              : null
+          }
           helperText="We'll use this number for account verification and security."
         />
 
