@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import connectToDatabase from "@/lib/mongodb";
 import User from "@/models/User";
-import { sanitizeString, validateEmail, validatePassword, normalizePhone, checkPasswordRequirements } from "@/utils/validation";
+import { sanitizeString, validateEmail, normalizePhone, checkPasswordRequirements } from "@/utils/validation";
 
 export async function POST(req: Request) {
   try {
@@ -148,8 +148,10 @@ export async function POST(req: Request) {
       );
     }
 
+    const safeMsg = error?.message?.replace(/mongodb(\+srv)?:\/\/[^@]+@/, "mongodb+srv://[REDACTED]@") || "Unable to create account. Please check your information and try again.";
+
     return NextResponse.json(
-      { error: "Unable to create account. Please check your information and try again." },
+      { error: safeMsg },
       { status: 500 }
     );
   }
