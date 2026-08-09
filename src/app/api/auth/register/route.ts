@@ -131,7 +131,6 @@ export async function POST(req: Request) {
     if (
       error.code === 11000 ||
       error.cause?.code === 11000 ||
-      error.name === "MongoServerError" ||
       (error.message && error.message.includes("E11000"))
     ) {
       return NextResponse.json(
