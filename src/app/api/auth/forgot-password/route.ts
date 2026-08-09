@@ -211,7 +211,15 @@ export async function POST(req: Request) {
     });
   } catch (error: any) {
     console.error("Forgot password route error:", error);
-    const msg = error?.message || "An unexpected error occurred while processing recovery request.";
+    const rawMsg = error?.message || "";
+    let msg = "An unexpected error occurred while processing recovery request.";
+    
+    if (rawMsg.includes("bad auth") || rawMsg.includes("authentication failed") || rawMsg.includes("MongoServerError")) {
+      msg = "Database service is temporarily unavailable. Please try again shortly or use email recovery.";
+    } else if (rawMsg) {
+      msg = rawMsg;
+    }
+
     return NextResponse.json(
       {
         success: false,
