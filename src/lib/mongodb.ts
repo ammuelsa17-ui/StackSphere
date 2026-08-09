@@ -20,24 +20,35 @@ if (!cached) {
 }
 
 async function connectToDatabase() {
-  if (cached.conn) {
+  if (cached.conn && cached.conn.readyState === 1) {
     return cached.conn;
   }
+
+  // Reset stale or failed connection state
+  cached.conn = null;
 
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongooseInstance) => {
-      return mongooseInstance;
-    });
+    cached.promise = mongoose
+      .connect(MONGODB_URI, opts)
+      .then((mongooseInstance) => {
+        return mongooseInstance;
+      })
+      .catch((err) => {
+        cached.promise = null;
+        throw err;
+      });
   }
 
   try {
     cached.conn = await cached.promise;
   } catch (error: any) {
     cached.promise = null;
+    cached.conn = null;
+
     const errorName = error?.name || "MongoConnectionError";
     const errorCode = error?.code || "UNKNOWN";
     const rawMessage = error?.errmsg || error?.message || "Failed to establish database connection";
