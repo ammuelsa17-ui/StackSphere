@@ -178,10 +178,15 @@ export async function POST(req: Request) {
       });
 
       if (smsRes && smsRes.success === false) {
+        const isMissingCreds = smsRes.errorCode === "MISSING_CREDENTIALS";
         const isTrialRecipientErr = smsRes.errorMessage && (smsRes.errorMessage.includes("recipient") || smsRes.errorMessage.includes("verified"));
-        const userMsg = isTrialRecipientErr
-          ? "We couldn't send the SMS code. On Twilio trial accounts, the recipient number must be added as a verified caller ID in your Twilio Console."
-          : "We couldn't send the verification code via SMS right now. Please try email recovery or try again later.";
+        
+        let userMsg = "We couldn't send the verification code via SMS right now. Please try email recovery or try again later.";
+        if (isMissingCreds) {
+          userMsg = "SMS service is temporarily unavailable. Please use email recovery or contact support.";
+        } else if (isTrialRecipientErr) {
+          userMsg = "We couldn't send the SMS code. On Twilio trial accounts, the recipient number must be added as a verified caller ID in your Twilio Console.";
+        }
 
         return NextResponse.json(
           {
@@ -204,11 +209,12 @@ export async function POST(req: Request) {
     });
   } catch (error: any) {
     console.error("Forgot password route error:", error);
+    const msg = error?.message || "An unexpected error occurred while processing recovery request.";
     return NextResponse.json(
       {
         success: false,
-        error: "An unexpected error occurred while processing recovery request.",
-        message: "An unexpected error occurred while processing recovery request.",
+        error: msg,
+        message: msg,
       },
       { status: 500 }
     );

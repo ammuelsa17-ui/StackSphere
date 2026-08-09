@@ -16,16 +16,19 @@ export async function sendSms(options: SendSmsOptions) {
   const destination = normalizePhone(to) || to;
 
   const isProduction = process.env.NODE_ENV === "production";
-  const provider = process.env.SMS_PROVIDER || "twilio";
   const accountSid = process.env.TWILIO_ACCOUNT_SID;
   const authToken = process.env.TWILIO_AUTH_TOKEN;
   const fromNumber = process.env.TWILIO_PHONE_NUMBER || "+18005550199";
 
-  // Production Enforcement Check
+  // Production Enforcement Check - Return structured error instead of throwing
   if (isProduction && (!accountSid || !authToken)) {
-    throw new Error(
-      "SMS Delivery Failed: Production SMS provider credentials (TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN) are missing."
-    );
+    return {
+      success: false,
+      method: "twilio",
+      error: true,
+      errorCode: "MISSING_CREDENTIALS",
+      errorMessage: "Production SMS provider credentials (TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN) are missing on Vercel environment.",
+    };
   }
 
   // Real Twilio API Call if credentials present
@@ -55,15 +58,23 @@ export async function sendSms(options: SendSmsOptions) {
           sid: msgResult.sid,
           status: msgResult.status,
         };
+      } else {
+        return {
+          success: false,
+          method: "twilio",
+          error: true,
+          errorCode: "MODULE_NOT_FOUND",
+          errorMessage: "Twilio package module is not installed.",
+        };
       }
     } catch (err: any) {
-      console.warn(`[SMS DISPATCH WARN] ${err.message}. Falling back to dev mock logger.`);
+      console.warn(`[SMS DISPATCH WARN] ${err.message}.`);
       return {
         success: false,
         method: "twilio",
         error: true,
         errorCode: err.code || err.status || "UNKNOWN",
-        errorMessage: err.message,
+        errorMessage: err.message || "Twilio SMS dispatch failed.",
       };
     }
   }
