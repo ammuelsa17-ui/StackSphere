@@ -7,6 +7,7 @@ import ProfileCard from "@/components/profile/ProfileCard";
 import EditProfileForm from "@/components/profile/EditProfileForm";
 import PointsDashboard from "@/components/profile/PointsDashboard";
 import PointTransfer from "@/components/rewards/PointTransfer";
+import DeleteAccountSection from "@/components/profile/DeleteAccountSection";
 import { Activity, MessageSquare, HelpCircle, ShieldAlert, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { checkAndUpdateSubscription } from "@/utils/checkSubscription";
@@ -142,6 +143,9 @@ export default async function ProfilePage({
             </div>
 
           </div>
+
+          {/* Self-Service Account Deletion Danger Zone Section */}
+          <DeleteAccountSection />
 
         </div>
 

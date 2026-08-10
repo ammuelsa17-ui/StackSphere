@@ -7,14 +7,20 @@ import Link from "next/link";
 import { LogIn } from "lucide-react";
 import { useTranslation } from "@/components/providers/I18nProvider";
 
+import { useSearchParams } from "next/navigation";
+
 export default function LoginForm() {
   const { language, t } = useTranslation();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [otpCode, setOtpCode] = useState("");
   const [showOtpInput, setShowOtpInput] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [infoMessage, setInfoMessage] = useState<string | null>(null);
+  const isDeleted = searchParams.get("message") === "deleted";
+  const [infoMessage, setInfoMessage] = useState<string | null>(
+    isDeleted ? "Your account has been permanently deleted." : null
+  );
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
