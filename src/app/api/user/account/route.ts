@@ -108,7 +108,7 @@ export async function DELETE(req: Request) {
     await Post.deleteMany({ author: userId });
     await Comment.deleteMany({ author: userId });
 
-    // E. Public Q&A Anonymization (preserve public thread discussions)
+    // E. Public Q&A Anonymization (preserve public thread discussions without active profile references)
     await Question.updateMany(
       { author: userId },
       {
@@ -116,6 +116,9 @@ export async function DELETE(req: Request) {
           authorName: "Deleted User",
           authorEmail: "deleted@stacksphere.com",
           isAnonymized: true,
+        },
+        $unset: {
+          author: 1,
         },
       }
     );
@@ -126,6 +129,9 @@ export async function DELETE(req: Request) {
         $set: {
           authorName: "Deleted User",
           isAnonymized: true,
+        },
+        $unset: {
+          author: 1,
         },
       }
     );
