@@ -17,9 +17,16 @@ export async function POST(req: Request) {
     const phoneClean = sanitizeString(phoneNumber);
 
     // 1. Basic input validation
+    if (!phoneClean) {
+      return NextResponse.json(
+        { error: "Phone number is required." },
+        { status: 400 }
+      );
+    }
+
     if (!nameClean || !emailClean || !password) {
       return NextResponse.json(
-        { error: "Missing required fields (name, email, password)" },
+        { error: "Missing required fields (name, email, phone number, password)" },
         { status: 400 }
       );
     }
@@ -39,16 +46,12 @@ export async function POST(req: Request) {
       );
     }
 
-    let normalizedPhone = "";
-    if (phoneClean) {
-      const normalized = normalizePhone(phoneClean);
-      if (normalized === null) {
-        return NextResponse.json(
-          { error: "Please enter a valid phone number." },
-          { status: 400 }
-        );
-      }
-      normalizedPhone = normalized;
+    const normalizedPhone = normalizePhone(phoneClean);
+    if (!normalizedPhone) {
+      return NextResponse.json(
+        { error: "Please enter a valid phone number." },
+        { status: 400 }
+      );
     }
 
     // Connect to database

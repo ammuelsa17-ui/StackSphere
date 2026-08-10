@@ -59,7 +59,7 @@ export default function RegisterForm() {
     setSuccess(null);
 
     // 1. Basic Client validations
-    if (!name || !email || !password) {
+    if (!name || !email || !phoneNumber || !password) {
       setError("Please fill in all required fields.");
       setIsLoading(false);
       return;
@@ -185,6 +185,7 @@ export default function RegisterForm() {
 
         {/* International Phone Input */}
         <PhoneInput
+          required={true}
           value={phoneNumber}
           onChange={(normalized) => setPhoneNumber(normalized)}
           label={t("phoneNumber")}

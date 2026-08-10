@@ -50,8 +50,8 @@ const UserSchema = new Schema(
     },
     phoneNumber: {
       type: String,
+      required: [true, "Phone number is required"],
       trim: true,
-      default: "",
     },
     avatarUrl: {
       type: String,
