@@ -105,7 +105,7 @@ export function checkPasswordRequirements(password: unknown): PasswordRequiremen
 
   let firstMissingError: string | null = null;
   if (!hasMinLength) {
-    firstMissingError = "Password must contain at least 8 characters.";
+    firstMissingError = "Password must be at least 8 characters and include an uppercase letter, lowercase letter, number, and special character.";
   } else if (!hasUppercase) {
     firstMissingError = "Add at least one uppercase letter.";
   } else if (!hasLowercase) {
