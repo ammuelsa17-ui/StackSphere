@@ -305,7 +305,7 @@ export default function RegisterForm() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-xs font-medium">
             <div className={`flex items-center gap-1.5 ${reqs.hasMinLength ? "text-emerald-600 dark:text-emerald-400 font-bold" : "text-neutral-400 dark:text-neutral-500"}`}>
               {reqs.hasMinLength ? <CheckCircle2 className="h-3.5 w-3.5" /> : <XCircle className="h-3.5 w-3.5 text-neutral-300 dark:text-neutral-700" />}
-              <span>12+ characters</span>
+              <span>8+ characters</span>
             </div>
             <div className={`flex items-center gap-1.5 ${reqs.hasUppercase ? "text-emerald-600 dark:text-emerald-400 font-bold" : "text-neutral-400 dark:text-neutral-500"}`}>
               {reqs.hasUppercase ? <CheckCircle2 className="h-3.5 w-3.5" /> : <XCircle className="h-3.5 w-3.5 text-neutral-300 dark:text-neutral-700" />}

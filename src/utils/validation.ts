@@ -68,7 +68,7 @@ export function validatePhone(
 
 /**
  * Password Policy Requirements for New Account Registration:
- * - Minimum 12 characters
+ * - Minimum 8 characters
  * - At least 1 uppercase letter
  * - At least 1 lowercase letter
  * - At least 1 number
@@ -97,7 +97,7 @@ export function checkPasswordRequirements(password: unknown): PasswordRequiremen
     };
   }
 
-  const hasMinLength = password.length >= 12;
+  const hasMinLength = password.length >= 8;
   const hasUppercase = /[A-Z]/.test(password);
   const hasLowercase = /[a-z]/.test(password);
   const hasNumber = /[0-9]/.test(password);
@@ -105,7 +105,7 @@ export function checkPasswordRequirements(password: unknown): PasswordRequiremen
 
   let firstMissingError: string | null = null;
   if (!hasMinLength) {
-    firstMissingError = "Password must contain at least 12 characters.";
+    firstMissingError = "Password must contain at least 8 characters.";
   } else if (!hasUppercase) {
     firstMissingError = "Add at least one uppercase letter.";
   } else if (!hasLowercase) {
@@ -151,8 +151,8 @@ export function calculatePasswordStrength(password: string): PasswordStrengthRes
   const reqs = checkPasswordRequirements(password);
   let score = 0;
 
+  if (password.length >= 8) score += 1;
   if (password.length >= 12) score += 1;
-  if (password.length >= 16) score += 1;
   if (reqs.hasUppercase && reqs.hasLowercase) score += 1;
   if (reqs.hasNumber && reqs.hasSpecial) score += 1;
 

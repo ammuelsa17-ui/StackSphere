@@ -18,11 +18,11 @@ export async function POST(req: Request) {
     }
 
     const isLettersOnly = /^[a-zA-Z]+$/.test(password);
-    const isMinLength = typeof password === "string" && password.length >= 6;
+    const isMinLength = typeof password === "string" && password.length >= 8;
 
     if (!isMinLength || !isLettersOnly) {
       return NextResponse.json(
-        { error: "Password must be at least 6 characters long and contain only letters." },
+        { error: "Password must be at least 8 characters long and contain only letters." },
         { status: 400 }
       );
     }
