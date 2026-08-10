@@ -8,37 +8,6 @@ import { sanitizeString, validateEmail, normalizePhone, checkPasswordRequirement
 import crypto from "crypto";
 import mongoose from "mongoose";
 
-export async function GET() {
-  const uri = process.env.MONGODB_URI;
-
-  if (!uri) {
-    return NextResponse.json({
-      envPresent: false,
-      uriSha256: "",
-      uriLength: 0,
-      hasLeadingWhitespace: false,
-      hasTrailingWhitespace: false,
-      hasQuotes: false,
-    });
-  }
-
-  const hasLeadingWhitespace = /^\s/.test(uri);
-  const hasTrailingWhitespace = /\s$/.test(uri);
-  const hasQuotes = /^["']|["']$/.test(uri.trim());
-
-  const cleanUri = uri.trim().replace(/^["']|["']$/g, "");
-  const sha256 = crypto.createHash("sha256").update(cleanUri).digest("hex");
-
-  return NextResponse.json({
-    envPresent: true,
-    uriSha256: sha256,
-    uriLength: cleanUri.length,
-    hasLeadingWhitespace,
-    hasTrailingWhitespace,
-    hasQuotes,
-  });
-}
-
 export async function POST(req: Request) {
   try {
     const { name, email, password, phoneNumber } = await req.json();
