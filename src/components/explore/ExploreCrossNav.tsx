@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { ArrowRight, Compass, Sparkles, CreditCard, Award, MessageSquare, Layers } from "lucide-react";
+import { useTranslation } from "@/components/providers/I18nProvider";
 
 interface CrossNavLink {
   title: string;
@@ -17,25 +18,27 @@ interface ExploreCrossNavProps {
 }
 
 export default function ExploreCrossNav({ currentPath }: ExploreCrossNavProps) {
+  const { t } = useTranslation();
+
   const getNavLinks = (): CrossNavLink[] => {
     switch (currentPath) {
       case "/explore/questions":
         return [
           {
-            title: "Explore Social Space",
-            description: "See photo & video feed demos and developer network posting rules",
+            title: t("socialSpacePreview"),
+            description: t("socialFeatureDesc"),
             href: "/explore/social",
             icon: <Compass className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />,
           },
           {
-            title: "View Membership Plans",
-            description: "Compare daily question limits across Free, Bronze, Silver & Gold tiers",
+            title: t("plansPricing"),
+            description: t("subscriptionFeatureDesc"),
             href: "/pricing",
             icon: <CreditCard className="h-5 w-5 text-purple-600 dark:text-purple-400" />,
           },
           {
-            title: "Create Free Account",
-            description: "Sign up in 30 seconds to ask technical questions and collect reputation",
+            title: t("createAccount"),
+            description: t("createAccountFooterDesc"),
             href: "/register",
             icon: <Sparkles className="h-5 w-5 text-amber-500" />,
             primary: true,
@@ -44,20 +47,20 @@ export default function ExploreCrossNav({ currentPath }: ExploreCrossNavProps) {
       case "/explore/social":
         return [
           {
-            title: "Explore Q&A Community",
-            description: "Browse recent developer technical questions and solution threads",
+            title: t("qaCommunity"),
+            description: t("qaFeatureDesc"),
             href: "/explore/questions",
             icon: <MessageSquare className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />,
           },
           {
-            title: "Learn About Rewards",
-            description: "Discover how to earn +5 points per answer and transfer reputation",
+            title: t("rewardsSystem"),
+            description: t("rewardsFeatureDesc"),
             href: "/explore/rewards",
             icon: <Award className="h-5 w-5 text-amber-500" />,
           },
           {
-            title: "Join StackSphere",
-            description: "Create your developer profile to connect with peers and share updates",
+            title: t("joinStackSphere"),
+            description: t("createAccountFooterDesc"),
             href: "/register",
             icon: <Sparkles className="h-5 w-5 text-indigo-500" />,
             primary: true,
@@ -66,20 +69,20 @@ export default function ExploreCrossNav({ currentPath }: ExploreCrossNavProps) {
       case "/explore/rewards":
         return [
           {
-            title: "Explore Q&A Community",
-            description: "Answer community questions to start collecting reputation points",
+            title: t("qaCommunity"),
+            description: t("qaFeatureDesc"),
             href: "/explore/questions",
             icon: <MessageSquare className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />,
           },
           {
-            title: "View Membership Plans",
-            description: "Unlock higher daily allowances with Bronze, Silver & Gold plans",
+            title: t("plansPricing"),
+            description: t("subscriptionFeatureDesc"),
             href: "/pricing",
             icon: <CreditCard className="h-5 w-5 text-purple-600 dark:text-purple-400" />,
           },
           {
-            title: "Create Account",
-            description: "Register to unlock your personal points wallet and peer transfer",
+            title: t("createAccount"),
+            description: t("createAccountFooterDesc"),
             href: "/register",
             icon: <Sparkles className="h-5 w-5 text-emerald-500" />,
             primary: true,
@@ -88,20 +91,20 @@ export default function ExploreCrossNav({ currentPath }: ExploreCrossNavProps) {
       case "/pricing":
         return [
           {
-            title: "Explore Platform Features",
-            description: "View full-stack capabilities including 6 languages, 2FA, & audit logs",
+            title: t("platformFeatures"),
+            description: t("featuresSubtitle"),
             href: "/explore/features",
             icon: <Layers className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />,
           },
           {
-            title: "Browse Q&A Forum",
-            description: "Check public questions feed and community allowance limits",
+            title: t("qaCommunity"),
+            description: t("qaFeatureDesc"),
             href: "/explore/questions",
             icon: <MessageSquare className="h-5 w-5 text-purple-600 dark:text-purple-400" />,
           },
           {
-            title: "Sign In to Upgrade",
-            description: "Already have an account? Sign in to upgrade your membership tier",
+            title: t("signIn"),
+            description: t("signInSubtitle"),
             href: "/login",
             icon: <Sparkles className="h-5 w-5 text-amber-500" />,
             primary: true,
@@ -111,20 +114,20 @@ export default function ExploreCrossNav({ currentPath }: ExploreCrossNavProps) {
       default:
         return [
           {
-            title: "View Membership Plans",
-            description: "Explore subscription pricing options and question daily limits",
+            title: t("plansPricing"),
+            description: t("subscriptionFeatureDesc"),
             href: "/pricing",
             icon: <CreditCard className="h-5 w-5 text-purple-600 dark:text-purple-400" />,
           },
           {
-            title: "Explore Q&A Community",
-            description: "Browse live technical questions and developer discussions",
+            title: t("qaCommunity"),
+            description: t("qaFeatureDesc"),
             href: "/explore/questions",
             icon: <MessageSquare className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />,
           },
           {
-            title: "Create Free Account",
-            description: "Join StackSphere to access all developer features and rewards",
+            title: t("createAccount"),
+            description: t("createAccountFooterDesc"),
             href: "/register",
             icon: <Sparkles className="h-5 w-5 text-indigo-500" />,
             primary: true,
@@ -141,10 +144,10 @@ export default function ExploreCrossNav({ currentPath }: ExploreCrossNavProps) {
         <div>
           <h3 className="text-base font-extrabold text-neutral-900 dark:text-white flex items-center gap-2">
             <Compass className="h-5 w-5 text-indigo-600" />
-            Explore More of StackSphere
+            {t("explorePlatform")}
           </h3>
           <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Discover other areas of the platform or sign in to participate in the community.
+            {t("featuresSubtitle")}
           </p>
         </div>
       </div>

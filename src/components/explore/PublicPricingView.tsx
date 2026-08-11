@@ -4,8 +4,10 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { CreditCard, Check, Clock, ShieldCheck, Sparkles, Lock, ArrowRight, Star, Zap } from "lucide-react";
 import ExploreCrossNav from "./ExploreCrossNav";
+import { useTranslation } from "@/components/providers/I18nProvider";
 
 export default function PublicPricingView() {
+  const { t } = useTranslation();
   const [showAuthGateModal, setShowAuthGateModal] = useState(false);
   const [selectedPlanName, setSelectedPlanName] = useState("Bronze");
 
@@ -18,10 +20,10 @@ export default function PublicPricingView() {
 
   const plans = [
     {
-      name: "Free",
+      name: t("freePlanTitle"),
       price: "₹0",
       period: "forever",
-      description: "Essential access for individual developers exploring community Q&A.",
+      description: t("qaFeatureDesc"),
       allowance: "1 Question / Day",
       features: [
         "1 question submission per day",
@@ -31,13 +33,13 @@ export default function PublicPricingView() {
         "6 language options",
       ],
       popular: false,
-      buttonText: "Current Default Plan",
+      buttonText: t("freePlanTitle"),
     },
     {
       name: "Bronze",
       price: "₹100",
       period: "per month",
-      description: "Ideal for active developers needing expanded daily question limits.",
+      description: t("subscriptionFeatureDesc"),
       allowance: "5 Questions / Day",
       features: [
         "5 question submissions per day",
@@ -47,43 +49,43 @@ export default function PublicPricingView() {
         "PDF payment invoices",
       ],
       popular: true,
-      buttonText: "Sign in to Upgrade",
+      buttonText: t("subscribeBtn"),
     },
     {
       name: "Silver",
       price: "₹300",
       period: "per month",
-      description: "Designed for power users and senior software engineers.",
+      description: t("subscriptionFeatureDesc"),
       allowance: "10 Questions / Day",
       features: [
         "10 question submissions per day",
         "10MB photo & video uploads",
-        "Enhanced reputation bonuses",
-        "Advanced login security logs",
-        "Full multi-language support",
+        "High-priority Q&A ranking",
+        "P2P reward points transfer",
+        "Automated PDF billing logs",
       ],
       popular: false,
-      buttonText: "Sign in to Upgrade",
+      buttonText: t("subscribeBtn"),
     },
     {
       name: "Gold",
       price: "₹1000",
       period: "per month",
-      description: "Ultimate unlimited access for tech leads and organization teams.",
-      allowance: "Unlimited Questions",
+      description: t("subscriptionFeatureDesc"),
+      allowance: "Unlimited / Day",
       features: [
-        "Unlimited daily questions",
-        "15MB high-res media uploads",
-        "Unlimited social post creation",
-        "Custom reputation badge styling",
-        "Dedicated developer support",
+        "Unlimited question submissions",
+        "Unlimited photo & video sharing",
+        "Gold VIP badge on profile",
+        "Full audit security logs",
+        "Razorpay Test Mode checkout",
       ],
       popular: false,
-      buttonText: "Sign in to Upgrade",
+      buttonText: t("subscribeBtn"),
     },
   ];
 
-  const handlePlanClick = (planName: string) => {
+  const triggerSubscribeModal = (planName: string) => {
     setSelectedPlanName(planName);
     setShowAuthGateModal(true);
   };
@@ -91,94 +93,83 @@ export default function PublicPricingView() {
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-indigo-600 rounded-3xl p-6 sm:p-8 text-white shadow-xl space-y-4">
+      <div className="bg-gradient-to-r from-purple-700 via-indigo-600 to-purple-800 rounded-3xl p-6 sm:p-8 text-white shadow-xl space-y-4">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center font-bold text-2xl">
             💳
           </div>
           <div>
             <span className="px-3 py-1 bg-white/20 text-white rounded-full text-[10px] font-extrabold uppercase tracking-widest">
-              Public Membership Plans
+              {t("plansPricing")}
             </span>
             <h1 className="text-2xl sm:text-3xl font-black mt-1">
-              Transparent Developer Pricing
+              {t("choosePlan")}
             </h1>
           </div>
         </div>
 
-        <p className="text-sm text-teal-100 max-w-2xl leading-relaxed">
-          Choose the plan that fits your coding workflow. Upgrade anytime to unlock higher daily question allowances, premium media upload limits, and custom reputation badges!
+        <p className="text-sm text-purple-100 max-w-2xl leading-relaxed">
+          {t("subscriptionFeatureDesc")}
         </p>
-      </div>
 
-      {/* Payment Window Time Gate Banner */}
-      <div className={`p-4 rounded-2xl border flex flex-wrap items-center justify-between gap-3 text-xs ${
-        isTimeGateOpen
-          ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300"
-          : "bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300"
-      }`}>
-        <div className="flex items-center gap-3">
-          <Clock className="h-5 w-5 shrink-0" />
-          <div>
-            <p className="font-bold">
-              Membership Payment Window: 10:00 AM – 11:00 AM IST Daily
-            </p>
-            <p className="text-[11px] opacity-80 mt-0.5">
-              {isTimeGateOpen
-                ? "Payment window is currently OPEN. Sign in to process membership upgrades via Razorpay."
-                : "Payment window is currently CLOSED. Checkout becomes active daily between 10:00 AM and 11:00 AM IST."}
-            </p>
+        {/* Time-Gate Alert Box */}
+        <div className="p-4 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2">
+            <Clock className="h-4 w-4 text-amber-300 shrink-0" />
+            <span>
+              <strong>10:00 AM - 11:00 AM IST Window:</strong>{" "}
+              {isTimeGateOpen ? "WINDOW OPEN NOW!" : t("timeGateWarning")}
+            </span>
           </div>
+          <span className={`px-2.5 py-1 rounded-full font-bold uppercase text-[9px] ${isTimeGateOpen ? "bg-emerald-500 text-white" : "bg-amber-400/30 text-amber-200"}`}>
+            {isTimeGateOpen ? "Open" : "Restricted"}
+          </span>
         </div>
-        <span className="px-3 py-1 bg-white/60 dark:bg-black/30 font-extrabold rounded-lg shrink-0">
-          {isTimeGateOpen ? "● Window Open" : "○ Restricted Window"}
-        </span>
       </div>
 
-      {/* Pricing Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-6 xl:gap-8">
+      {/* Plan Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {plans.map((plan) => (
           <div
             key={plan.name}
-            className={`bg-white dark:bg-neutral-800 rounded-3xl p-6 sm:p-7 border flex flex-col justify-between space-y-6 shadow-sm relative transition-all hover:shadow-md ${
+            className={`bg-white dark:bg-neutral-800 border rounded-2xl p-5 flex flex-col justify-between space-y-4 relative shadow-sm ${
               plan.popular
-                ? "border-indigo-500 ring-2 ring-indigo-500/20 dark:border-indigo-500"
+                ? "border-purple-500 ring-2 ring-purple-500/20"
                 : "border-neutral-200 dark:border-neutral-700"
             }`}
           >
             {plan.popular && (
-              <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-indigo-600 text-white text-[10px] font-black rounded-full uppercase tracking-widest shadow-md">
+              <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-extrabold text-[9px] uppercase tracking-widest rounded-full shadow-sm">
                 Most Popular
               </span>
             )}
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div>
-                <h3 className="text-lg font-black text-neutral-900 dark:text-white">
-                  {plan.name}
+                <h3 className="font-extrabold text-lg text-neutral-900 dark:text-white flex items-center justify-between">
+                  <span>{plan.name}</span>
+                  {plan.name === "Gold" && <Zap className="h-4 w-4 text-amber-500" />}
                 </h3>
-                <p className="text-xs text-neutral-500 mt-1 leading-relaxed">
+                <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1 line-clamp-2">
                   {plan.description}
                 </p>
               </div>
 
-              <div className="flex items-baseline gap-1">
-                <span className="text-3xl font-black text-neutral-900 dark:text-white">
-                  {plan.price}
+              <div className="py-2 border-y border-neutral-100 dark:border-neutral-700">
+                <div className="flex items-baseline gap-1">
+                  <span className="text-2xl font-black text-neutral-900 dark:text-white">{plan.price}</span>
+                  <span className="text-xs text-neutral-500">{plan.period}</span>
+                </div>
+                <span className="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 rounded-md">
+                  {plan.allowance}
                 </span>
-                <span className="text-xs text-neutral-500">{plan.period}</span>
               </div>
 
-              <div className="p-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-900/50 text-xs font-bold flex items-center gap-2">
-                <Zap className="h-4 w-4 shrink-0" />
-                <span>{plan.allowance}</span>
-              </div>
-
-              <ul className="space-y-2.5 pt-2">
-                {plan.features.map((feature, idx) => (
-                  <li key={idx} className="flex items-start gap-2 text-xs text-neutral-600 dark:text-neutral-300">
-                    <Check className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
-                    <span>{feature}</span>
+              <ul className="space-y-2 text-xs text-neutral-600 dark:text-neutral-300">
+                {plan.features.map((feat) => (
+                  <li key={feat} className="flex items-start gap-2">
+                    <Check className="h-3.5 w-3.5 text-emerald-500 shrink-0 mt-0.5" />
+                    <span>{feat}</span>
                   </li>
                 ))}
               </ul>
@@ -186,11 +177,11 @@ export default function PublicPricingView() {
 
             <button
               type="button"
-              onClick={() => handlePlanClick(plan.name)}
-              className={`w-full py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                plan.name === "Free"
-                  ? "bg-neutral-100 dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-800"
-                  : "bg-indigo-600 hover:bg-indigo-700 text-white shadow-md hover:shadow-lg"
+              onClick={() => triggerSubscribeModal(plan.name)}
+              className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer shadow-xs ${
+                plan.popular
+                  ? "bg-purple-600 hover:bg-purple-700 text-white"
+                  : "bg-neutral-100 dark:bg-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-600 text-neutral-800 dark:text-neutral-200"
               }`}
             >
               {plan.buttonText}
@@ -199,44 +190,39 @@ export default function PublicPricingView() {
         ))}
       </div>
 
-      {/* Public Explore Cross Navigation */}
       <ExploreCrossNav currentPath="/pricing" />
 
-      {/* Friendly Auth Gate Modal */}
+      {/* Auth Gate Modal */}
       {showAuthGateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-900/60 backdrop-blur-xs">
-          <div className="bg-white dark:bg-neutral-950 rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4 border border-neutral-200 dark:border-neutral-800 animate-in fade-in zoom-in-95">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-xl">
-              🔒
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 max-w-sm w-full p-6 rounded-2xl shadow-2xl text-center space-y-4">
+            <div className="w-12 h-12 rounded-full bg-purple-50 dark:bg-purple-900/30 text-purple-600 flex items-center justify-center mx-auto">
+              <Lock className="h-6 w-6" />
             </div>
-            <div>
-              <h3 className="text-lg font-extrabold text-neutral-900 dark:text-white">
-                Sign in to Upgrade Plan
-              </h3>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1.5 leading-relaxed">
-                Please create an account or sign in before purchasing a {selectedPlanName} membership plan to unlock higher daily question allowances.
-              </p>
-            </div>
-            <div className="flex flex-col gap-2 pt-2">
-              <Link
-                href="/register"
-                className="w-full py-2.5 text-center text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-sm transition-all"
-              >
-                Create Account
-              </Link>
-              <Link
-                href="/login"
-                className="w-full py-2.5 text-center text-xs font-bold border border-neutral-200 dark:border-neutral-700 text-neutral-800 dark:text-neutral-200 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-all"
-              >
-                Sign In
-              </Link>
+
+            <h3 className="font-extrabold text-base text-neutral-900 dark:text-white">
+              {t("signInTitle")}
+            </h3>
+
+            <p className="text-xs text-neutral-500 dark:text-neutral-400">
+              {t("signInSubtitle")}
+            </p>
+
+            <div className="flex gap-2 pt-2">
               <button
                 type="button"
                 onClick={() => setShowAuthGateModal(false)}
-                className="w-full py-2 text-center text-xs font-medium text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 mt-1 cursor-pointer"
+                className="flex-1 py-2 bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-200 font-bold text-xs rounded-xl"
               >
-                Continue Exploring Pricing
+                Cancel
               </button>
+              <Link
+                href="/login"
+                className="flex-1 py-2 bg-purple-600 text-white font-bold text-xs rounded-xl hover:bg-purple-700 flex items-center justify-center gap-1"
+              >
+                <Lock className="h-3.5 w-3.5" />
+                <span>{t("signIn")}</span>
+              </Link>
             </div>
           </div>
         </div>

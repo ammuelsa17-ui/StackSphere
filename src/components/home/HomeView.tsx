@@ -58,13 +58,13 @@ export default function HomeView({
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mb-3">
-                  <Sparkles className="w-3.5 h-3.5" /> Welcome Back
+                  <Sparkles className="w-3.5 h-3.5" /> {t("welcomeBack")}
                 </span>
                 <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-                  Hello, {session.user.name || "Developer"} 👋
+                  {t("helloUser")}, {session.user.name || "Developer"} 👋
                 </h1>
                 <p className="text-slate-400 text-sm sm:text-base mt-1">
-                  Here is your community snapshot and recent developer discussions.
+                  {t("dashboardSnapshot")}
                 </p>
               </div>
 
@@ -87,30 +87,30 @@ export default function HomeView({
             {/* Quick Metrics */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-slate-700/60">
               <div className="bg-slate-900/60 rounded-xl p-4 border border-slate-700/40">
-                <p className="text-xs font-medium text-slate-400">{t("myReputationPoints")}</p>
+                <p className="text-xs font-medium text-slate-400">{t("reputationPoints")}</p>
                 <p className="text-xl font-bold text-indigo-400 mt-1">
                   {userDetails?.points ?? 0} pts
                 </p>
               </div>
               <div className="bg-slate-900/60 rounded-xl p-4 border border-slate-700/40">
-                <p className="text-xs font-medium text-slate-400">{t("activePlanLabel")}</p>
+                <p className="text-xs font-medium text-slate-400">{t("activeMembership")}</p>
                 <p className="text-xl font-bold text-emerald-400 mt-1">
-                  {userDetails?.subscription?.plan || "Free"} Plan
+                  {userDetails?.subscription?.plan || "Free"}
                 </p>
               </div>
               <div className="bg-slate-900/60 rounded-xl p-4 border border-slate-700/40">
-                <p className="text-xs font-medium text-slate-400">{t("friendsNetwork")}</p>
+                <p className="text-xs font-medium text-slate-400">{t("friendsConnected")}</p>
                 <p className="text-xl font-bold text-amber-400 mt-1">
-                  {userDetails?.friends?.length || 0} Friends
+                  {userDetails?.friends?.length || 0}
                 </p>
               </div>
               <div className="bg-slate-900/60 rounded-xl p-4 border border-slate-700/40">
-                <p className="text-xs font-medium text-slate-400">{t("viewSecurityLogs")}</p>
+                <p className="text-xs font-medium text-slate-400">{t("securityAudit")}</p>
                 <Link
                   href="/login-history"
                   className="text-sm font-semibold text-indigo-400 hover:underline mt-1 inline-block"
                 >
-                  {t("viewSecurityLogs")} →
+                  {t("loginHistory")} →
                 </Link>
               </div>
             </div>
@@ -120,7 +120,7 @@ export default function HomeView({
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-indigo-400" /> {t("questionsTitle")}
+                <TrendingUp className="w-5 h-5 text-indigo-400" /> {t("communityDiscussions")}
               </h2>
               <Link
                 href="/dashboard"
@@ -200,16 +200,15 @@ export default function HomeView({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center max-w-3xl mx-auto space-y-6">
             <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shadow-inner">
-              <Sparkles className="w-4 h-4" /> {t("developerEcosystem")}
+              <Sparkles className="w-4 h-4" /> {t("heroBadge")}
             </span>
 
             <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-white leading-tight">
-              Learn. Ask. <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-sky-400 to-emerald-400">Connect.</span>
+              {t("heroTitleLead")} <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-sky-400 to-emerald-400">{t("heroTitleGradient")}</span>
             </h1>
 
             <p className="text-base sm:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed">
-              StackSphere is a modern developer community platform combining Q&A knowledge sharing,
-              social networking, reward points, multi-language support, and flexible subscription memberships.
+              {t("heroDescription")}
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
@@ -217,13 +216,13 @@ export default function HomeView({
                 href="/register"
                 className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-base transition-all shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2"
               >
-                {t("createAccount")} <ArrowRight className="w-5 h-5" />
+                {t("joinStackSphere")} <ArrowRight className="w-5 h-5" />
               </Link>
               <Link
                 href="/explore/questions"
                 className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold text-base transition-all flex items-center justify-center gap-2"
               >
-                {t("qaCommunity")}
+                {t("exploreQuestions")}
               </Link>
             </div>
           </div>
@@ -235,10 +234,10 @@ export default function HomeView({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-16">
             <h2 className="text-2xl sm:text-4xl font-bold text-white">
-              {t("platformFeatures")}
+              {t("featuresTitle")}
             </h2>
             <p className="text-slate-400 mt-3 text-sm sm:text-base">
-              Built from the ground up for collaborative learning, social sharing, and security.
+              {t("featuresSubtitle")}
             </p>
           </div>
 
@@ -250,7 +249,7 @@ export default function HomeView({
               </div>
               <h3 className="text-xl font-bold text-white">{t("qaCommunity")}</h3>
               <p className="text-slate-400 text-sm leading-relaxed">
-                Ask technical questions, submit verified answers, and upvote quality contributions to build community knowledge.
+                {t("qaFeatureDesc")}
               </p>
             </div>
 
@@ -261,7 +260,7 @@ export default function HomeView({
               </div>
               <h3 className="text-xl font-bold text-white">{t("socialSpace")}</h3>
               <p className="text-slate-400 text-sm leading-relaxed">
-                Connect with developer friends, share photos/videos via Cloudinary, and post updates with friend-based posting limits.
+                {t("socialFeatureDesc")}
               </p>
             </div>
 
@@ -272,7 +271,7 @@ export default function HomeView({
               </div>
               <h3 className="text-xl font-bold text-white">{t("rewardsSystem")}</h3>
               <p className="text-slate-400 text-sm leading-relaxed">
-                Earn +5 points per answer, +5 bonus for 5 upvotes, track reputation on your profile, and transfer points securely.
+                {t("rewardsFeatureDesc")}
               </p>
             </div>
 
@@ -283,7 +282,7 @@ export default function HomeView({
               </div>
               <h3 className="text-xl font-bold text-white">Six Languages Supported</h3>
               <p className="text-slate-400 text-sm leading-relaxed">
-                Switch seamlessly between English, Spanish, Hindi, Portuguese, Chinese & French with OTP verification rules.
+                {t("languagesFeatureDesc")}
               </p>
             </div>
 
@@ -294,7 +293,7 @@ export default function HomeView({
               </div>
               <h3 className="text-xl font-bold text-white">{t("accountSecurityGroup")}</h3>
               <p className="text-slate-400 text-sm leading-relaxed">
-                Chrome Email OTP challenge, Edge direct login, mobile time window rules, and detailed login audit logs.
+                {t("securityFeatureDesc")}
               </p>
             </div>
 
@@ -305,7 +304,7 @@ export default function HomeView({
               </div>
               <h3 className="text-xl font-bold text-white">{t("plansPricing")}</h3>
               <p className="text-slate-400 text-sm leading-relaxed">
-                Free (1/day), Bronze ₹100 (5/day), Silver ₹300 (10/day), Gold ₹1000 (unlimited) with Razorpay Test Mode integration.
+                {t("subscriptionFeatureDesc")}
               </p>
             </div>
           </div>
@@ -316,10 +315,10 @@ export default function HomeView({
       <section className="py-16 bg-gradient-to-r from-indigo-900/40 via-slate-900 to-slate-950 border-t border-slate-800">
         <div className="max-w-4xl mx-auto px-4 text-center space-y-6">
           <h2 className="text-3xl sm:text-4xl font-extrabold text-white">
-            {t("signUpTitle")}
+            {t("readyToJoin")}
           </h2>
           <p className="text-slate-400 max-w-xl mx-auto text-sm sm:text-base">
-            {t("signUpSubtitle")}
+            {t("createAccountFooterDesc")}
           </p>
           <div className="pt-2">
             <Link

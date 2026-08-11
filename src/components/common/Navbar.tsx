@@ -36,7 +36,7 @@ export default function Navbar() {
           </div>
           <input
             type="text"
-            placeholder="Search questions, posts, users..."
+            placeholder={t("searchPlaceholder")}
             className="w-full h-10 pl-10 pr-4 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900 text-sm text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
           />
         </div>
