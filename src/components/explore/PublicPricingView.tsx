@@ -20,68 +20,72 @@ export default function PublicPricingView() {
 
   const plans = [
     {
-      name: t("freePlanTitle"),
+      id: "free",
+      nameKey: "freePlanTitle",
       price: "₹0",
-      period: t("forever"),
-      description: t("qaFeatureDesc"),
-      allowance: t("freeAllowance"),
-      features: [
-        t("feat1QuestionPerDay"),
-        t("featBrowsePublicForum"),
-        t("featSocialPreview"),
-        t("featEarnRewards"),
-        t("feat6Languages"),
+      periodKey: "forever",
+      descriptionKey: "qaFeatureDesc",
+      allowanceKey: "freeAllowance",
+      featureKeys: [
+        "feat1QuestionPerDay",
+        "featBrowsePublicForum",
+        "featSocialPreview",
+        "featEarnRewards",
+        "feat6Languages",
       ],
       popular: false,
-      buttonText: t("freePlanTitle"),
+      buttonTextKey: "freePlanTitle",
     },
     {
-      name: "Bronze",
+      id: "bronze",
+      nameKey: "bronzePlanName",
       price: "₹100",
-      period: t("perMonth"),
-      description: t("subscriptionFeatureDesc"),
-      allowance: t("bronzeAllowance"),
-      features: [
-        t("feat5QuestionsPerDay"),
-        t("featPhotoVideoUpload"),
-        t("featExpandedPostLimits"),
-        t("featPriorityVisibility"),
-        t("featPdfInvoices"),
+      periodKey: "perMonth",
+      descriptionKey: "subscriptionFeatureDesc",
+      allowanceKey: "bronzeAllowance",
+      featureKeys: [
+        "feat5QuestionsPerDay",
+        "featPhotoVideoUpload",
+        "featExpandedPostLimits",
+        "featPriorityVisibility",
+        "featPdfInvoices",
       ],
       popular: true,
-      buttonText: t("subscribeBtn"),
+      buttonTextKey: "subscribeBtn",
     },
     {
-      name: "Silver",
+      id: "silver",
+      nameKey: "silverPlanName",
       price: "₹300",
-      period: t("perMonth"),
-      description: t("subscriptionFeatureDesc"),
-      allowance: t("silverAllowance"),
-      features: [
-        t("feat10QuestionsPerDay"),
-        t("feat10MbMediaUpload"),
-        t("featHighPriorityRanking"),
-        t("featP2pTransfer"),
-        t("featAutomatedBillingLogs"),
+      periodKey: "perMonth",
+      descriptionKey: "subscriptionFeatureDesc",
+      allowanceKey: "silverAllowance",
+      featureKeys: [
+        "feat10QuestionsPerDay",
+        "feat10MbMediaUpload",
+        "featHighPriorityRanking",
+        "featP2pTransfer",
+        "featAutomatedBillingLogs",
       ],
       popular: false,
-      buttonText: t("subscribeBtn"),
+      buttonTextKey: "subscribeBtn",
     },
     {
-      name: "Gold",
+      id: "gold",
+      nameKey: "goldPlanName",
       price: "₹1000",
-      period: t("perMonth"),
-      description: t("subscriptionFeatureDesc"),
-      allowance: t("goldAllowance"),
-      features: [
-        t("featUnlimitedQuestions"),
-        t("featUnlimitedMediaSharing"),
-        t("featGoldBadge"),
-        t("featFullAuditLogs"),
-        t("featRazorpayTestMode"),
+      periodKey: "perMonth",
+      descriptionKey: "subscriptionFeatureDesc",
+      allowanceKey: "goldAllowance",
+      featureKeys: [
+        "featUnlimitedQuestions",
+        "featUnlimitedMediaSharing",
+        "featGoldBadge",
+        "featFullAuditLogs",
+        "featRazorpayTestMode",
       ],
       popular: false,
-      buttonText: t("subscribeBtn"),
+      buttonTextKey: "subscribeBtn",
     },
   ];
 
@@ -117,7 +121,7 @@ export default function PublicPricingView() {
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4 text-amber-300 shrink-0" />
             <span>
-              <strong>10:00 AM - 11:00 AM IST Window:</strong>{" "}
+              <strong>{t("timeWindowLabel")}:</strong>{" "}
               {isTimeGateOpen ? t("openWindow") : t("timeGateWarning")}
             </span>
           </div>
@@ -131,7 +135,7 @@ export default function PublicPricingView() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {plans.map((plan) => (
           <div
-            key={plan.name}
+            key={plan.id}
             className={`bg-white dark:bg-neutral-800 border rounded-2xl p-5 flex flex-col justify-between space-y-4 relative shadow-sm ${
               plan.popular
                 ? "border-purple-500 ring-2 ring-purple-500/20"
@@ -147,29 +151,29 @@ export default function PublicPricingView() {
             <div className="space-y-3">
               <div>
                 <h3 className="font-extrabold text-lg text-neutral-900 dark:text-white flex items-center justify-between">
-                  <span>{plan.name}</span>
-                  {plan.name === "Gold" && <Zap className="h-4 w-4 text-amber-500" />}
+                  <span>{t(plan.nameKey)}</span>
+                  {plan.id === "gold" && <Zap className="h-4 w-4 text-amber-500" />}
                 </h3>
                 <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1 line-clamp-2">
-                  {plan.description}
+                  {t(plan.descriptionKey)}
                 </p>
               </div>
 
               <div className="py-2 border-y border-neutral-100 dark:border-neutral-700">
                 <div className="flex items-baseline gap-1">
                   <span className="text-2xl font-black text-neutral-900 dark:text-white">{plan.price}</span>
-                  <span className="text-xs text-neutral-500">{plan.period}</span>
+                  <span className="text-xs text-neutral-500">/ {t(plan.periodKey)}</span>
                 </div>
                 <span className="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 rounded-md">
-                  {plan.allowance}
+                  {t(plan.allowanceKey)}
                 </span>
               </div>
 
               <ul className="space-y-2 text-xs text-neutral-600 dark:text-neutral-300">
-                {plan.features.map((feat) => (
-                  <li key={feat} className="flex items-start gap-2">
+                {plan.featureKeys.map((fKey) => (
+                  <li key={fKey} className="flex items-start gap-2">
                     <Check className="h-3.5 w-3.5 text-emerald-500 shrink-0 mt-0.5" />
-                    <span>{feat}</span>
+                    <span>{t(fKey)}</span>
                   </li>
                 ))}
               </ul>
@@ -177,14 +181,14 @@ export default function PublicPricingView() {
 
             <button
               type="button"
-              onClick={() => triggerSubscribeModal(plan.name)}
+              onClick={() => triggerSubscribeModal(plan.id)}
               className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer shadow-xs ${
                 plan.popular
                   ? "bg-purple-600 hover:bg-purple-700 text-white"
                   : "bg-neutral-100 dark:bg-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-600 text-neutral-800 dark:text-neutral-200"
               }`}
             >
-              {plan.buttonText}
+              {t(plan.buttonTextKey)}
             </button>
           </div>
         ))}
