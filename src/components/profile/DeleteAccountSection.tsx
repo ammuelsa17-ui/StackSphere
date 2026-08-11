@@ -4,7 +4,10 @@ import React, { useState } from "react";
 import { signOut } from "next-auth/react";
 import { Trash2, AlertTriangle, Lock, X, ShieldAlert, Loader2 } from "lucide-react";
 
+import { useTranslation } from "@/components/providers/I18nProvider";
+
 export default function DeleteAccountSection() {
+  const { t } = useTranslation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
@@ -64,10 +67,10 @@ export default function DeleteAccountSection() {
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-rose-600 dark:text-rose-400 font-bold text-lg">
               <AlertTriangle className="h-5 w-5 shrink-0" />
-              <h3>Danger Zone: Account Deletion</h3>
+              <h3>{t("dangerZoneTitle")}: {t("deleteAccountTitle")}</h3>
             </div>
             <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed max-w-2xl">
-              Permanently remove your account, profile credentials, login history, and personal data from StackSphere. This action is irreversible.
+              {t("deleteAccountDesc")}
             </p>
           </div>
 
@@ -77,7 +80,7 @@ export default function DeleteAccountSection() {
             className="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 transition-all shadow-sm shrink-0 cursor-pointer"
           >
             <Trash2 className="h-4 w-4" />
-            <span>Delete Account</span>
+            <span>{t("deleteAccountBtn")}</span>
           </button>
         </div>
       </div>
