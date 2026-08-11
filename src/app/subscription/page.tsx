@@ -6,6 +6,7 @@ import connectToDatabase from "@/lib/mongodb";
 import { checkAndUpdateSubscription } from "@/utils/checkSubscription";
 import Transaction from "@/models/Transaction";
 import SubscriptionDashboardView from "@/components/subscription/SubscriptionDashboardView";
+import { SUBSCRIPTION_PLANS } from "@/lib/subscriptionPlans";
 
 export const metadata = {
   title: "Subscription Plans - StackSphere",
@@ -71,78 +72,24 @@ export default async function SubscriptionPage() {
     remainingDays = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
   }
 
-  const plans = [
-    {
-      name: "Free",
-      price: "₹0",
-      priceUSD: 0,
-      period: "forever",
-      description: "Essential Q&A features for developers getting started.",
-      features: [
-        "1 question post per day",
-        "Standard community Q&A access",
-        "Basic profile personalization",
-        "No image or video uploads allowed",
-      ],
-      cta: "Current Plan",
-      badge: null,
-      color: "border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900",
-      buttonStyle: "bg-neutral-100 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-500 cursor-default",
-    },
-    {
-      name: "Bronze",
-      price: "₹100",
-      priceUSD: 100,
-      period: "month",
-      description: "Perfect for active developers seeking occasional media uploads.",
-      features: [
-        "5 question posts per day",
-        "Priority community support",
-        "Image uploads up to 5MB",
-        "Bronze badge on your profile",
-      ],
-      cta: "Upgrade to Bronze",
-      badge: "Popular Starter",
-      color: "border-amber-200 dark:border-amber-900/35 bg-white dark:bg-neutral-900 shadow-sm",
-      buttonStyle: "bg-amber-600 hover:bg-amber-500 text-white shadow-sm hover:shadow transition-all duration-250 cursor-pointer",
-    },
-    {
-      name: "Silver",
-      price: "₹300",
-      priceUSD: 300,
-      period: "month",
-      description: "Our recommended choice for professional content creators.",
-      features: [
-        "10 question posts per day",
-        "High-priority response times",
-        "Image & video uploads up to 10MB",
-        "Silver badge on your profile",
-        "Completely ad-free browsing",
-      ],
-      cta: "Upgrade to Silver",
-      badge: "Most Popular",
-      color: "border-indigo-500 dark:border-indigo-400/80 bg-gradient-to-b from-indigo-50/20 via-white to-white dark:from-indigo-950/10 dark:via-neutral-900 dark:to-neutral-900 shadow-md ring-2 ring-indigo-500/20 dark:ring-indigo-400/20 scale-[1.02]",
-      buttonStyle: "bg-indigo-650 hover:bg-indigo-600 text-white shadow-md hover:shadow-lg transition-all duration-250 cursor-pointer",
-    },
-    {
-      name: "Gold",
-      price: "₹1000",
-      priceUSD: 1000,
-      period: "month",
-      description: "Ultimate power for teams, experts, and enterprise contributors.",
-      features: [
-        "Unlimited question posts",
-        "VIP dedicated live-chat support",
-        "Advanced media uploads up to 20MB",
-        "Gold badge on your profile",
-        "Exclusive premium profile themes",
-      ],
-      cta: "Upgrade to Gold",
-      badge: "Ultimate Power",
-      color: "border-violet-300 dark:border-violet-900/40 bg-white dark:bg-neutral-900 shadow-sm",
-      buttonStyle: "bg-violet-650 hover:bg-violet-600 text-white shadow-sm hover:shadow transition-all duration-250 cursor-pointer",
-    },
-  ];
+  const formattedPlans = SUBSCRIPTION_PLANS.map((plan) => ({
+    name: plan.id === "bronze" ? "Bronze" : plan.id === "silver" ? "Silver" : plan.id === "gold" ? "Gold" : "Free",
+    id: plan.id,
+    nameKey: plan.nameKey,
+    price: plan.price,
+    priceUSD: plan.id === "bronze" ? 100 : plan.id === "silver" ? 300 : plan.id === "gold" ? 1000 : 0,
+    period: plan.periodKey,
+    description: plan.descriptionKey,
+    features: plan.featureKeys,
+    cta: "subscribeBtn",
+    badge: plan.badgeKey || null,
+    color: plan.popular
+      ? "border-indigo-500 dark:border-indigo-400/80 bg-gradient-to-b from-indigo-50/20 via-white to-white dark:from-indigo-950/10 dark:via-neutral-900 dark:to-neutral-900 shadow-md ring-2 ring-indigo-500/20 dark:ring-indigo-400/20 scale-[1.02]"
+      : "border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900",
+    buttonStyle: plan.popular
+      ? "bg-indigo-650 hover:bg-indigo-600 text-white shadow-md hover:shadow-lg transition-all duration-250 cursor-pointer"
+      : "bg-neutral-800 hover:bg-neutral-700 text-white shadow-sm transition-all duration-250 cursor-pointer",
+  }));
 
   return (
     <SubscriptionDashboardView
@@ -153,7 +100,7 @@ export default async function SubscriptionPage() {
       startDateStr={startDateStr}
       expiryDate={expiryDate}
       remainingDays={remainingDays}
-      plans={plans}
+      plans={formattedPlans}
     />
   );
 }

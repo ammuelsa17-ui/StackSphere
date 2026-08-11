@@ -7,6 +7,7 @@ import { useTranslation } from "@/components/providers/I18nProvider";
 
 interface PlanConfig {
   name: string;
+  nameKey?: string;
   price: string;
   priceUSD: number;
   period: string;
@@ -57,6 +58,14 @@ export default function SubscriptionPlanGrid({
     setIsModalOpen(true);
   };
 
+  const getPlanNameLabel = (plan: PlanConfig) => {
+    if (plan.nameKey) return t(plan.nameKey);
+    if (plan.name === "Bronze") return t("bronzePlanName");
+    if (plan.name === "Silver") return t("silverPlanName");
+    if (plan.name === "Gold") return t("goldPlanName");
+    return t("freePlanTitle");
+  };
+
   return (
     <>
       {isTimeGateBlocked && (
@@ -91,7 +100,7 @@ export default function SubscriptionPlanGrid({
               {/* Popular / Premium Plan Badge */}
               {plan.badge && (
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 text-[10px] font-extrabold uppercase tracking-wider bg-indigo-600 dark:bg-indigo-500 text-white rounded-full shadow-sm">
-                  {plan.badge === "Most Popular" ? t("mostPopular") : plan.badge}
+                  {t(plan.badge === "mostPopular" || plan.badge === "Most Popular" ? "mostPopular" : plan.badge)}
                 </span>
               )}
 
@@ -99,7 +108,7 @@ export default function SubscriptionPlanGrid({
               <div className="space-y-5">
                 <div>
                   <h3 className="text-xl font-bold text-neutral-850 dark:text-neutral-100 flex items-center gap-2">
-                    {plan.name}
+                    {getPlanNameLabel(plan)}
                     {isCurrent && (
                       <span className="text-[10px] font-bold bg-indigo-50 dark:bg-indigo-900/40 text-indigo-650 dark:text-indigo-400 py-0.5 px-2 rounded-md border border-indigo-100 dark:border-indigo-900/60">
                         {t("verifiedLabel")}
@@ -107,7 +116,7 @@ export default function SubscriptionPlanGrid({
                     )}
                   </h3>
                   <p className="text-xs text-neutral-450 dark:text-neutral-400 mt-2 min-h-8">
-                    {t("subscriptionFeatureDesc")}
+                    {t(plan.description.includes("Desc") || plan.description.includes("Desc") ? plan.description : "subscriptionFeatureDesc")}
                   </p>
                 </div>
 
@@ -123,19 +132,10 @@ export default function SubscriptionPlanGrid({
 
                 {/* Features List */}
                 <ul className="space-y-3.5 text-xs text-neutral-700 dark:text-neutral-300">
-                  {plan.features.map((feature, idx) => (
+                  {plan.features.map((featureKey, idx) => (
                     <li key={idx} className="flex gap-2.5 items-start">
                       <Check className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
-                      <span>
-                        {feature.includes("1 question") ? t("feat1QuestionPerDay") :
-                         feature.includes("5 question") ? t("feat5QuestionsPerDay") :
-                         feature.includes("10 question") ? t("feat10QuestionsPerDay") :
-                         feature.includes("Unlimited question") ? t("featUnlimitedQuestions") :
-                         feature.includes("Photo") ? t("featPhotoVideoUpload") :
-                         feature.includes("10MB") ? t("feat10MbMediaUpload") :
-                         feature.includes("VIP") ? t("featGoldBadge") :
-                         feature}
-                      </span>
+                      <span>{t(featureKey)}</span>
                     </li>
                   ))}
                 </ul>
