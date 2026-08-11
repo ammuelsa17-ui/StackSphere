@@ -75,12 +75,19 @@ export async function POST(req: Request) {
     });
 
     if (!smsResult.success) {
-      const errMsg = smsResult.errorMessage || "Twilio SMS dispatch failed.";
+      const providerErrorCode = smsResult.errorCode || "TWILIO_DISPATCH_FAILURE";
+      const errMsg = smsResult.errorMessage || "";
+      
+      let safeUserMessage = "Failed to send SMS verification code. Please try again or check your phone number.";
+      if (errMsg.toLowerCase().includes("unverified") || errMsg.toLowerCase().includes("trial")) {
+        safeUserMessage = "BLOCKED — TWILIO TRIAL RECIPIENT RESTRICTION: Twilio trial accounts can only send SMS to verified numbers. Please verify your phone number in Twilio Console.";
+      }
+
       return NextResponse.json(
         {
-          error: `TWILIO DISPATCH ERROR (${smsResult.errorCode || 'API'}): ${errMsg}`,
-          twilioError: true,
-          details: smsResult,
+          error: safeUserMessage,
+          providerErrorCode,
+          category: "SMS_DISPATCH_FAILURE",
         },
         { status: 400 }
       );
