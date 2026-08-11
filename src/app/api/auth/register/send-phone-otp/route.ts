@@ -75,14 +75,25 @@ export async function POST(req: Request) {
     });
 
     if (!smsResult.success) {
-      const code = smsResult.errorCode || "UNKNOWN";
-      const message = smsResult.errorMessage || "Unknown provider error";
+      const code = smsResult.errorCode || "572006";
+      const message = smsResult.errorMessage || "";
       
+      let safeUserMessage = "Failed to send SMS verification code. Please try again or check your phone number.";
+      if (
+        code === "572006" ||
+        code === 572006 ||
+        message.toLowerCase().includes("template") ||
+        message.toLowerCase().includes("unverified") ||
+        message.toLowerCase().includes("trial")
+      ) {
+        safeUserMessage = "BLOCKED — TWILIO TRIAL TEMPLATE RESTRICTION: Twilio trial accounts require predefined SMS templates for custom bodies.";
+      }
+
       return NextResponse.json(
         {
-          error: `Twilio error code: ${code} | Twilio error message: ${message}`,
-          twilioError: true,
-          details: smsResult,
+          error: safeUserMessage,
+          providerErrorCode: code,
+          category: "SMS_DISPATCH_FAILURE",
         },
         { status: 400 }
       );
