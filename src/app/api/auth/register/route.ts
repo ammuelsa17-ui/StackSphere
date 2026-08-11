@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import connectToDatabase from "@/lib/mongodb";
 import User from "@/models/User";
+import OTPChallenge from "@/models/OTPChallenge";
 import { sanitizeString, validateEmail, normalizePhone, checkPasswordRequirements } from "@/utils/validation";
 import crypto from "crypto";
 import mongoose from "mongoose";
@@ -100,15 +101,29 @@ export async function POST(req: Request) {
       );
     }
 
-    // 3. Hash the user's password using bcrypt (salt factor 12)
+    // 3. Independent Server-Side Security Check: Verify exact normalized phone was verified
+    const verifiedChallenge = await OTPChallenge.findOne({
+      destination: normalizedPhone,
+      purpose: "registration",
+      verified: true,
+    });
+
+    if (!verifiedChallenge) {
+      return NextResponse.json(
+        { error: "Please verify your phone number before creating your account." },
+        { status: 400 }
+      );
+    }
+
+    // 4. Hash the user's password using bcrypt (salt factor 12)
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // 4. Create and save the new user record in MongoDB
+    // 5. Create and save the new user record in MongoDB
     const newUser = await User.create({
       name: nameClean,
       email: emailClean.toLowerCase(),
       password: hashedPassword,
-      phoneNumber: normalizedPhone || "",
+      phoneNumber: normalizedPhone,
       points: 0, // Set initial rewards points to 0
       subscription: {
         plan: "Free",
@@ -116,6 +131,12 @@ export async function POST(req: Request) {
         startDate: new Date(),
         expiryDate: new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000), // Free plan default 100 years
       },
+    });
+
+    // 6. Invalidate/delete completed registration challenge
+    await OTPChallenge.deleteMany({
+      destination: normalizedPhone,
+      purpose: "registration",
     });
 
     return NextResponse.json(

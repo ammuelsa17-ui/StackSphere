@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { UserPlus, Eye, EyeOff, Sparkles, Copy, Check, ShieldCheck, CheckCircle2, XCircle } from "lucide-react";
+import { UserPlus, Eye, EyeOff, Sparkles, Copy, Check, ShieldCheck, CheckCircle2, XCircle, Loader2, Send, CheckCircle } from "lucide-react";
 import { useTranslation } from "@/components/providers/I18nProvider";
 import PhoneInput from "@/components/common/PhoneInput";
 import {
@@ -19,6 +19,15 @@ export default function RegisterForm() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+
+  // Phone OTP Verification State
+  const [isPhoneVerified, setIsPhoneVerified] = useState(false);
+  const [isSendingPhoneOtp, setIsSendingPhoneOtp] = useState(false);
+  const [isVerifyingPhoneOtp, setIsVerifyingPhoneOtp] = useState(false);
+  const [phoneOtpSent, setPhoneOtpSent] = useState(false);
+  const [phoneOtpCode, setPhoneOtpCode] = useState("");
+  const [phoneOtpError, setPhoneOtpError] = useState<string | null>(null);
+  const [phoneOtpSuccess, setPhoneOtpSuccess] = useState<string | null>(null);
   
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -51,6 +60,71 @@ export default function RegisterForm() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handlePhoneInputChange = (normalized: string) => {
+    setPhoneNumber(normalized);
+    // Reset verification state immediately if phone number is edited
+    setIsPhoneVerified(false);
+    setPhoneOtpSent(false);
+    setPhoneOtpCode("");
+    setPhoneOtpError(null);
+    setPhoneOtpSuccess(null);
+  };
+
+  const handleSendPhoneOtp = async () => {
+    if (!phoneNumber) {
+      setPhoneOtpError("Please enter a valid phone number first.");
+      return;
+    }
+    setIsSendingPhoneOtp(true);
+    setPhoneOtpError(null);
+    setPhoneOtpSuccess(null);
+
+    try {
+      const res = await fetch("/api/auth/register/send-phone-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phoneNumber }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to send SMS verification code.");
+      }
+      setPhoneOtpSent(true);
+      setPhoneOtpSuccess(data.message || "Verification code sent to your phone.");
+    } catch (err: any) {
+      setPhoneOtpError(err.message || "Failed to send verification code.");
+    } finally {
+      setIsSendingPhoneOtp(false);
+    }
+  };
+
+  const handleVerifyPhoneOtp = async () => {
+    if (!phoneNumber || !phoneOtpCode || phoneOtpCode.length !== 6) {
+      setPhoneOtpError("Please enter the 6-digit verification code.");
+      return;
+    }
+    setIsVerifyingPhoneOtp(true);
+    setPhoneOtpError(null);
+
+    try {
+      const res = await fetch("/api/auth/register/verify-phone-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phoneNumber, code: phoneOtpCode }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Invalid verification code.");
+      }
+      setIsPhoneVerified(true);
+      setPhoneOtpSuccess("Phone number verified ✓");
+    } catch (err: any) {
+      setPhoneOtpError(err.message || "Failed to verify code.");
+    } finally {
+      setIsVerifyingPhoneOtp(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -61,6 +135,12 @@ export default function RegisterForm() {
     // 1. Basic Client validations
     if (!name || !email || !phoneNumber || !password) {
       setError("Please fill in all required fields.");
+      setIsLoading(false);
+      return;
+    }
+
+    if (!isPhoneVerified) {
+      setError("Please verify your phone number before creating your account.");
       setIsLoading(false);
       return;
     }
@@ -183,19 +263,110 @@ export default function RegisterForm() {
           )}
         </div>
 
-        {/* International Phone Input */}
-        <PhoneInput
-          required={true}
-          value={phoneNumber}
-          onChange={(normalized) => setPhoneNumber(normalized)}
-          label={t("phoneNumber")}
-          error={
-            duplicateField === "phone" || duplicateField === "both"
-              ? "This phone number is already registered."
-              : null
-          }
-          helperText="We'll use this number for account verification and security."
-        />
+        {/* International Phone Input & Verification */}
+        <div className="space-y-2">
+          <PhoneInput
+            required={true}
+            value={phoneNumber}
+            onChange={handlePhoneInputChange}
+            label={t("phoneNumber")}
+            error={
+              duplicateField === "phone" || duplicateField === "both"
+                ? "This phone number is already registered."
+                : null
+            }
+            helperText="We'll send an SMS OTP code to verify your mobile phone."
+          />
+
+          {/* Verification Status & Controls */}
+          {phoneNumber && !isPhoneVerified && (
+            <div className="space-y-2 pt-1">
+              {!phoneOtpSent ? (
+                <button
+                  type="button"
+                  onClick={handleSendPhoneOtp}
+                  disabled={isSendingPhoneOtp}
+                  className="w-full h-9 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
+                >
+                  {isSendingPhoneOtp ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      <span>Sending SMS Code...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Send className="h-3.5 w-3.5" />
+                      <span>Send OTP Code</span>
+                    </>
+                  )}
+                </button>
+              ) : (
+                <div className="space-y-2 p-3 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+                      VERIFICATION CODE (6 DIGITS) *
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleSendPhoneOtp}
+                      disabled={isSendingPhoneOtp}
+                      className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+                    >
+                      Resend Code
+                    </button>
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      maxLength={6}
+                      value={phoneOtpCode}
+                      onChange={(e) => setPhoneOtpCode(e.target.value.replace(/\D/g, ""))}
+                      placeholder="123456"
+                      className="flex-1 h-9 px-3 bg-white dark:bg-neutral-950 border border-neutral-300 dark:border-neutral-700 rounded-lg text-xs font-mono text-center tracking-widest text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleVerifyPhoneOtp}
+                      disabled={isVerifyingPhoneOtp || phoneOtpCode.length !== 6}
+                      className="h-9 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-lg flex items-center gap-1 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      {isVerifyingPhoneOtp ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <span>Verify</span>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* OTP Error Feedback Banner */}
+              {phoneOtpError && (
+                <div className="p-2.5 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/80 rounded-xl text-xs text-red-600 dark:text-red-400 font-semibold leading-relaxed">
+                  {phoneOtpError}
+                </div>
+              )}
+
+              {/* OTP Success Feedback Banner */}
+              {phoneOtpSuccess && !isPhoneVerified && (
+                <div className="p-2 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 text-xs font-medium rounded-xl">
+                  {phoneOtpSuccess}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Verified Green Badge */}
+          {isPhoneVerified && (
+            <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl flex items-center justify-between text-xs font-bold text-emerald-600 dark:text-emerald-400">
+              <div className="flex items-center gap-1.5">
+                <CheckCircle className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                <span>Phone number verified ✓</span>
+              </div>
+              <span className="text-[10px] font-normal text-neutral-400">Ready for signup</span>
+            </div>
+          )}
+        </div>
 
         {/* Password Input Field */}
         <div className="flex flex-col gap-1.5">

@@ -5,12 +5,13 @@ const OTPChallengeSchema = new Schema(
     userId: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      required: true,
+      required: false,
+      default: null,
       index: true,
     },
     purpose: {
       type: String,
-      enum: ["login", "forgot-password", "language-change"],
+      enum: ["login", "forgot-password", "language-change", "registration"],
       required: true,
     },
     channel: {
@@ -30,6 +31,14 @@ const OTPChallengeSchema = new Schema(
     pendingLanguage: {
       type: String,
       default: "",
+    },
+    verified: {
+      type: Boolean,
+      default: false,
+    },
+    verifiedAt: {
+      type: Date,
+      default: null,
     },
     expiresAt: {
       type: Date,
@@ -51,10 +60,8 @@ const OTPChallengeSchema = new Schema(
   { timestamps: true }
 );
 
-// Enforce only one active challenge per user and purpose
-OTPChallengeSchema.index({ userId: 1, purpose: 1 }, { unique: true });
-
-// Automatic MongoDB TTL index to clean up expired challenges automatically
+// Indexes
+OTPChallengeSchema.index({ destination: 1, purpose: 1 });
 OTPChallengeSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 const OTPChallenge = models.OTPChallenge || model("OTPChallenge", OTPChallengeSchema);
