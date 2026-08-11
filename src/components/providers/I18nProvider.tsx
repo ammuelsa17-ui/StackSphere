@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import { usePathname } from "next/navigation";
 import { Shield, Mail, Phone, Clock, AlertCircle } from "lucide-react";
 
 export type Language = "en" | "es" | "hi" | "pt" | "zh" | "fr";
@@ -1323,12 +1324,41 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   const [resendTimer, setResendTimer] = useState(0);
   const [otpError, setOtpError] = useState<string | null>(null);
 
+  const pathname = usePathname();
+
   useEffect(() => {
     const saved = localStorage.getItem("stacksphere_lang") as Language;
     if (saved && translations[saved]) {
       setLanguageState(saved);
     }
   }, []);
+
+  // Dynamically update document/browser tab title for all routes in the viewer's selected language
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const routeTitleMap: Record<string, string> = {
+      "/": "homeOverview",
+      "/dashboard": "dashboard",
+      "/explore/questions": "questionsTitle",
+      "/explore/social": "socialSpacePreview",
+      "/pricing": "plansPricing",
+      "/subscription": "subscription",
+      "/explore/rewards": "rewardsSystem",
+      "/explore/features": "platformFeatures",
+      "/login": "signIn",
+      "/register": "register",
+      "/forgot-password": "forgotPasswordTitle",
+      "/profile": "profile",
+      "/login-history": "loginHistory",
+      "/social": "socialSpace",
+    };
+
+    const titleKey = routeTitleMap[pathname] || "developerEcosystem";
+    const localizedPageTitle = t(titleKey);
+
+    document.title = `${localizedPageTitle} - StackSphere`;
+  }, [language, pathname]);
 
   const requestLanguageOtp = async (lang: Language): Promise<boolean> => {
     try {
