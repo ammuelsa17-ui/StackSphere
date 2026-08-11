@@ -1,11 +1,8 @@
 import { NextResponse } from "next/server";
-import { randomInt } from "crypto";
 import connectToDatabase from "@/lib/mongodb";
 import User from "@/models/User";
-import OTPChallenge from "@/models/OTPChallenge";
 import { sanitizeString, normalizePhone } from "@/utils/validation";
-import { sendSms } from "@/utils/sms";
-import { hashOtp } from "@/utils/hmac";
+import { sendTwilioVerifyOtp } from "@/utils/sms";
 
 export async function POST(req: Request) {
   try {
@@ -45,55 +42,22 @@ export async function POST(req: Request) {
       );
     }
 
-    // 2. Generate 6-digit cryptographically secure OTP
-    const rawCode = randomInt(100000, 1000000).toString();
-    const codeHash = hashOtp(rawCode);
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5-minute expiry
-    const resendAvailableAt = new Date(Date.now() + 60 * 1000); // 60s cooldown
+    // 2. Dispatch SMS via Twilio Verify API v2 service
+    const verifyResult = await sendTwilioVerifyOtp(normalizedPhone);
 
-    // 3. Upsert registration OTP challenge in MongoDB
-    await OTPChallenge.findOneAndUpdate(
-      { destination: normalizedPhone, purpose: "registration" },
-      {
-        channel: "sms",
-        destination: normalizedPhone,
-        codeHash,
-        expiresAt,
-        resendAvailableAt,
-        attempts: 0,
-        verified: false,
-        verifiedAt: null,
-        usedAt: null,
-      },
-      { upsert: true, returnDocument: "after" }
-    );
-
-    // 4. Dispatch SMS via Twilio
-    const smsResult = await sendSms({
-      to: normalizedPhone,
-      message: `Your StackSphere registration verification code is: ${rawCode}. Valid for 5 minutes.`,
-    });
-
-    if (!smsResult.success) {
-      const code = smsResult.errorCode || "572006";
-      const message = smsResult.errorMessage || "";
+    if (!verifyResult.success) {
+      const code = verifyResult.errorCode || "VERIFY_DISPATCH_FAILURE";
+      let userMsg = "Failed to send SMS verification code. Please check your phone number or try again later.";
       
-      let safeUserMessage = "Failed to send SMS verification code. Please try again or check your phone number.";
-      if (
-        code === "572006" ||
-        code === 572006 ||
-        message.toLowerCase().includes("template") ||
-        message.toLowerCase().includes("unverified") ||
-        message.toLowerCase().includes("trial")
-      ) {
-        safeUserMessage = "BLOCKED — TWILIO TRIAL TEMPLATE RESTRICTION: Twilio trial accounts require predefined SMS templates for custom bodies.";
+      if (code === "MISSING_VERIFY_SERVICE") {
+        userMsg = "TWILIO VERIFY CONFIGURATION MISSING: TWILIO_VERIFY_SERVICE_SID environment variable is missing on Vercel environment.";
       }
 
       return NextResponse.json(
         {
-          error: safeUserMessage,
+          error: userMsg,
           providerErrorCode: code,
-          category: "SMS_DISPATCH_FAILURE",
+          category: "VERIFY_DISPATCH_FAILURE",
         },
         { status: 400 }
       );
@@ -101,10 +65,9 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
-      message: `Verification code sent via SMS to ${normalizedPhone}.`,
+      message: "Verification code sent via Twilio Verify SMS.",
     });
   } catch (error: any) {
-    console.error("Send phone OTP error:", error);
     return NextResponse.json(
       { error: "An unexpected error occurred while sending the verification code." },
       { status: 500 }

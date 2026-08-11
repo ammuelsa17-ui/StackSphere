@@ -85,3 +85,125 @@ export async function sendSms(options: SendSmsOptions) {
   }
   return { success: true, method: "mock" };
 }
+
+/**
+ * Sends a registration phone OTP via Twilio Verify API v2 service.
+ */
+export async function sendTwilioVerifyOtp(phoneNumber: string) {
+  const destination = normalizePhone(phoneNumber) || phoneNumber;
+
+  const accountSid = process.env.TWILIO_ACCOUNT_SID;
+  const authToken = process.env.TWILIO_AUTH_TOKEN;
+  const verifyServiceSid = process.env.TWILIO_VERIFY_SERVICE_SID;
+
+  if (!accountSid || !authToken) {
+    return {
+      success: false,
+      errorCode: "MISSING_CREDENTIALS",
+      errorMessage: "Twilio account SID or auth token is missing on server environment.",
+    };
+  }
+
+  if (!verifyServiceSid) {
+    return {
+      success: false,
+      errorCode: "MISSING_VERIFY_SERVICE",
+      errorMessage: "TWILIO_VERIFY_SERVICE_SID environment variable is missing.",
+    };
+  }
+
+  try {
+    let twilioModule: any = null;
+    try {
+      twilioModule = require("twilio");
+    } catch {
+      twilioModule = null;
+    }
+
+    if (!twilioModule) {
+      return {
+        success: false,
+        errorCode: "MODULE_NOT_FOUND",
+        errorMessage: "Twilio package module is not installed.",
+      };
+    }
+
+    const client = twilioModule(accountSid, authToken);
+    const verification = await client.verify.v2
+      .services(verifyServiceSid)
+      .verifications.create({
+        to: destination,
+        channel: "sms",
+      });
+
+    return {
+      success: true,
+      sid: verification.sid,
+      status: verification.status,
+    };
+  } catch (err: any) {
+    return {
+      success: false,
+      errorCode: err.code || err.status || "VERIFY_SEND_FAILED",
+      errorMessage: err.message || "Twilio Verify dispatch failed.",
+    };
+  }
+}
+
+/**
+ * Checks a registration phone OTP code via Twilio Verify API v2 service.
+ */
+export async function checkTwilioVerifyOtp(phoneNumber: string, code: string) {
+  const destination = normalizePhone(phoneNumber) || phoneNumber;
+
+  const accountSid = process.env.TWILIO_ACCOUNT_SID;
+  const authToken = process.env.TWILIO_AUTH_TOKEN;
+  const verifyServiceSid = process.env.TWILIO_VERIFY_SERVICE_SID;
+
+  if (!accountSid || !authToken || !verifyServiceSid) {
+    return {
+      approved: false,
+      errorCode: "MISSING_CONFIG",
+      errorMessage: "Twilio Verify service configuration is incomplete.",
+    };
+  }
+
+  try {
+    let twilioModule: any = null;
+    try {
+      twilioModule = require("twilio");
+    } catch {
+      twilioModule = null;
+    }
+
+    if (!twilioModule) {
+      return {
+        approved: false,
+        errorCode: "MODULE_NOT_FOUND",
+        errorMessage: "Twilio package module is not installed.",
+      };
+    }
+
+    const client = twilioModule(accountSid, authToken);
+    const verificationCheck = await client.verify.v2
+      .services(verifyServiceSid)
+      .verificationChecks.create({
+        to: destination,
+        code,
+      });
+
+    const isApproved = verificationCheck.status === "approved";
+    return {
+      approved: isApproved,
+      status: verificationCheck.status,
+      errorCode: isApproved ? null : "NOT_APPROVED",
+      errorMessage: isApproved ? null : "Verification code was not approved.",
+    };
+  } catch (err: any) {
+    return {
+      approved: false,
+      errorCode: err.code || err.status || "VERIFY_CHECK_FAILED",
+      errorMessage: err.message || "Failed to verify code.",
+    };
+  }
+}
