@@ -76,15 +76,9 @@ export async function POST(req: Request) {
 
     if (!smsResult.success) {
       const errMsg = smsResult.errorMessage || "Twilio SMS dispatch failed.";
-      let userMsg = `Failed to send SMS code: ${errMsg}`;
-      
-      if (errMsg.toLowerCase().includes("unverified") || errMsg.toLowerCase().includes("trial")) {
-        userMsg = "BLOCKED — TWILIO TRIAL RECIPIENT RESTRICTION: Twilio trial accounts can only send SMS to verified numbers. Please verify your phone number in Twilio Console.";
-      }
-
       return NextResponse.json(
         {
-          error: userMsg,
+          error: `TWILIO DISPATCH ERROR (${smsResult.errorCode || 'API'}): ${errMsg}`,
           twilioError: true,
           details: smsResult,
         },
