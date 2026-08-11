@@ -22,15 +22,15 @@ export default function PublicPricingView() {
     {
       name: t("freePlanTitle"),
       price: "₹0",
-      period: "forever",
+      period: t("forever"),
       description: t("qaFeatureDesc"),
-      allowance: "1 Question / Day",
+      allowance: t("freeAllowance"),
       features: [
-        "1 question submission per day",
-        "Browse public Q&A forum",
-        "Access Social Space preview",
-        "Earn community reward points",
-        "6 language options",
+        t("feat1QuestionPerDay"),
+        t("featBrowsePublicForum"),
+        t("featSocialPreview"),
+        t("featEarnRewards"),
+        t("feat6Languages"),
       ],
       popular: false,
       buttonText: t("freePlanTitle"),
@@ -38,15 +38,15 @@ export default function PublicPricingView() {
     {
       name: "Bronze",
       price: "₹100",
-      period: "per month",
+      period: t("perMonth"),
       description: t("subscriptionFeatureDesc"),
-      allowance: "5 Questions / Day",
+      allowance: t("bronzeAllowance"),
       features: [
-        "5 question submissions per day",
-        "Photo & video media upload",
-        "Expanded social post limits",
-        "Priority community visibility",
-        "PDF payment invoices",
+        t("feat5QuestionsPerDay"),
+        t("featPhotoVideoUpload"),
+        t("featExpandedPostLimits"),
+        t("featPriorityVisibility"),
+        t("featPdfInvoices"),
       ],
       popular: true,
       buttonText: t("subscribeBtn"),
@@ -54,15 +54,15 @@ export default function PublicPricingView() {
     {
       name: "Silver",
       price: "₹300",
-      period: "per month",
+      period: t("perMonth"),
       description: t("subscriptionFeatureDesc"),
-      allowance: "10 Questions / Day",
+      allowance: t("silverAllowance"),
       features: [
-        "10 question submissions per day",
-        "10MB photo & video uploads",
-        "High-priority Q&A ranking",
-        "P2P reward points transfer",
-        "Automated PDF billing logs",
+        t("feat10QuestionsPerDay"),
+        t("feat10MbMediaUpload"),
+        t("featHighPriorityRanking"),
+        t("featP2pTransfer"),
+        t("featAutomatedBillingLogs"),
       ],
       popular: false,
       buttonText: t("subscribeBtn"),
@@ -70,15 +70,15 @@ export default function PublicPricingView() {
     {
       name: "Gold",
       price: "₹1000",
-      period: "per month",
+      period: t("perMonth"),
       description: t("subscriptionFeatureDesc"),
-      allowance: "Unlimited / Day",
+      allowance: t("goldAllowance"),
       features: [
-        "Unlimited question submissions",
-        "Unlimited photo & video sharing",
-        "Gold VIP badge on profile",
-        "Full audit security logs",
-        "Razorpay Test Mode checkout",
+        t("featUnlimitedQuestions"),
+        t("featUnlimitedMediaSharing"),
+        t("featGoldBadge"),
+        t("featFullAuditLogs"),
+        t("featRazorpayTestMode"),
       ],
       popular: false,
       buttonText: t("subscribeBtn"),
@@ -118,11 +118,11 @@ export default function PublicPricingView() {
             <Clock className="h-4 w-4 text-amber-300 shrink-0" />
             <span>
               <strong>10:00 AM - 11:00 AM IST Window:</strong>{" "}
-              {isTimeGateOpen ? "WINDOW OPEN NOW!" : t("timeGateWarning")}
+              {isTimeGateOpen ? t("openWindow") : t("timeGateWarning")}
             </span>
           </div>
           <span className={`px-2.5 py-1 rounded-full font-bold uppercase text-[9px] ${isTimeGateOpen ? "bg-emerald-500 text-white" : "bg-amber-400/30 text-amber-200"}`}>
-            {isTimeGateOpen ? "Open" : "Restricted"}
+            {isTimeGateOpen ? t("openWindow") : t("restricted")}
           </span>
         </div>
       </div>
@@ -140,7 +140,7 @@ export default function PublicPricingView() {
           >
             {plan.popular && (
               <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-extrabold text-[9px] uppercase tracking-widest rounded-full shadow-sm">
-                Most Popular
+                {t("mostPopular")}
               </span>
             )}
 

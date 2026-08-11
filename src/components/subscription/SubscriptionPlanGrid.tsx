@@ -91,7 +91,7 @@ export default function SubscriptionPlanGrid({
               {/* Popular / Premium Plan Badge */}
               {plan.badge && (
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 text-[10px] font-extrabold uppercase tracking-wider bg-indigo-600 dark:bg-indigo-500 text-white rounded-full shadow-sm">
-                  {plan.badge}
+                  {plan.badge === "Most Popular" ? t("mostPopular") : plan.badge}
                 </span>
               )}
 
@@ -102,12 +102,12 @@ export default function SubscriptionPlanGrid({
                     {plan.name}
                     {isCurrent && (
                       <span className="text-[10px] font-bold bg-indigo-50 dark:bg-indigo-900/40 text-indigo-650 dark:text-indigo-400 py-0.5 px-2 rounded-md border border-indigo-100 dark:border-indigo-900/60">
-                        Active
+                        {t("verifiedLabel")}
                       </span>
                     )}
                   </h3>
                   <p className="text-xs text-neutral-450 dark:text-neutral-400 mt-2 min-h-8">
-                    {plan.description}
+                    {t("subscriptionFeatureDesc")}
                   </p>
                 </div>
 
@@ -117,7 +117,7 @@ export default function SubscriptionPlanGrid({
                     {plan.price}
                   </span>
                   <span className="text-xs font-semibold text-neutral-450 dark:text-neutral-400">
-                    / {plan.period}
+                    / {plan.period === "forever" ? t("forever") : t("perMonth")}
                   </span>
                 </div>
 
@@ -126,7 +126,16 @@ export default function SubscriptionPlanGrid({
                   {plan.features.map((feature, idx) => (
                     <li key={idx} className="flex gap-2.5 items-start">
                       <Check className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
-                      <span>{feature}</span>
+                      <span>
+                        {feature.includes("1 question") ? t("feat1QuestionPerDay") :
+                         feature.includes("5 question") ? t("feat5QuestionsPerDay") :
+                         feature.includes("10 question") ? t("feat10QuestionsPerDay") :
+                         feature.includes("Unlimited question") ? t("featUnlimitedQuestions") :
+                         feature.includes("Photo") ? t("featPhotoVideoUpload") :
+                         feature.includes("10MB") ? t("feat10MbMediaUpload") :
+                         feature.includes("VIP") ? t("featGoldBadge") :
+                         feature}
+                      </span>
                     </li>
                   ))}
                 </ul>
@@ -175,32 +184,26 @@ export default function SubscriptionPlanGrid({
             </div>
             <div>
               <h3 className="text-lg font-extrabold text-neutral-900 dark:text-white">
-                Sign in to Upgrade Plan
+                {t("signInTitle")}
               </h3>
               <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1.5 leading-relaxed">
-                Please create an account or sign in before purchasing a membership plan to unlock higher daily question allowances.
+                {t("signInSubtitle")}
               </p>
             </div>
-            <div className="flex flex-col gap-2 pt-2">
-              <a
-                href="/register"
-                className="w-full py-2.5 text-center text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-sm transition-all"
-              >
-                Create Account
-              </a>
-              <a
-                href="/login"
-                className="w-full py-2.5 text-center text-xs font-bold border border-neutral-200 dark:border-neutral-700 text-neutral-800 dark:text-neutral-200 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-all"
-              >
-                Sign In
-              </a>
+            <div className="flex gap-2 pt-2">
               <button
                 type="button"
                 onClick={() => setShowGuestAuthModal(false)}
-                className="w-full py-2 text-center text-xs font-medium text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 mt-1 cursor-pointer"
+                className="flex-1 py-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 font-bold text-xs rounded-xl"
               >
-                Continue Exploring Pricing
+                Cancel
               </button>
+              <a
+                href="/login"
+                className="flex-1 py-2 bg-indigo-600 text-white font-bold text-xs rounded-xl hover:bg-indigo-500 flex items-center justify-center gap-1"
+              >
+                {t("signIn")}
+              </a>
             </div>
           </div>
         </div>
