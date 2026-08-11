@@ -5,6 +5,7 @@ import Link from "next/link";
 import { MessageSquare, Users, Heart, Share2, Image, Video, Sparkles, Lock, ArrowRight, ShieldAlert } from "lucide-react";
 import ExploreCrossNav from "./ExploreCrossNav";
 import { useTranslation } from "@/components/providers/I18nProvider";
+import { SOCIAL_POSTING_TIERS } from "@/lib/socialPostingPolicy";
 
 export default function PublicSocialView() {
   const { t } = useTranslation();
@@ -57,7 +58,7 @@ export default function PublicSocialView() {
         </div>
       </div>
 
-      {/* Friend-Based Posting Rules Card */}
+      {/* Centralized Friend-Based Posting Rules Card */}
       <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-5 shadow-sm space-y-3">
         <div className="flex items-center gap-2 text-purple-600 dark:text-purple-400">
           <ShieldAlert className="h-4 w-4" />
@@ -65,19 +66,38 @@ export default function PublicSocialView() {
             {t("friendsNetwork")}
           </h3>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-          <div className="p-3 bg-purple-50 dark:bg-purple-950/30 rounded-xl border border-purple-200 dark:border-purple-900/50">
-            <span className="font-bold text-purple-900 dark:text-purple-300 block">0 Friends</span>
-            <span className="text-purple-600 dark:text-purple-400">1 post allowed / day</span>
-          </div>
-          <div className="p-3 bg-pink-50 dark:bg-pink-950/30 rounded-xl border border-pink-200 dark:border-pink-900/50">
-            <span className="font-bold text-pink-900 dark:text-pink-300 block">1 - 9 Friends</span>
-            <span className="text-pink-600 dark:text-pink-400">5 posts allowed / day</span>
-          </div>
-          <div className="p-3 bg-indigo-50 dark:bg-indigo-950/30 rounded-xl border border-indigo-200 dark:border-indigo-900/50">
-            <span className="font-bold text-indigo-900 dark:text-indigo-300 block">10+ Friends</span>
-            <span className="text-indigo-600 dark:text-indigo-400">Unlimited daily posts</span>
-          </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+          {SOCIAL_POSTING_TIERS.map((tier) => (
+            <div
+              key={tier.id}
+              className={`p-3 rounded-xl border ${
+                tier.id === "noFriends"
+                  ? "bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-900/50"
+                  : tier.id === "oneFriend"
+                  ? "bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900/50"
+                  : tier.id === "twoToTenFriends"
+                  ? "bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-900/50"
+                  : "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900/50"
+              }`}
+            >
+              <span className={`font-bold block ${
+                tier.id === "noFriends" ? "text-rose-900 dark:text-rose-300" :
+                tier.id === "oneFriend" ? "text-amber-900 dark:text-amber-300" :
+                tier.id === "twoToTenFriends" ? "text-purple-900 dark:text-purple-300" :
+                "text-emerald-900 dark:text-emerald-300"
+              }`}>
+                {t(tier.tierTitleKey)}
+              </span>
+              <span className={
+                tier.id === "noFriends" ? "text-rose-600 dark:text-rose-400" :
+                tier.id === "oneFriend" ? "text-amber-600 dark:text-amber-400" :
+                tier.id === "twoToTenFriends" ? "text-purple-600 dark:text-purple-400" :
+                "text-emerald-600 dark:text-emerald-400"
+              }>
+                {t(tier.tierDescKey)}
+              </span>
+            </div>
+          ))}
         </div>
       </div>
 

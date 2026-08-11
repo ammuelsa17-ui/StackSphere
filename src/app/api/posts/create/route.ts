@@ -6,6 +6,7 @@ import Post from "@/models/Post";
 import Upload from "@/models/Upload";
 import User from "@/models/User";
 import { sanitizeString } from "@/utils/validation";
+import { getDailyPostLimit } from "@/lib/socialPostingPolicy";
 
 export async function POST(req: Request) {
   try {
@@ -58,24 +59,13 @@ export async function POST(req: Request) {
     }
 
     const friendCount = dbUser.friends?.length || 0;
+    const dailyLimit = getDailyPostLimit(friendCount);
 
-    if (friendCount === 0) {
+    if (dailyLimit === 0) {
       return NextResponse.json(
-        { error: "You cannot create a post because you have 0 friends. Please add at least 1 friend to start posting." },
+        { error: "Posting is blocked until you add at least 1 friend.", code: "POSTING_BLOCKED" },
         { status: 403 }
       );
-    }
-
-    // Determine daily post limit based on friend count:
-    // - 0 friends: no posts
-    // - 1 friend: 1 post per day
-    // - 2 to 10 friends: 2 posts per day
-    // - More than 10 friends: unlimited
-    let dailyLimit = 2;
-    if (friendCount === 1) {
-      dailyLimit = 1;
-    } else if (friendCount > 10) {
-      dailyLimit = Infinity;
     }
 
     if (dailyLimit !== Infinity) {
@@ -92,99 +82,71 @@ export async function POST(req: Request) {
       if (postCountToday >= dailyLimit) {
         return NextResponse.json(
           {
-            error: `Daily posting limit reached. With ${friendCount} friend${
-              friendCount === 1 ? "" : "s"
-            }, you can post up to ${dailyLimit} time${dailyLimit === 1 ? "" : "s"} per day.`,
+            error: `Daily post limit reached based on your friend count.`,
+            code: "DAILY_LIMIT_REACHED",
           },
           { status: 403 }
         );
       }
     }
 
-    // 7. Create the new post in the database
-    const newPost = await Post.create({
-      author: (session.user as any).id,
-      content: contentClean,
-      mediaUrl: mediaUrl || "",
-      mediaType: normalizedMediaType,
-      likes: [],
-      commentsCount: 0,
-      sharesCount: 0,
-    });
+    // 7. Verification: If media is provided, ensure it exists in Upload collection
+    let verifiedMediaUrl = "";
+    let verifiedMediaType: "image" | "video" | "none" = "none";
 
-    // Concurrency Safety Check: Verify total count today after creation
-    if (dailyLimit !== Infinity) {
-      const startOfToday = new Date();
-      startOfToday.setUTCHours(0, 0, 0, 0);
-
-      const totalCountToday = await Post.countDocuments({
-        author: userId,
-        createdAt: { $gte: startOfToday },
+    if (mediaUrl && normalizedMediaType !== "none") {
+      const uploadDoc = await Upload.findOne({
+        url: mediaUrl,
+        user: userId,
       });
 
-      if (totalCountToday > dailyLimit) {
-        // Rollback / delete excess creation caused by race condition
-        await Post.deleteOne({ _id: newPost._id });
+      if (!uploadDoc) {
         return NextResponse.json(
-          {
-            error: `Daily posting limit reached. With ${friendCount} friend${
-              friendCount === 1 ? "" : "s"
-            }, you can post up to ${dailyLimit} time${dailyLimit === 1 ? "" : "s"} per day.`,
-          },
-          { status: 403 }
+          { error: "Provided media file was not found in your uploads." },
+          { status: 400 }
         );
       }
+
+      verifiedMediaUrl = uploadDoc.url;
+      verifiedMediaType = uploadDoc.fileType as "image" | "video";
     }
 
-    // 8. If post includes media, link the upload record to this post
-    if (mediaUrl && mediaUrl.trim() !== "") {
-      try {
-        await Upload.findOneAndUpdate(
-          {
-            url: mediaUrl,
-            uploader: (session.user as any).id,
-          },
-          {
-            associatedPost: newPost._id,
-          }
-        );
-      } catch (err) {
-        console.error("Failed to link upload metadata to post:", err);
-        // Do not fail the request if database link fails, just log it.
-      }
-    }
+    // 8. Create the Post document
+    const newPost = await Post.create({
+      author: userId,
+      content: contentClean,
+      mediaUrl: verifiedMediaUrl,
+      mediaType: verifiedMediaType,
+      likes: [],
+      shares: 0,
+      createdAt: new Date(),
+    });
 
-    // 8. Respond with the created post
+    // Populate author details for client response
+    const populatedPost = await Post.findById(newPost._id)
+      .populate("author", "name avatarUrl subscription friends")
+      .lean();
+
     return NextResponse.json(
       {
-        success: true,
+        message: "Post published successfully!",
         post: {
-          id: newPost._id.toString(),
-          content: newPost.content,
-          mediaUrl: newPost.mediaUrl,
-          mediaType: newPost.mediaType,
-          likes: newPost.likes,
-          commentsCount: newPost.commentsCount,
-          sharesCount: newPost.sharesCount,
-          createdAt: newPost.createdAt,
+          _id: (populatedPost as any)._id.toString(),
+          author: (populatedPost as any).author,
+          content: (populatedPost as any).content,
+          mediaUrl: (populatedPost as any).mediaUrl,
+          mediaType: (populatedPost as any).mediaType,
+          likes: (populatedPost as any).likes || [],
+          shares: (populatedPost as any).shares || 0,
+          createdAt: (populatedPost as any).createdAt,
         },
       },
       { status: 201 }
     );
   } catch (error: any) {
-    console.error("Post creation error:", error);
-
-    // Intercept Mongoose schema validation failures
-    if (error.name === "ValidationError") {
-      const messages = Object.values(error.errors).map((err: any) => err.message);
-      return NextResponse.json(
-        { error: messages[0] || "Validation failed" },
-        { status: 400 }
-      );
-    }
-
+    console.error("Error creating post:", error);
     return NextResponse.json(
-      { error: "An unexpected error occurred during post creation." },
+      { error: "Internal server error creating post." },
       { status: 500 }
     );
   }

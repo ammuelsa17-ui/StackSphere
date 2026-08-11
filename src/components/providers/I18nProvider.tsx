@@ -219,7 +219,17 @@ const translations: Record<Language, Record<string, string>> = {
     featUnlimitedMediaSharing: "Unlimited photo & video sharing",
     featGoldBadge: "Gold VIP badge on profile",
     featFullAuditLogs: "Full audit security logs",
-    featRazorpayTestMode: "Razorpay Test Mode checkout"
+    featRazorpayTestMode: "Razorpay Test Mode checkout",
+    socialTierNoFriendsTitle: "0 Friends",
+    socialTierNoFriendsDesc: "Posting blocked. Add 1 friend to post.",
+    socialTierOneFriendTitle: "1 Friend",
+    socialTierOneFriendDesc: "1 post allowed per day",
+    socialTierTwoToTenTitle: "2–10 Friends",
+    socialTierTwoToTenDesc: "2 posts allowed per day",
+    socialTierOverTenTitle: "11+ Friends",
+    socialTierOverTenDesc: "Unlimited daily posts",
+    postingBlockedError: "Posting is blocked until you add at least 1 friend.",
+    dailyPostLimitReached: "Daily post limit reached based on your friend count."
   },
   es: {
     socialSpace: "Espacio Social",
@@ -425,7 +435,17 @@ const translations: Record<Language, Record<string, string>> = {
     featUnlimitedMediaSharing: "Compartición de fotos y videos ilimitada",
     featGoldBadge: "Insignia VIP de Oro en el perfil",
     featFullAuditLogs: "Registros completos de auditoría de seguridad",
-    featRazorpayTestMode: "Pago integrado en modo de prueba de Razorpay"
+    featRazorpayTestMode: "Pago integrado en modo de prueba de Razorpay",
+    socialTierNoFriendsTitle: "0 Amigos",
+    socialTierNoFriendsDesc: "Publicación bloqueada. Agregue 1 amigo para publicar.",
+    socialTierOneFriendTitle: "1 Amigo",
+    socialTierOneFriendDesc: "1 publicación permitida por día",
+    socialTierTwoToTenTitle: "2–10 Amigos",
+    socialTierTwoToTenDesc: "2 publicaciones permitidas por día",
+    socialTierOverTenTitle: "Más de 10 Amigos",
+    socialTierOverTenDesc: "Publicaciones diarias ilimitadas",
+    postingBlockedError: "La publicación está bloqueada hasta que agregues al menos 1 amigo.",
+    dailyPostLimitReached: "Se alcanzó el límite diario de publicaciones según tus amigos."
   },
   hi: {
     socialSpace: "सोशल स्पेस",
@@ -631,7 +651,17 @@ const translations: Record<Language, Record<string, string>> = {
     featUnlimitedMediaSharing: "असीमित फोटो और वीडियो शेयरिंग",
     featGoldBadge: "प्रोफ़ाइल पर गोल्ड वीआईपी बैज",
     featFullAuditLogs: "पूर्ण सुरक्षा ऑडिट लॉग",
-    featRazorpayTestMode: "रेजरपे टेस्ट मोड चेकआउट"
+    featRazorpayTestMode: "रेजरपे टेस्ट मोड चेकआउट",
+    socialTierNoFriendsTitle: "0 मित्र",
+    socialTierNoFriendsDesc: "पोस्टिंग ब्लॉक। पोस्ट करने के लिए 1 मित्र जोड़ें।",
+    socialTierOneFriendTitle: "1 मित्र",
+    socialTierOneFriendDesc: "प्रति दिन 1 पोस्ट की अनुमति",
+    socialTierTwoToTenTitle: "2–10 मित्र",
+    socialTierTwoToTenDesc: "प्रति दिन 2 पोस्ट की अनुमति",
+    socialTierOverTenTitle: "11+ मित्र",
+    socialTierOverTenDesc: "असीमित दैनिक पोस्ट",
+    postingBlockedError: "कम से कम 1 मित्र जोड़ने तक पोस्टिंग ब्लॉक है।",
+    dailyPostLimitReached: "आपके मित्रों की संख्या के आधार पर दैनिक पोस्ट सीमा समाप्त।"
   },
   pt: {
     socialSpace: "Espaço Social",
@@ -837,7 +867,17 @@ const translations: Record<Language, Record<string, string>> = {
     featUnlimitedMediaSharing: "Compartilhamento de mídia ilimitado",
     featGoldBadge: "Selo VIP de Ouro no perfil",
     featFullAuditLogs: "Registros completos de auditoria de segurança",
-    featRazorpayTestMode: "Pagamento no modo de teste do Razorpay"
+    featRazorpayTestMode: "Pagamento no modo de teste do Razorpay",
+    socialTierNoFriendsTitle: "0 Amigos",
+    socialTierNoFriendsDesc: "Publicação bloqueada. Adicione 1 amigo para publicar.",
+    socialTierOneFriendTitle: "1 Amigo",
+    socialTierOneFriendDesc: "1 publicação permitida por dia",
+    socialTierTwoToTenTitle: "2–10 Amigos",
+    socialTierTwoToTenDesc: "2 publicações permitidas por dia",
+    socialTierOverTenTitle: "Mais de 10 Amigos",
+    socialTierOverTenDesc: "Publicações diárias ilimitadas",
+    postingBlockedError: "Publicação bloqueada até adicionar pelo menos 1 amigo.",
+    dailyPostLimitReached: "Limite diário atingido com base no número de amigos."
   },
   zh: {
     socialSpace: "社交空间",
@@ -1043,7 +1083,17 @@ const translations: Record<Language, Record<string, string>> = {
     featUnlimitedMediaSharing: "无限量图片与视频分享",
     featGoldBadge: "个人资料黄金 VIP 徽章",
     featFullAuditLogs: "完整安全审计日志",
-    featRazorpayTestMode: "Razorpay 测试模式结账"
+    featRazorpayTestMode: "Razorpay 测试模式结账",
+    socialTierNoFriendsTitle: "0 个好友",
+    socialTierNoFriendsDesc: "无法发帖。请添加 1 个好友。",
+    socialTierOneFriendTitle: "1 个好友",
+    socialTierOneFriendDesc: "每日允许发布 1 条动态",
+    socialTierTwoToTenTitle: "2–10 个好友",
+    socialTierTwoToTenDesc: "每日允许发布 2 条动态",
+    socialTierOverTenTitle: "11+ 个好友",
+    socialTierOverTenDesc: "每日无限量发布动态",
+    postingBlockedError: "在添加至少 1 个好友之前禁止发帖。",
+    dailyPostLimitReached: "已达到基于好友数量的每日发帖上限。"
   },
   fr: {
     socialSpace: "Espace Social",
@@ -1249,7 +1299,17 @@ const translations: Record<Language, Record<string, string>> = {
     featUnlimitedMediaSharing: "Partage de photos et vidéos illimité",
     featGoldBadge: "Badge VIP Or sur le profil",
     featFullAuditLogs: "Journaux complets d'audit de sécurité",
-    featRazorpayTestMode: "Paiement en mode test Razorpay"
+    featRazorpayTestMode: "Paiement en mode test Razorpay",
+    socialTierNoFriendsTitle: "0 Ami",
+    socialTierNoFriendsDesc: "Publication bloquée. Ajoutez 1 ami pour publier.",
+    socialTierOneFriendTitle: "1 Ami",
+    socialTierOneFriendDesc: "1 publication autorisée par jour",
+    socialTierTwoToTenTitle: "2–10 Amis",
+    socialTierTwoToTenDesc: "2 publications autorisées par jour",
+    socialTierOverTenTitle: "11+ Amis",
+    socialTierOverTenDesc: "Publications quotidiennes illimitées",
+    postingBlockedError: "Publication bloquée jusqu'à l'ajout d'au moins 1 ami.",
+    dailyPostLimitReached: "Limite quotidienne de publications atteinte."
   }
 };
 

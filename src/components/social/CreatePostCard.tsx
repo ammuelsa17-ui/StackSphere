@@ -3,6 +3,7 @@
 import React, { useState, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { Image, Video, Send, X, Star, AlertCircle } from "lucide-react";
+import { useTranslation } from "@/components/providers/I18nProvider";
 
 interface CreatePostCardProps {
   currentUser?: {
@@ -24,6 +25,7 @@ interface CreatePostCardProps {
 }
 
 export default function CreatePostCard({ currentUser, onPostCreated }: CreatePostCardProps) {
+  const { t } = useTranslation();
   const { data: session } = useSession();
   const [content, setContent] = useState("");
   const [isExpanded, setIsExpanded] = useState(false);
@@ -43,23 +45,23 @@ export default function CreatePostCard({ currentUser, onPostCreated }: CreatePos
           👥
         </div>
         <h3 className="text-base font-extrabold text-neutral-900 dark:text-white">
-          Join the StackSphere Social Space
+          {t("socialSpacePreview")}
         </h3>
         <p className="text-xs text-neutral-500 dark:text-neutral-400 max-w-md mx-auto">
-          Create an account or sign in to connect with fellow developers, share media updates, and participate in community discussions!
+          {t("socialFeatureDesc")}
         </p>
         <div className="flex items-center justify-center gap-3 pt-2">
           <a
             href="/register"
             className="px-4 py-2 text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-sm transition-all"
           >
-            Create Account
+            {t("createAccount")}
           </a>
           <a
             href="/login"
             className="px-4 py-2 text-xs font-bold border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-all"
           >
-            Sign In
+            {t("signIn")}
           </a>
         </div>
       </div>
@@ -80,10 +82,10 @@ export default function CreatePostCard({ currentUser, onPostCreated }: CreatePos
     const charSum = name.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
     const colors = [
       "from-indigo-500 to-purple-600",
+      "from-purple-500 to-pink-600",
       "from-blue-500 to-indigo-600",
-      "from-violet-500 to-fuchsia-600",
-      "from-teal-500 to-emerald-600",
-      "from-rose-500 to-pink-600",
+      "from-emerald-500 to-teal-600",
+      "from-amber-500 to-orange-600",
     ];
     return colors[charSum % colors.length];
   };
@@ -92,118 +94,107 @@ export default function CreatePostCard({ currentUser, onPostCreated }: CreatePos
     setIsExpanded(true);
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: "image" | "video") => {
-    const userPlan = currentUser?.plan || "Free";
-    if (userPlan === "Free") {
-      alert("Only premium subscribers (Bronze, Silver, Gold plans) can attach images or videos to posts. Please upgrade your subscription plan in the Dashboard to unlock media uploads.");
-      // Reset input value to prevent triggering file picker again with same file
-      if (e.target) e.target.value = "";
-      return;
-    }
-
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // 1. File Format Validation
-    const isImage = file.type.startsWith("image/");
-    const isVideo = file.type.startsWith("video/");
-    if (!isImage && !isVideo) {
-      alert("Unsupported file format! Please upload an image (PNG, JPG, WEBP) or video (MP4, WEBM).");
-      if (e.target) e.target.value = "";
-      return;
-    }
-
-    // 2. File Size Validation
-    const maxSizeBytes = userPlan.toLowerCase() === "gold" 
-      ? 15 * 1024 * 1024 // Gold: 15MB
-      : userPlan.toLowerCase() === "silver"
-      ? 10 * 1024 * 1024 // Silver: 10MB
-      : 5 * 1024 * 1024; // Bronze: 5MB
-
-    if (file.size > maxSizeBytes) {
-      const sizeLabel = userPlan.toLowerCase() === "gold" ? "15MB" : userPlan.toLowerCase() === "silver" ? "10MB" : "5MB";
-      alert(`File size exceeds limit! Your subscription plan (${userPlan}) allows media uploads up to ${sizeLabel}.`);
-      if (e.target) e.target.value = "";
-      return;
-    }
-
-    setIsUploading(true);
-    setUploadStatus(`Uploading ${type}...`);
-
     try {
+      setIsUploading(true);
+      setUploadStatus(t("loading"));
+
       const formData = new FormData();
       formData.append("file", file);
 
-      const response = await fetch("/api/uploads", {
+      const res = await fetch("/api/uploads", {
         method: "POST",
         body: formData,
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to upload file");
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || t("error"));
+        return;
       }
 
-      const resData = await response.json();
-      if (resData.success && resData.url) {
-        setMediaUrl(resData.url);
-        setMediaType(resData.type);
-      }
-    } catch (err: unknown) {
-      const errMsg = err instanceof Error ? err.message : "An error occurred during file upload.";
-      console.error("Upload error:", err);
-      alert(errMsg);
-      removeMedia();
+      setMediaUrl(data.url);
+      setMediaType("image");
+      setUploadStatus(null);
+    } catch (err: any) {
+      alert(err.message || t("error"));
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsUploading(true);
+      setUploadStatus(t("loading"));
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/uploads", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || t("error"));
+        return;
+      }
+
+      setMediaUrl(data.url);
+      setMediaType("video");
       setUploadStatus(null);
+    } catch (err: any) {
+      alert(err.message || t("error"));
+    } finally {
+      setIsUploading(false);
     }
   };
 
-  const handleAddMockImage = () => {
-    const userPlan = currentUser?.plan || "Free";
-    if (userPlan === "Free") {
-      alert("Only premium subscribers (Bronze, Silver, Gold plans) can attach images or videos to posts. Please upgrade your subscription plan in the Dashboard to unlock media uploads.");
-      return;
-    }
-
-    const mockImages = [
-      "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&auto=format&fit=crop&q=60",
-      "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop&q=60",
-      "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&auto=format&fit=crop&q=60",
-    ];
-    const randomImg = mockImages[Math.floor(Math.random() * mockImages.length)];
-    setMediaUrl(randomImg);
-    setMediaType("image");
-  };
-
-  const removeMedia = () => {
+  const handleRemoveMedia = () => {
     setMediaUrl(null);
     setMediaType("none");
-    if (fileInputRef.current) fileInputRef.current.value = "";
-    if (videoInputRef.current) videoInputRef.current.value = "";
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!content.trim() && mediaType === "none") return;
+    if (!content.trim() && !mediaUrl) return;
 
-    setIsSubmitting(true);
-    
     try {
-      if (onPostCreated) {
-        await onPostCreated({
-          content,
-          mediaUrl: mediaUrl || undefined,
+      setIsSubmitting(true);
+      const res = await fetch("/api/posts/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          content: content.trim(),
+          mediaUrl: mediaUrl || "",
           mediaType,
-        });
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || t("error"));
+        return;
       }
-      // Reset state
+
       setContent("");
-      removeMedia();
+      setMediaUrl(null);
+      setMediaType("none");
       setIsExpanded(false);
-    } catch (err) {
-      console.error("Submission failed:", err);
+
+      if (onPostCreated) {
+        onPostCreated(data.post);
+      }
+    } catch (err: any) {
+      alert(err.message || t("error"));
     } finally {
       setIsSubmitting(false);
     }
@@ -213,11 +204,10 @@ export default function CreatePostCard({ currentUser, onPostCreated }: CreatePos
                         (currentUser?.dailyLimit !== Infinity && currentUser?.remainingPosts === 0);
   
   const blockReason = currentUser?.friendCount === 0 
-    ? "Posting is blocked because you have 0 friends. Add at least 1 friend to start sharing posts!"
-    : "Daily posting limit reached for today. You can post up to 1 post/day with 1 friend, or 2 posts/day with 2 to 10 friends. Add more than 10 friends to unlock unlimited posting!";
+    ? t("postingBlockedError")
+    : t("dailyPostLimitReached");
 
-  const userName = session?.user?.name || "StackSphere Member";
-  const userPlan = (session?.user as any)?.subscription?.plan || "Bronze";
+  const userName = session?.user?.name || "Developer";
 
   return (
     <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-5 shadow-sm transition-all duration-200">
@@ -242,22 +232,22 @@ export default function CreatePostCard({ currentUser, onPostCreated }: CreatePos
               value={content}
               onChange={(e) => setContent(e.target.value)}
               onFocus={handleTextareaFocus}
-              placeholder={isPostBlocked ? "Posting is restricted. See reason below." : "Share your thoughts, tech insights, or ask a question..."}
+              placeholder={isPostBlocked ? t("postingBlockedError") : t("postPlaceholder")}
               rows={isExpanded ? 3 : 1}
               className="w-full bg-transparent text-neutral-800 dark:text-neutral-100 placeholder-neutral-400 focus:outline-none resize-none text-sm py-2 leading-relaxed disabled:opacity-60"
             />
 
-            {/* Day 52: Social Posting Limit Tracker */}
+            {/* Social Posting Limit Tracker */}
             <div className="text-[10px] text-neutral-400 dark:text-neutral-500 font-semibold flex items-center justify-between mt-1 pt-1 border-t border-neutral-100 dark:border-neutral-750/30">
-              <span>Friends: <strong>{currentUser?.friendCount ?? 0}</strong></span>
+              <span>{t("friendsNetwork")}: <strong>{currentUser?.friendCount ?? 0}</strong></span>
               <span>
                 {currentUser?.dailyLimit === Infinity ? (
-                  <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Unlimited Posting (11+ Friends)</span>
+                  <span className="text-emerald-600 dark:text-emerald-400 font-semibold">{t("socialTierOverTenDesc")}</span>
                 ) : (
                   <span>
                     Posts Today: <strong>{currentUser?.postsCountToday ?? 0} / {currentUser?.dailyLimit ?? 0}</strong> 
                     { (currentUser?.remainingPosts ?? 0) === 0 ? (
-                      <span className="text-rose-500 font-bold ml-1.5">(Limit Reached)</span>
+                      <span className="text-rose-500 font-bold ml-1.5">{t("limitReached")}</span>
                     ) : (
                       <span className="text-indigo-650 dark:text-indigo-400 font-bold ml-1.5">({currentUser?.remainingPosts ?? 0} remaining)</span>
                     )}
@@ -272,118 +262,83 @@ export default function CreatePostCard({ currentUser, onPostCreated }: CreatePos
           <div className="bg-rose-50 dark:bg-rose-950/20 border border-rose-250 dark:border-rose-900 text-rose-600 dark:text-rose-450 p-3.5 rounded-xl flex gap-3 text-xs leading-normal ml-11 sm:ml-14 animate-fadeIn">
             <AlertCircle className="h-4.5 w-4.5 shrink-0 mt-0.5" />
             <div>
-              <span className="font-bold block mb-0.5">Posting Access Restricted</span>
+              <span className="font-bold block mb-0.5">{t("error")}</span>
               {blockReason}
             </div>
           </div>
         )}
 
-        {/* Media Preview Box or Uploading State */}
-        {(mediaUrl || isUploading) && (
-          <div className="relative rounded-xl overflow-hidden border border-neutral-150 dark:border-neutral-700/60 min-h-[150px] max-h-[250px] bg-neutral-50 dark:bg-neutral-900/20 ml-11 sm:ml-14 flex items-center justify-center">
-            {isUploading ? (
-              <div className="flex flex-col items-center gap-2 py-8">
-                <span className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
-                <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
-                  {uploadStatus}
-                </span>
-              </div>
+        {/* Media Preview Box */}
+        {mediaUrl && (
+          <div className="relative rounded-xl overflow-hidden bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 ml-11 sm:ml-14 max-h-60">
+            {mediaType === "image" ? (
+              <img src={mediaUrl} alt="Upload preview" className="w-full h-full object-cover max-h-60" />
             ) : (
-              <>
-                <button
-                  type="button"
-                  onClick={removeMedia}
-                  className="absolute top-2.5 right-2.5 z-10 bg-neutral-900/80 hover:bg-neutral-900 text-white p-1 rounded-full backdrop-blur-sm transition-all"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-                {mediaType === "video" ? (
-                  <video src={mediaUrl!} controls className="w-full h-full object-cover max-h-[250px]" />
-                ) : (
-                  <img src={mediaUrl!} alt="Attached preview" className="w-full h-full object-cover max-h-[250px]" />
-                )}
-              </>
+              <video src={mediaUrl} controls className="w-full h-full object-cover max-h-60" />
             )}
+            <button
+              type="button"
+              onClick={handleRemoveMedia}
+              className="absolute top-2 right-2 p-1.5 bg-black/60 hover:bg-black/80 text-white rounded-full transition-colors cursor-pointer"
+            >
+              <X className="h-4 w-4" />
+            </button>
           </div>
         )}
 
-        {/* Action Toolbar */}
+        {/* Action Controls */}
         {isExpanded && (
-          <div className="flex items-center justify-between pt-3 border-t border-neutral-100 dark:border-neutral-700/60 ml-11 sm:ml-14">
-            <div className="flex items-center gap-0.5 sm:gap-1">
-              {/* Hidden file inputs */}
-              <input
-                type="file"
-                ref={fileInputRef}
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => handleFileChange(e, "image")}
-              />
-              <input
-                type="file"
-                ref={videoInputRef}
-                accept="video/*"
-                className="hidden"
-                onChange={(e) => handleFileChange(e, "video")}
-              />
-
-              {/* Photo Upload Trigger */}
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="p-2 rounded-lg text-neutral-500 hover:text-indigo-650 hover:bg-indigo-50 dark:hover:bg-indigo-950/20 transition-all"
-                title="Upload Image"
-              >
-                <Image className="h-4.5 w-4.5" />
-              </button>
-
-              {/* Video Upload Trigger */}
-              <button
-                type="button"
-                onClick={() => videoInputRef.current?.click()}
-                className="p-2 rounded-lg text-neutral-500 hover:text-indigo-650 hover:bg-indigo-50 dark:hover:bg-indigo-950/20 transition-all"
-                title="Upload Video"
-              >
-                <Video className="h-4.5 w-4.5" />
-              </button>
-
-              {/* Quick Mock Image Button */}
-              <button
-                type="button"
-                onClick={handleAddMockImage}
-                className="px-2 py-1 text-[10px] font-bold text-neutral-400 hover:text-indigo-600 dark:hover:text-indigo-400 border border-neutral-200 dark:border-neutral-700 hover:border-indigo-300 dark:hover:border-indigo-800 rounded-md transition-all ml-1.5"
-                title="Attach premium mock image"
-              >
-                + Premium Photo
-              </button>
-            </div>
-
+          <div className="flex items-center justify-between pt-3 border-t border-neutral-100 dark:border-neutral-750 ml-11 sm:ml-14 animate-fadeIn">
             <div className="flex items-center gap-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
+              />
               <button
                 type="button"
-                onClick={() => setIsExpanded(false)}
-                className="px-3 py-1.5 text-xs font-semibold text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-all"
+                disabled={isUploading || isPostBlocked}
+                onClick={() => fileInputRef.current?.click()}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-neutral-100 dark:bg-neutral-700/60 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors disabled:opacity-50 cursor-pointer"
               >
-                Cancel
+                <Image className="h-3.5 w-3.5 text-indigo-500" />
+                <span>Photo</span>
               </button>
-              
+
+              <input
+                ref={videoInputRef}
+                type="file"
+                accept="video/*"
+                onChange={handleVideoUpload}
+                className="hidden"
+              />
               <button
-                type="submit"
-                disabled={isSubmitting || isUploading || (!content.trim() && mediaType === "none")}
-                className={`flex items-center gap-1.5 px-4.5 py-1.5 rounded-lg text-xs font-semibold text-white shadow-sm transition-all duration-200 ${
-                  (content.trim() || mediaType !== "none") && !isUploading && !isSubmitting
-                    ? "bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98]"
-                    : "bg-indigo-400 text-indigo-200/80 cursor-not-allowed"
-                }`}
+                type="button"
+                disabled={isUploading || isPostBlocked}
+                onClick={() => videoInputRef.current?.click()}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-neutral-100 dark:bg-neutral-700/60 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors disabled:opacity-50 cursor-pointer"
               >
-                {isSubmitting ? (
-                  <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                ) : (
-                  <Send className="h-3.5 w-3.5" />
-                )}
-                <span>{isSubmitting ? "Posting..." : "Post"}</span>
+                <Video className="h-3.5 w-3.5 text-pink-500" />
+                <span>Video</span>
               </button>
+
+              {uploadStatus && (
+                <span className="text-[10px] font-semibold text-neutral-400 animate-pulse">
+                  {uploadStatus}
+                </span>
+              )}
             </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting || isUploading || isPostBlocked || (!content.trim() && !mediaUrl)}
+              className="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow-md shadow-indigo-600/20 transition-all disabled:opacity-50 cursor-pointer"
+            >
+              <Send className="h-3.5 w-3.5" />
+              <span>{t("postButton")}</span>
+            </button>
           </div>
         )}
       </form>
