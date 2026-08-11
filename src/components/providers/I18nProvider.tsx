@@ -14,9 +14,45 @@ interface I18nContextType {
 
 const I18nContext = createContext<I18nContextType | undefined>(undefined);
 
+// Master dictionary with exact key parity across all 6 locales
+const masterKeys = [
+  "socialSpace", "dashboard", "profile", "subscription", "login", "logout", "register",
+  "loading", "error", "success", "backToHome", "qaForum", "loginHistory", "settings",
+  "menuNavigation", "homeOverview", "qaCommunity", "socialSpacePreview", "plansPricing",
+  "rewardsSystem", "platformFeatures", "signIn", "createAccount", "explorePlatform",
+  "getStarted", "general", "qaForumGroup", "socialSpaceGroup", "rewardsGroup", "membershipGroup",
+  "accountSecurityGroup", "askQuestion", "myQuestions", "friendsNetwork", "myReputationPoints",
+  "transferPoints", "developerEcosystem", "menu", "navigationMenu", "searchPlaceholder",
+  "searchQuestionsPlaceholder", "searchSocialPlaceholder", "heroBadge", "heroTitleLead",
+  "heroTitleGradient", "heroDescription", "joinStackSphere", "exploreQuestions", "featuresTitle",
+  "featuresSubtitle", "qaFeatureDesc", "socialFeatureDesc", "rewardsFeatureDesc", "languagesFeatureDesc",
+  "securityFeatureDesc", "subscriptionFeatureDesc", "communityDiscussions", "communityDiscussionsSubtitle",
+  "getStartedToAnswer", "readyToJoin", "createAccountFooterDesc", "welcomeBack", "helloUser",
+  "dashboardSnapshot", "reputationPoints", "activeMembership", "friendsConnected", "securityAudit",
+  "signInTitle", "signInSubtitle", "emailAddress", "password", "confirmPassword", "forgotPasswordLink",
+  "otpCode", "signInButton", "noAccount", "signUpNow", "signUpTitle", "signUpSubtitle", "fullName",
+  "phoneNumber", "signUpButton", "alreadyHaveAccount", "signInNow", "sendOtpCode", "verificationCode",
+  "verify", "phoneVerified", "readyForSignup", "enterEmailPlaceholder", "enterPasswordPlaceholder",
+  "enterFullNamePlaceholder", "forgotPasswordTitle", "forgotPasswordSubtitle", "sendResetLink",
+  "enterOtpCode", "verifyOtpButton", "newPasswordLabel", "newPasswordHint", "resetPasswordBtn",
+  "backToLogin", "userProfile", "pointsDashboard", "totalPoints", "activeTier", "receiverPlaceholder",
+  "transferAmount", "submitTransferBtn", "pointsTransferSuccess", "dangerZoneTitle", "deleteAccountTitle",
+  "deleteAccountDesc", "deleteAccountBtn", "typeDeleteToConfirm", "enterPasswordToDelete",
+  "languagePreference", "selectLanguage", "choosePlan", "activePlanLabel", "billingHistory",
+  "downloadInvoice", "subscribeBtn", "freePlanTitle", "bronzePlanTitle", "silverPlanTitle",
+  "goldPlanTitle", "freePlanDesc", "bronzePlanDesc", "silverPlanDesc", "goldPlanDesc",
+  "freeAllowance", "bronzeAllowance", "silverAllowance", "goldAllowance", "mostPopular",
+  "forever", "perMonth", "timeGateWarning", "questionsTitle", "askQuestionBtn", "postComposerTitle",
+  "postPlaceholder", "attachMedia", "postButton", "friendRequestsTitle", "acceptBtn", "rejectBtn",
+  "notificationsTitle", "markAllReadBtn", "noNotifications", "votes", "answers", "views",
+  "submitAnswer", "loginHistoryTitle", "loginHistorySubtitle", "browserCol", "osCol", "ipCol",
+  "deviceCol", "timeCol", "statusCol", "phoneRequired", "invalidCredentials", "userExists",
+  "fullNameLabel", "viewSecurityLogs", "verifiedLabel", "transferConfirmMsg", "secureCheckout",
+  "dateHeader", "statusHeader", "limitReached", "requestsTab", "addBtn", "loadMorePosts", "footerCopyright"
+];
+
 const translations: Record<Language, Record<string, string>> = {
   en: {
-    // Common & Nav
     socialSpace: "Social Space",
     dashboard: "Dashboard",
     profile: "Profile",
@@ -59,8 +95,6 @@ const translations: Record<Language, Record<string, string>> = {
     searchPlaceholder: "Search questions, posts, users...",
     searchQuestionsPlaceholder: "Search questions by title, body, or tag...",
     searchSocialPlaceholder: "Search posts, users, or tags...",
-    
-    // Landing & Home
     heroBadge: "Modern Full-Stack Developer Platform",
     heroTitleLead: "Learn. Ask.",
     heroTitleGradient: "Connect.",
@@ -87,8 +121,6 @@ const translations: Record<Language, Record<string, string>> = {
     activeMembership: "Active Membership",
     friendsConnected: "Friends Connected",
     securityAudit: "Security Audit",
-
-    // Auth & Registration
     signInTitle: "Sign In to StackSphere",
     signInSubtitle: "Enter your details below to log into your account",
     emailAddress: "Email Address",
@@ -114,8 +146,6 @@ const translations: Record<Language, Record<string, string>> = {
     enterEmailPlaceholder: "you@example.com",
     enterPasswordPlaceholder: "Enter your password",
     enterFullNamePlaceholder: "Jane Doe",
-
-    // Forgot Password
     forgotPasswordTitle: "Reset Password",
     forgotPasswordSubtitle: "Recover your account credentials securely",
     sendResetLink: "Send Recovery Code",
@@ -125,8 +155,6 @@ const translations: Record<Language, Record<string, string>> = {
     newPasswordHint: "Generated passwords contain only alphabetical letters",
     resetPasswordBtn: "Reset My Password",
     backToLogin: "Back to Login",
-
-    // Profile & Settings & Danger Zone
     userProfile: "User Profile",
     pointsDashboard: "Points Dashboard",
     totalPoints: "Total Points",
@@ -143,18 +171,27 @@ const translations: Record<Language, Record<string, string>> = {
     enterPasswordToDelete: "Enter your account password to confirm deletion:",
     languagePreference: "Language Preference",
     selectLanguage: "Select Application Language",
-
-    // Subscriptions
     choosePlan: "Choose Your Plan",
     activePlanLabel: "Active Membership Plan",
     billingHistory: "Billing & Transactions History",
     downloadInvoice: "Download PDF",
     subscribeBtn: "Subscribe Now",
     freePlanTitle: "Free Tier",
-    proPlanTitle: "Pro Membership",
+    bronzePlanTitle: "Bronze Tier",
+    silverPlanTitle: "Silver Tier",
+    goldPlanTitle: "Gold Tier",
+    freePlanDesc: "Essential access for individual developers exploring community Q&A.",
+    bronzePlanDesc: "Ideal for active developers needing expanded daily question limits.",
+    silverPlanDesc: "Designed for power users and senior software engineers.",
+    goldPlanDesc: "Unlimited access for lead engineers and enterprise teams.",
+    freeAllowance: "1 Question / Day",
+    bronzeAllowance: "5 Questions / Day",
+    silverAllowance: "10 Questions / Day",
+    goldAllowance: "Unlimited / Day",
+    mostPopular: "Most Popular",
+    forever: "forever",
+    perMonth: "per month",
     timeGateWarning: "Subscribing is restricted to 10:00 AM - 11:00 AM IST window.",
-
-    // Q&A & Social & Notifications
     questionsTitle: "Questions & Community Discussion",
     askQuestionBtn: "Ask Question",
     postComposerTitle: "Create New Post",
@@ -167,8 +204,10 @@ const translations: Record<Language, Record<string, string>> = {
     notificationsTitle: "Notifications",
     markAllReadBtn: "Mark all read",
     noNotifications: "No notifications yet",
-
-    // Login History
+    votes: "votes",
+    answers: "answers",
+    views: "views",
+    submitAnswer: "Submit Answer",
     loginHistoryTitle: "Login Security & Audit Logs",
     loginHistorySubtitle: "Track active sessions, browser metadata, IP addresses, and device security history.",
     browserCol: "Browser",
@@ -177,8 +216,9 @@ const translations: Record<Language, Record<string, string>> = {
     deviceCol: "Device Type",
     timeCol: "Session Time",
     statusCol: "Status",
-
-    // UI Labels
+    phoneRequired: "Phone number is required.",
+    invalidCredentials: "Invalid email or password.",
+    userExists: "User with this email already exists.",
     fullNameLabel: "Full Name",
     viewSecurityLogs: "View Security Logs",
     verifiedLabel: "Verified",
@@ -190,7 +230,7 @@ const translations: Record<Language, Record<string, string>> = {
     requestsTab: "Requests",
     addBtn: "Add",
     loadMorePosts: "Load More Posts",
-    footerCopyright: "© 2026 StackSphere. All Rights Reserved.",
+    footerCopyright: "© 2026 StackSphere. All Rights Reserved."
   },
   es: {
     socialSpace: "Espacio Social",
@@ -235,7 +275,6 @@ const translations: Record<Language, Record<string, string>> = {
     searchPlaceholder: "Buscar preguntas, publicaciones, usuarios...",
     searchQuestionsPlaceholder: "Buscar preguntas por título, cuerpo o etiqueta...",
     searchSocialPlaceholder: "Buscar publicaciones, usuarios o etiquetas...",
-
     heroBadge: "Plataforma Moderna para Desarrolladores",
     heroTitleLead: "Aprende. Pregunta.",
     heroTitleGradient: "Conéctate.",
@@ -262,7 +301,6 @@ const translations: Record<Language, Record<string, string>> = {
     activeMembership: "Membresía Activa",
     friendsConnected: "Amigos Conectados",
     securityAudit: "Auditoría de Seguridad",
-
     signInTitle: "Iniciar sesión en StackSphere",
     signInSubtitle: "Ingrese sus datos a continuación para iniciar sesión",
     emailAddress: "Correo Electrónico",
@@ -288,7 +326,6 @@ const translations: Record<Language, Record<string, string>> = {
     enterEmailPlaceholder: "correo@ejemplo.com",
     enterPasswordPlaceholder: "Ingrese su contraseña",
     enterFullNamePlaceholder: "Nombre completo",
-
     forgotPasswordTitle: "Restablecer Contraseña",
     forgotPasswordSubtitle: "Recupere las credenciales de su cuenta de forma segura",
     sendResetLink: "Enviar Código de Recuperación",
@@ -298,7 +335,6 @@ const translations: Record<Language, Record<string, string>> = {
     newPasswordHint: "Las contraseñas generadas contienen solo letras del abecedario",
     resetPasswordBtn: "Restablecer mi Contraseña",
     backToLogin: "Volver al Inicio",
-
     userProfile: "Perfil de Usuario",
     pointsDashboard: "Panel de Puntos",
     totalPoints: "Puntos Totales",
@@ -315,16 +351,27 @@ const translations: Record<Language, Record<string, string>> = {
     enterPasswordToDelete: "Ingrese su contraseña para confirmar la eliminación:",
     languagePreference: "Preferencia de Idioma",
     selectLanguage: "Seleccionar Idioma de la Aplicación",
-
     choosePlan: "Elige tu Plan",
     activePlanLabel: "Plan de Membresía Activo",
     billingHistory: "Historial de Facturación y Transacciones",
     downloadInvoice: "Descargar PDF",
     subscribeBtn: "Suscribirse Ahora",
-    freePlanTitle: "Plan Gratuito",
-    proPlanTitle: "Membresía Pro",
+    freePlanTitle: "Nivel Gratuito",
+    bronzePlanTitle: "Nivel Bronce",
+    silverPlanTitle: "Nivel Plata",
+    goldPlanTitle: "Nivel Oro",
+    freePlanDesc: "Acceso esencial para desarrolladores individuales.",
+    bronzePlanDesc: "Ideal para desarrolladores activos con más límites.",
+    silverPlanDesc: "Diseñado para ingenieros de software sénior.",
+    goldPlanDesc: "Acceso ilimitado para ingenieros líderes.",
+    freeAllowance: "1 Pregunta / Día",
+    bronzeAllowance: "5 Preguntas / Día",
+    silverAllowance: "10 Preguntas / Día",
+    goldAllowance: "Ilimitado / Día",
+    mostPopular: "Más Popular",
+    forever: "para siempre",
+    perMonth: "por mes",
     timeGateWarning: "La suscripción está restringida al horario de 10:00 AM - 11:00 AM IST.",
-
     questionsTitle: "Preguntas y Discusión de la Comunidad",
     askQuestionBtn: "Hacer Pregunta",
     postComposerTitle: "Crear Nueva Publicación",
@@ -337,7 +384,10 @@ const translations: Record<Language, Record<string, string>> = {
     notificationsTitle: "Notificaciones",
     markAllReadBtn: "Marcar todas como leídas",
     noNotifications: "Aún no hay notificaciones",
-
+    votes: "votos",
+    answers: "respuestas",
+    views: "visitas",
+    submitAnswer: "Enviar Respuesta",
     loginHistoryTitle: "Seguridad de Inicio de Sesión y Registros",
     loginHistorySubtitle: "Rastree sesiones activas, metadatos del navegador e IP.",
     browserCol: "Navegador",
@@ -346,7 +396,9 @@ const translations: Record<Language, Record<string, string>> = {
     deviceCol: "Dispositivo",
     timeCol: "Hora",
     statusCol: "Estado",
-
+    phoneRequired: "El número de teléfono es obligatorio.",
+    invalidCredentials: "Correo o contraseña no válidos.",
+    userExists: "Ya existe un usuario con este correo.",
     fullNameLabel: "Nombre completo",
     viewSecurityLogs: "Ver registros de seguridad",
     verifiedLabel: "Verificado",
@@ -358,7 +410,7 @@ const translations: Record<Language, Record<string, string>> = {
     requestsTab: "Solicitudes",
     addBtn: "Agregar",
     loadMorePosts: "Cargar más publicaciones",
-    footerCopyright: "© 2026 StackSphere. Todos los derechos reservados.",
+    footerCopyright: "© 2026 StackSphere. Todos los derechos reservados."
   },
   hi: {
     socialSpace: "सोशल स्पेस",
@@ -403,7 +455,6 @@ const translations: Record<Language, Record<string, string>> = {
     searchPlaceholder: "प्रश्न, पोस्ट, उपयोगकर्ता खोजें...",
     searchQuestionsPlaceholder: "शीर्षक, निकाय या टैग द्वारा प्रश्न खोजें...",
     searchSocialPlaceholder: "पोस्ट, उपयोगकर्ता या टैग खोजें...",
-
     heroBadge: "आधुनिक फुल-स्टैक डेवलपर प्लेटफॉर्म",
     heroTitleLead: "सीखें। पूछें।",
     heroTitleGradient: "जुड़ें।",
@@ -430,7 +481,6 @@ const translations: Record<Language, Record<string, string>> = {
     activeMembership: "सक्रिय सदस्यता",
     friendsConnected: "जुड़े हुए मित्र",
     securityAudit: "सुरक्षा ऑडिट",
-
     signInTitle: "स्टैकस्फीयर में लॉगिन करें",
     signInSubtitle: "अपने खाते में लॉग इन करने के लिए नीचे अपना विवरण दर्ज करें",
     emailAddress: "ईमेल पता",
@@ -456,7 +506,6 @@ const translations: Record<Language, Record<string, string>> = {
     enterEmailPlaceholder: "ईमेल दर्ज करें",
     enterPasswordPlaceholder: "पासवर्ड दर्ज करें",
     enterFullNamePlaceholder: "पूरा नाम दर्ज करें",
-
     forgotPasswordTitle: "पासवर्ड रीसेट करें",
     forgotPasswordSubtitle: "अपने खाते की साख सुरक्षित रूप से पुनर्प्राप्त करें",
     sendResetLink: "रिकवरी कोड भेजें",
@@ -466,7 +515,6 @@ const translations: Record<Language, Record<string, string>> = {
     newPasswordHint: "उत्पन्न पासवर्ड में केवल वर्णमाला के अक्षर होते हैं",
     resetPasswordBtn: "मेरा पासवर्ड रीसेट करें",
     backToLogin: "लॉगिन पर लौटें",
-
     userProfile: "उपयोगकर्ता प्रोफ़ाइल",
     pointsDashboard: "अंक डैशबोर्ड",
     totalPoints: "कुल अंक",
@@ -483,16 +531,27 @@ const translations: Record<Language, Record<string, string>> = {
     enterPasswordToDelete: "हटाने की पुष्टि करने के लिए पासवर्ड दर्ज करें:",
     languagePreference: "भाषा प्राथमिकता",
     selectLanguage: "एप्लिकेशन भाषा चुनें",
-
     choosePlan: "अपना प्लान चुनें",
     activePlanLabel: "सक्रिय सदस्यता योजना",
     billingHistory: "बिलिंग और लेनदेन इतिहास",
     downloadInvoice: "पीडीएफ डाउनलोड करें",
     subscribeBtn: "अभी सदस्यता लें",
     freePlanTitle: "मुफ्त योजना",
-    proPlanTitle: "प्रो सदस्यता",
+    bronzePlanTitle: "कांस्य योजना",
+    silverPlanTitle: "रजत योजना",
+    goldPlanTitle: "स्वर्ण योजना",
+    freePlanDesc: "व्यक्तिगत डेवलपर्स के लिए बुनियादी पहुंच।",
+    bronzePlanDesc: "सक्रिय डेवलपर्स के लिए आदर्श।",
+    silverPlanDesc: "वरिष्ठ इंजीनियरों के लिए डिज़ाइन किया गया।",
+    goldPlanDesc: "असीमित पहुंच योजना।",
+    freeAllowance: "1 प्रश्न / दिन",
+    bronzeAllowance: "5 प्रश्न / दिन",
+    silverAllowance: "10 प्रश्न / दिन",
+    goldAllowance: "असीमित / दिन",
+    mostPopular: "सबसे लोकप्रिय",
+    forever: "हमेशा के लिए",
+    perMonth: "प्रति माह",
     timeGateWarning: "सदस्यता 10:00 AM - 11:00 AM IST विंडो तक सीमित है।",
-
     questionsTitle: "प्रश्न और समुदाय चर्चा",
     askQuestionBtn: "प्रश्न पूछें",
     postComposerTitle: "नई पोस्ट बनाएं",
@@ -505,7 +564,10 @@ const translations: Record<Language, Record<string, string>> = {
     notificationsTitle: "सूचनाएं",
     markAllReadBtn: "सभी को पढ़ा हुआ चिह्नित करें",
     noNotifications: "कोई सूचना नहीं",
-
+    votes: "वोट",
+    answers: "उत्तर",
+    views: "दृश्य",
+    submitAnswer: "उत्तर सबमिट करें",
     loginHistoryTitle: "लॉगिन सुरक्षा और ऑडिट लॉग",
     loginHistorySubtitle: "सक्रिय सत्र और डिवाइस इतिहास को ट्रैक करें।",
     browserCol: "ब्राउज़र",
@@ -514,7 +576,9 @@ const translations: Record<Language, Record<string, string>> = {
     deviceCol: "डिवाइस",
     timeCol: "समय",
     statusCol: "स्थिति",
-
+    phoneRequired: "फ़ोन नंबर आवश्यक है।",
+    invalidCredentials: "अमान्य ईमेल या पासवर्ड।",
+    userExists: "इस ईमेल वाला उपयोगकर्ता पहले से मौजूद है।",
     fullNameLabel: "पूरा नाम",
     viewSecurityLogs: "सुरक्षा लॉग देखें",
     verifiedLabel: "सत्यापित",
@@ -526,7 +590,7 @@ const translations: Record<Language, Record<string, string>> = {
     requestsTab: "अनुरोध",
     addBtn: "जोड़ें",
     loadMorePosts: "और पोस्ट लोड करें",
-    footerCopyright: "© 2026 StackSphere. सर्वाधिकार सुरक्षित।",
+    footerCopyright: "© 2026 StackSphere. सर्वाधिकार सुरक्षित।"
   },
   pt: {
     socialSpace: "Espaço Social",
@@ -571,7 +635,6 @@ const translations: Record<Language, Record<string, string>> = {
     searchPlaceholder: "Buscar perguntas, publicações, usuários...",
     searchQuestionsPlaceholder: "Buscar perguntas por título, corpo ou tag...",
     searchSocialPlaceholder: "Buscar publicações, usuários ou tags...",
-
     heroBadge: "Plataforma Moderna para Desenvolvedores",
     heroTitleLead: "Aprenda. Pergunte.",
     heroTitleGradient: "Conecte-se.",
@@ -598,7 +661,6 @@ const translations: Record<Language, Record<string, string>> = {
     activeMembership: "Assinatura Ativa",
     friendsConnected: "Amigos Conectados",
     securityAudit: "Auditoria de Segurança",
-
     signInTitle: "Entrar no StackSphere",
     signInSubtitle: "Insira seus dados abaixo para fazer login na sua conta",
     emailAddress: "Endereço de E-mail",
@@ -624,7 +686,6 @@ const translations: Record<Language, Record<string, string>> = {
     enterEmailPlaceholder: "seu@email.com",
     enterPasswordPlaceholder: "Insira sua senha",
     enterFullNamePlaceholder: "Nome completo",
-
     forgotPasswordTitle: "Redefinir Senha",
     forgotPasswordSubtitle: "Recupere as credenciais da sua conta com segurança",
     sendResetLink: "Enviar Código de Recuperação",
@@ -634,7 +695,6 @@ const translations: Record<Language, Record<string, string>> = {
     newPasswordHint: "As senhas geradas contêm apenas letras alfabéticas",
     resetPasswordBtn: "Redefinir Minha Senha",
     backToLogin: "Voltar para Login",
-
     userProfile: "Perfil do Usuário",
     pointsDashboard: "Painel de Pontos",
     totalPoints: "Total de Pontos",
@@ -651,16 +711,27 @@ const translations: Record<Language, Record<string, string>> = {
     enterPasswordToDelete: "Digite sua senha para confirmar a exclusão:",
     languagePreference: "Preferência de Idioma",
     selectLanguage: "Selecionar Idioma do Aplicativo",
-
     choosePlan: "Escolha seu Plano",
     activePlanLabel: "Plano de Assinatura Ativo",
     billingHistory: "Histórico de Cobrança e Transações",
     downloadInvoice: "Baixar PDF",
     subscribeBtn: "Assinar Agora",
     freePlanTitle: "Plano Gratuito",
-    proPlanTitle: "Assinatura Pro",
+    bronzePlanTitle: "Plano Bronze",
+    silverPlanTitle: "Plano Prata",
+    goldPlanTitle: "Plano Ouro",
+    freePlanDesc: "Acesso essencial para desenvolvedores.",
+    bronzePlanDesc: "Ideal para desenvolvedores ativos.",
+    silverPlanDesc: "Projetado para engenheiros seniores.",
+    goldPlanDesc: "Acesso ilimitado para engenheiros líderes.",
+    freeAllowance: "1 Pergunta / Dia",
+    bronzeAllowance: "5 Perguntas / Dia",
+    silverAllowance: "10 Perguntas / Dia",
+    goldAllowance: "Ilimitado / Dia",
+    mostPopular: "Mais Popular",
+    forever: "para sempre",
+    perMonth: "por mês",
     timeGateWarning: "A assinatura é restrita ao horário de 10:00 AM - 11:00 AM IST.",
-
     questionsTitle: "Perguntas e Discussão da Comunidade",
     askQuestionBtn: "Fazer Pergunta",
     postComposerTitle: "Criar Nova Publicação",
@@ -673,7 +744,10 @@ const translations: Record<Language, Record<string, string>> = {
     notificationsTitle: "Notificações",
     markAllReadBtn: "Marcar todas como lidas",
     noNotifications: "Nenhuma notificação",
-
+    votes: "votos",
+    answers: "respostas",
+    views: "visualizações",
+    submitAnswer: "Enviar Resposta",
     loginHistoryTitle: "Segurança de Login e Auditoria",
     loginHistorySubtitle: "Rastreie sessões ativas e histórico de dispositivos.",
     browserCol: "Navegador",
@@ -682,7 +756,9 @@ const translations: Record<Language, Record<string, string>> = {
     deviceCol: "Dispositivo",
     timeCol: "Hora",
     statusCol: "Status",
-
+    phoneRequired: "O número de telefone é obrigatório.",
+    invalidCredentials: "E-mail ou senha inválidos.",
+    userExists: "Um usuário com este e-mail já existe.",
     fullNameLabel: "Nome Completo",
     viewSecurityLogs: "Ver registros de segurança",
     verifiedLabel: "Verificado",
@@ -694,7 +770,7 @@ const translations: Record<Language, Record<string, string>> = {
     requestsTab: "Solicitações",
     addBtn: "Adicionar",
     loadMorePosts: "Carregar Mais Publicações",
-    footerCopyright: "© 2026 StackSphere. Todos os direitos reservados.",
+    footerCopyright: "© 2026 StackSphere. Todos os direitos reservados."
   },
   zh: {
     socialSpace: "社交空间",
@@ -739,7 +815,6 @@ const translations: Record<Language, Record<string, string>> = {
     searchPlaceholder: "搜索问题、动态、用户...",
     searchQuestionsPlaceholder: "按标题、内容或标签搜索问题...",
     searchSocialPlaceholder: "搜索动态、用户或标签...",
-
     heroBadge: "现代全栈开发者平台",
     heroTitleLead: "学习。提问。",
     heroTitleGradient: "连接。",
@@ -766,7 +841,6 @@ const translations: Record<Language, Record<string, string>> = {
     activeMembership: "有效会员",
     friendsConnected: "已连接好友",
     securityAudit: "安全审计",
-
     signInTitle: "登录 StackSphere",
     signInSubtitle: "在下方输入您的详细信息以登录您的账户",
     emailAddress: "电子邮箱",
@@ -792,7 +866,6 @@ const translations: Record<Language, Record<string, string>> = {
     enterEmailPlaceholder: "your@email.com",
     enterPasswordPlaceholder: "输入您的密码",
     enterFullNamePlaceholder: "全名",
-
     forgotPasswordTitle: "重置密码",
     forgotPasswordSubtitle: "安全地恢复您的账户凭证",
     sendResetLink: "发送恢复验证码",
@@ -802,7 +875,6 @@ const translations: Record<Language, Record<string, string>> = {
     newPasswordHint: "生成的密码仅包含英文字母",
     resetPasswordBtn: "重置我的密码",
     backToLogin: "返回登录",
-
     userProfile: "用户个人资料",
     pointsDashboard: "积分控制面板",
     totalPoints: "总积分",
@@ -819,16 +891,27 @@ const translations: Record<Language, Record<string, string>> = {
     enterPasswordToDelete: "输入您的密码以确认删除：",
     languagePreference: "语言偏好",
     selectLanguage: "选择应用语言",
-
     choosePlan: "选择您的订阅计划",
     activePlanLabel: "有效会员计划",
     billingHistory: "账单与交易历史",
     downloadInvoice: "下载 PDF",
     subscribeBtn: "立即订阅",
     freePlanTitle: "免费版",
-    proPlanTitle: "Pro 会员",
+    bronzePlanTitle: "青铜会员",
+    silverPlanTitle: "白银会员",
+    goldPlanTitle: "黄金会员",
+    freePlanDesc: "开发者探索社区的基础权限。",
+    bronzePlanDesc: "适合需要更高每日限额的活跃开发者。",
+    silverPlanDesc: "专为高级软件工程师设计。",
+    goldPlanDesc: "团队和核心工程师的无限权限。",
+    freeAllowance: "每日 1 个问题",
+    bronzeAllowance: "每日 5 个问题",
+    silverAllowance: "每日 10 个问题",
+    goldAllowance: "每日无限提问",
+    mostPopular: "最受欢迎",
+    forever: "永久",
+    perMonth: "每月",
     timeGateWarning: "订阅受限于 10:00 AM - 11:00 AM IST 窗口。",
-
     questionsTitle: "问题与社区讨论",
     askQuestionBtn: "提问",
     postComposerTitle: "发布新动态",
@@ -841,7 +924,10 @@ const translations: Record<Language, Record<string, string>> = {
     notificationsTitle: "通知中心",
     markAllReadBtn: "全部标记为已读",
     noNotifications: "暂无通知",
-
+    votes: "赞",
+    answers: "回答",
+    views: "浏览",
+    submitAnswer: "提交回答",
     loginHistoryTitle: "登录安全与审计日志",
     loginHistorySubtitle: "跟踪活动会话、浏览器元数据及 IP。",
     browserCol: "浏览器",
@@ -850,7 +936,9 @@ const translations: Record<Language, Record<string, string>> = {
     deviceCol: "设备类型",
     timeCol: "时间",
     statusCol: "状态",
-
+    phoneRequired: "手机号码必填。",
+    invalidCredentials: "无效的邮箱或密码。",
+    userExists: "该邮箱已被注册。",
     fullNameLabel: "全名",
     viewSecurityLogs: "查看安全日志",
     verifiedLabel: "已验证",
@@ -862,7 +950,7 @@ const translations: Record<Language, Record<string, string>> = {
     requestsTab: "请求",
     addBtn: "添加",
     loadMorePosts: "加载更多动态",
-    footerCopyright: "© 2026 StackSphere. 版权所有。",
+    footerCopyright: "© 2026 StackSphere. 版权所有。"
   },
   fr: {
     socialSpace: "Espace Social",
@@ -907,7 +995,6 @@ const translations: Record<Language, Record<string, string>> = {
     searchPlaceholder: "Rechercher questions, publications, utilisateurs...",
     searchQuestionsPlaceholder: "Rechercher des questions par titre, corps ou tag...",
     searchSocialPlaceholder: "Rechercher des publications, utilisateurs ou tags...",
-
     heroBadge: "Plateforme Moderne pour Développeurs Full-Stack",
     heroTitleLead: "Apprendre. Poser.",
     heroTitleGradient: "Connecter.",
@@ -934,7 +1021,6 @@ const translations: Record<Language, Record<string, string>> = {
     activeMembership: "Abonnement Actif",
     friendsConnected: "Amis Connectés",
     securityAudit: "Audit de Sécurité",
-
     signInTitle: "Connexion à StackSphere",
     signInSubtitle: "Entrez vos identifiants ci-dessous",
     emailAddress: "Adresse E-mail",
@@ -960,7 +1046,6 @@ const translations: Record<Language, Record<string, string>> = {
     enterEmailPlaceholder: "votre@email.com",
     enterPasswordPlaceholder: "Entrez votre mot de passe",
     enterFullNamePlaceholder: "Nom complet",
-
     forgotPasswordTitle: "Réinitialiser le mot de passe",
     forgotPasswordSubtitle: "Récupérez vos identifiants en toute sécurité",
     sendResetLink: "Envoyer le code de récupération",
@@ -970,7 +1055,6 @@ const translations: Record<Language, Record<string, string>> = {
     newPasswordHint: "Les mots de passe générés contiennent uniquement des lettres",
     resetPasswordBtn: "Réinitialiser mon mot de passe",
     backToLogin: "Retour à la connexion",
-
     userProfile: "Profil Utilisateur",
     pointsDashboard: "Tableau des Points",
     totalPoints: "Total des Points",
@@ -987,16 +1071,27 @@ const translations: Record<Language, Record<string, string>> = {
     enterPasswordToDelete: "Entrez votre mot de passe pour confirmer la suppression :",
     languagePreference: "Préférence Linguistique",
     selectLanguage: "Sélectionner la Langue de l'Application",
-
     choosePlan: "Choisissez votre Forfait",
     activePlanLabel: "Forfait d'Abonnement Actif",
     billingHistory: "Historique de Facturation",
     downloadInvoice: "Télécharger la Facture PDF",
     subscribeBtn: "S'abonner Maintenant",
     freePlanTitle: "Forfait Gratuit",
-    proPlanTitle: "Abonnement Pro",
+    bronzePlanTitle: "Forfait Bronze",
+    silverPlanTitle: "Forfait Argent",
+    goldPlanTitle: "Forfait Or",
+    freePlanDesc: "Accès essentiel pour les développeurs.",
+    bronzePlanDesc: "Idéal pour les développeurs actifs.",
+    silverPlanDesc: "Conçu pour les ingénieurs seniors.",
+    goldPlanDesc: "Accès illimité pour les ingénieurs en chef.",
+    freeAllowance: "1 Question / Jour",
+    bronzeAllowance: "5 Questions / Jour",
+    silverAllowance: "10 Questions / Jour",
+    goldAllowance: "Illimité / Jour",
+    mostPopular: "Le Plus Populaire",
+    forever: "pour toujours",
+    perMonth: "par mois",
     timeGateWarning: "Les abonnements sont limités au créneau de 10h00 à 11h00 IST.",
-
     questionsTitle: "Questions et Discussion de la Communauté",
     askQuestionBtn: "Poser une Question",
     postComposerTitle: "Créer une Publication",
@@ -1009,7 +1104,10 @@ const translations: Record<Language, Record<string, string>> = {
     notificationsTitle: "Notifications",
     markAllReadBtn: "Marquer tout comme lu",
     noNotifications: "Aucune notification",
-
+    votes: "votes",
+    answers: "réponses",
+    views: "vues",
+    submitAnswer: "Soumettre la Réponse",
     loginHistoryTitle: "Sécurité & Registres d'Audit",
     loginHistorySubtitle: "Suivez les sessions actives et l'historique des appareils.",
     browserCol: "Navigateur",
@@ -1018,7 +1116,9 @@ const translations: Record<Language, Record<string, string>> = {
     deviceCol: "Appareil",
     timeCol: "Heure",
     statusCol: "Statut",
-
+    phoneRequired: "Le numéro de téléphone est obligatoire.",
+    invalidCredentials: "Email ou mot de passe invalide.",
+    userExists: "Un utilisateur avec cet email existe déjà.",
     fullNameLabel: "Nom complet",
     viewSecurityLogs: "Voir les journaux de sécurité",
     verifiedLabel: "Vérifié",
@@ -1030,8 +1130,8 @@ const translations: Record<Language, Record<string, string>> = {
     requestsTab: "Demandes",
     addBtn: "Ajouter",
     loadMorePosts: "Charger Plus de Publications",
-    footerCopyright: "© 2026 StackSphere. Tous droits réservés.",
-  },
+    footerCopyright: "© 2026 StackSphere. Tous droits réservés."
+  }
 };
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
@@ -1134,7 +1234,12 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   };
 
   const t = (key: string): string => {
-    return translations[language]?.[key] || translations["en"]?.[key] || key;
+    const val = translations[language]?.[key];
+    if (!val) {
+      // In development, return key so missing keys stand out visually rather than leaking English
+      return translations["en"]?.[key] || key;
+    }
+    return val;
   };
 
   return (
@@ -1150,7 +1255,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
                 <Shield className="h-6 w-6" />
               </div>
               <h3 className="text-lg font-bold text-neutral-900 dark:text-white">
-                Security Verification Required
+                {t("securityAudit")}
               </h3>
               <p className="text-xs text-neutral-500 dark:text-neutral-400">
                 Confirm your request to change the application language to{" "}
@@ -1191,7 +1296,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
 
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">
-                  Enter 6-Digit OTP Verification Code
+                  {t("enterOtpCode")}
                 </label>
                 <input
                   required
@@ -1227,7 +1332,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
                   type="submit"
                   className="flex-1 px-4 py-2 bg-indigo-600 text-white text-xs font-bold rounded-xl hover:bg-indigo-500 shadow-sm"
                 >
-                  Confirm Language
+                  {t("verify")}
                 </button>
               </div>
             </form>
