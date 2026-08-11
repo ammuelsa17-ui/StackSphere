@@ -9,6 +9,7 @@ import { parseBrowser, parseOS, parseDeviceType } from "@/utils/userAgent";
 import { sanitizeString, validateEmail } from "@/utils/validation";
 import { sendEmail } from "@/utils/email";
 import { hashOtp, verifyOtpHash } from "@/utils/hmac";
+import { randomInt } from "crypto";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -25,7 +26,7 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Please enter your email and password");
         }
 
-        const emailClean = sanitizeString(credentials.email);
+        const emailClean = sanitizeString(credentials.email).toLowerCase();
         if (!validateEmail(emailClean)) {
           throw new Error("Please provide a valid email address");
         }
@@ -88,8 +89,8 @@ export const authOptions: NextAuthOptions = {
         if (browser === "Chrome") {
           const code = credentials?.code ? String(credentials.code).trim() : "";
           if (!code) {
-            // Generate 6-digit OTP code and HMAC-SHA256 hash
-            const rawCode = Math.floor(100000 + Math.random() * 900000).toString();
+            // Generate 6-digit cryptographically secure OTP code and HMAC-SHA256 hash
+            const rawCode = randomInt(100000, 1000000).toString();
             const codeHash = hashOtp(rawCode);
             const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5-minute expiry
             const resendAvailableAt = new Date(Date.now() + 60 * 1000); // 60s cooldown
