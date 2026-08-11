@@ -5,6 +5,7 @@ import Link from "next/link";
 import { HelpCircle, PlusCircle, MessageSquare, Eye, Tag, Sparkles, Lock, ArrowRight, ShieldCheck } from "lucide-react";
 import ExploreCrossNav from "./ExploreCrossNav";
 import { useTranslation } from "@/components/providers/I18nProvider";
+import { SUBSCRIPTION_PLANS } from "@/lib/subscriptionPlans";
 
 interface PublicQuestion {
   _id: string;
@@ -72,7 +73,7 @@ export default function PublicQuestionsView({ initialQuestions }: PublicQuestion
         </div>
       </div>
 
-      {/* Plan Question Allowances Overview Card */}
+      {/* Centralized Plan Question Allowances Overview Card */}
       <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-5 shadow-sm space-y-3">
         <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
           <ShieldCheck className="h-4 w-4" />
@@ -81,22 +82,27 @@ export default function PublicQuestionsView({ initialQuestions }: PublicQuestion
           </h3>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-          <div className="p-3 bg-neutral-50 dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-700">
-            <span className="font-bold text-neutral-800 dark:text-neutral-200 block">{t("freePlanTitle")}</span>
-            <span className="text-neutral-500">1 question / day</span>
-          </div>
-          <div className="p-3 bg-amber-50 dark:bg-amber-950/30 rounded-xl border border-amber-200 dark:border-amber-900/50">
-            <span className="font-bold text-amber-800 dark:text-amber-300 block">Bronze ₹100</span>
-            <span className="text-amber-600 dark:text-amber-400">5 questions / day</span>
-          </div>
-          <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700">
-            <span className="font-bold text-slate-800 dark:text-slate-200 block">Silver ₹300</span>
-            <span className="text-slate-600 dark:text-slate-400">10 questions / day</span>
-          </div>
-          <div className="p-3 bg-yellow-50 dark:bg-yellow-950/30 rounded-xl border border-yellow-200 dark:border-yellow-900/50">
-            <span className="font-bold text-yellow-800 dark:text-yellow-300 block">Gold ₹1000</span>
-            <span className="text-yellow-600 dark:text-yellow-400">Unlimited / day</span>
-          </div>
+          {SUBSCRIPTION_PLANS.map((plan) => (
+            <div
+              key={plan.id}
+              className={`p-3 rounded-xl border ${
+                plan.id === "bronze"
+                  ? "bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900/50"
+                  : plan.id === "silver"
+                  ? "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+                  : plan.id === "gold"
+                  ? "bg-yellow-50 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-900/50"
+                  : "bg-neutral-50 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700"
+              }`}
+            >
+              <span className="font-bold text-neutral-800 dark:text-neutral-200 block">
+                {t(plan.nameKey)} {plan.price !== "₹0" ? plan.price : ""}
+              </span>
+              <span className="text-neutral-500 dark:text-neutral-400">
+                {t(plan.allowanceKey)}
+              </span>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -139,11 +145,11 @@ export default function PublicQuestionsView({ initialQuestions }: PublicQuestion
                 <div className="flex items-center gap-4 text-neutral-500">
                   <span className="flex items-center gap-1">
                     <MessageSquare className="h-3.5 w-3.5" />
-                    {q.answersCount} answers
+                    {q.answersCount} {t("answers")}
                   </span>
                   <span className="flex items-center gap-1">
                     <Eye className="h-3.5 w-3.5" />
-                    {q.views} views
+                    {q.views} {t("views")}
                   </span>
                   <button
                     type="button"

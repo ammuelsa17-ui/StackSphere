@@ -5,6 +5,7 @@ import Link from "next/link";
 import { CreditCard, Check, Clock, ShieldCheck, Sparkles, Lock, ArrowRight, Star, Zap } from "lucide-react";
 import ExploreCrossNav from "./ExploreCrossNav";
 import { useTranslation } from "@/components/providers/I18nProvider";
+import { SUBSCRIPTION_PLANS } from "@/lib/subscriptionPlans";
 
 export default function PublicPricingView() {
   const { t } = useTranslation();
@@ -18,79 +19,8 @@ export default function PublicPricingView() {
   const istHour = istTime.getHours();
   const isTimeGateOpen = istHour === 10;
 
-  const plans = [
-    {
-      id: "free",
-      nameKey: "freePlanTitle",
-      price: "₹0",
-      periodKey: "forever",
-      descriptionKey: "qaFeatureDesc",
-      allowanceKey: "freeAllowance",
-      featureKeys: [
-        "feat1QuestionPerDay",
-        "featBrowsePublicForum",
-        "featSocialPreview",
-        "featEarnRewards",
-        "feat6Languages",
-      ],
-      popular: false,
-      buttonTextKey: "freePlanTitle",
-    },
-    {
-      id: "bronze",
-      nameKey: "bronzePlanName",
-      price: "₹100",
-      periodKey: "perMonth",
-      descriptionKey: "subscriptionFeatureDesc",
-      allowanceKey: "bronzeAllowance",
-      featureKeys: [
-        "feat5QuestionsPerDay",
-        "featPhotoVideoUpload",
-        "featExpandedPostLimits",
-        "featPriorityVisibility",
-        "featPdfInvoices",
-      ],
-      popular: true,
-      buttonTextKey: "subscribeBtn",
-    },
-    {
-      id: "silver",
-      nameKey: "silverPlanName",
-      price: "₹300",
-      periodKey: "perMonth",
-      descriptionKey: "subscriptionFeatureDesc",
-      allowanceKey: "silverAllowance",
-      featureKeys: [
-        "feat10QuestionsPerDay",
-        "feat10MbMediaUpload",
-        "featHighPriorityRanking",
-        "featP2pTransfer",
-        "featAutomatedBillingLogs",
-      ],
-      popular: false,
-      buttonTextKey: "subscribeBtn",
-    },
-    {
-      id: "gold",
-      nameKey: "goldPlanName",
-      price: "₹1000",
-      periodKey: "perMonth",
-      descriptionKey: "subscriptionFeatureDesc",
-      allowanceKey: "goldAllowance",
-      featureKeys: [
-        "featUnlimitedQuestions",
-        "featUnlimitedMediaSharing",
-        "featGoldBadge",
-        "featFullAuditLogs",
-        "featRazorpayTestMode",
-      ],
-      popular: false,
-      buttonTextKey: "subscribeBtn",
-    },
-  ];
-
-  const triggerSubscribeModal = (planName: string) => {
-    setSelectedPlanName(planName);
+  const triggerSubscribeModal = (planId: string) => {
+    setSelectedPlanName(planId);
     setShowAuthGateModal(true);
   };
 
@@ -133,7 +63,7 @@ export default function PublicPricingView() {
 
       {/* Plan Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {plans.map((plan) => (
+        {SUBSCRIPTION_PLANS.map((plan) => (
           <div
             key={plan.id}
             className={`bg-white dark:bg-neutral-800 border rounded-2xl p-5 flex flex-col justify-between space-y-4 relative shadow-sm ${
@@ -144,7 +74,7 @@ export default function PublicPricingView() {
           >
             {plan.popular && (
               <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-extrabold text-[9px] uppercase tracking-widest rounded-full shadow-sm">
-                {t("mostPopular")}
+                {t(plan.badgeKey || "mostPopular")}
               </span>
             )}
 
@@ -188,7 +118,7 @@ export default function PublicPricingView() {
                   : "bg-neutral-100 dark:bg-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-600 text-neutral-800 dark:text-neutral-200"
               }`}
             >
-              {t(plan.buttonTextKey)}
+              {t("subscribeBtn")}
             </button>
           </div>
         ))}
