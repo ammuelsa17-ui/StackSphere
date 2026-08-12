@@ -65,9 +65,9 @@ export default function Sidebar() {
     {
       title: t("qaForumGroup"),
       items: [
-        { name: t("qaForum"), href: "/", icon: HelpCircle },
-        { name: t("askQuestion"), href: "/dashboard", icon: PlusCircle },
-        { name: t("myQuestions"), href: "/dashboard?filter=mine", icon: FileText },
+        { name: t("qaForum"), href: "/explore/questions", icon: HelpCircle },
+        { name: t("askQuestion"), href: "/explore/questions?action=ask", icon: PlusCircle },
+        { name: t("myQuestions"), href: "/explore/questions?filter=mine", icon: FileText },
       ],
     },
     {
@@ -102,8 +102,8 @@ export default function Sidebar() {
 
   const bottomBarItems = isAuthenticated
     ? [
-        { name: t("dashboard"), href: "/", icon: Home },
-        { name: t("qaForum"), href: "/dashboard", icon: HelpCircle },
+        { name: t("dashboard"), href: "/dashboard", icon: Home },
+        { name: t("qaForum"), href: "/explore/questions", icon: HelpCircle },
         { name: t("socialSpace"), href: "/social", icon: MessageSquare },
         { name: t("subscription"), href: "/subscription", icon: CreditCard },
       ]

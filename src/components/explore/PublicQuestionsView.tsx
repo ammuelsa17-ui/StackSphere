@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
 import {
   HelpCircle,
   PlusCircle,
@@ -19,6 +20,8 @@ import {
   Send,
   Loader2,
   Trash2,
+  FileText,
+  Globe,
 } from "lucide-react";
 import ExploreCrossNav from "./ExploreCrossNav";
 import { useTranslation } from "@/components/providers/I18nProvider";
@@ -45,8 +48,14 @@ interface PublicQuestionsViewProps {
 export default function PublicQuestionsView({ initialQuestions }: PublicQuestionsViewProps) {
   const { t } = useTranslation();
   const { data: session } = useSession();
+  const searchParams = useSearchParams();
+
+  const currentUserId = (session?.user as any)?.id;
 
   const [questions, setQuestions] = useState<PublicQuestion[]>(initialQuestions);
+  const [activeFilter, setActiveFilter] = useState<"all" | "mine">(
+    searchParams.get("filter") === "mine" ? "mine" : "all"
+  );
   const [allowance, setAllowance] = useState<{
     plan: string;
     dailyLimit: number | string;
@@ -58,7 +67,7 @@ export default function PublicQuestionsView({ initialQuestions }: PublicQuestion
   const [authGateAction, setAuthGateAction] = useState("ask a question");
 
   // Ask Question Modal State
-  const [showAskModal, setShowAskModal] = useState(false);
+  const [showAskModal, setShowAskModal] = useState(searchParams.get("action") === "ask");
   const [newTitle, setNewTitle] = useState("");
   const [newContent, setNewContent] = useState("");
   const [newTags, setNewTags] = useState("");
@@ -88,7 +97,7 @@ export default function PublicQuestionsView({ initialQuestions }: PublicQuestion
             views: q.views || 1,
             createdAt: q.createdAt ? new Date(q.createdAt).toLocaleDateString() : "Just now",
             authorName: q.author?.name || q.author?.email?.split("@")[0] || "Anonymous",
-            authorId: q.author?._id || q.author,
+            authorId: q.author?._id ? String(q.author._id) : String(q.author || ""),
             upvotes: q.upvotes || [],
             downvotes: q.downvotes || [],
           }))
@@ -105,6 +114,20 @@ export default function PublicQuestionsView({ initialQuestions }: PublicQuestion
   useEffect(() => {
     fetchQuestionsData();
   }, [session]);
+
+  useEffect(() => {
+    if (searchParams.get("action") === "ask") {
+      if (session) {
+        setShowAskModal(true);
+      } else {
+        setAuthGateAction("ask a new question");
+        setShowAuthGateModal(true);
+      }
+    }
+    if (searchParams.get("filter") === "mine") {
+      setActiveFilter("mine");
+    }
+  }, [searchParams, session]);
 
   const handleAskClick = () => {
     if (!session) {
@@ -171,6 +194,24 @@ export default function PublicQuestionsView({ initialQuestions }: PublicQuestion
     } catch (err) {
       setSelectedQuestion(q);
       setAnswers([]);
+    }
+  };
+
+  const handleDeleteQuestion = async (questionId: string) => {
+    if (!confirm("Are you sure you want to delete this question?")) return;
+    try {
+      const res = await fetch(`/api/questions/${questionId}`, { method: "DELETE" });
+      if (res.ok) {
+        if (selectedQuestion?._id === questionId) {
+          setSelectedQuestion(null);
+        }
+        await fetchQuestionsData();
+      } else {
+        const data = await res.json();
+        alert(data.error || "Failed to delete question.");
+      }
+    } catch (err) {
+      console.error("Delete question error", err);
     }
   };
 
@@ -259,6 +300,13 @@ export default function PublicQuestionsView({ initialQuestions }: PublicQuestion
     }
   };
 
+  const displayedQuestions = questions.filter((q) => {
+    if (activeFilter === "mine" && currentUserId) {
+      return String(q.authorId) === String(currentUserId);
+    }
+    return true;
+  });
+
   return (
     <div className="space-y-6">
       {/* Header Banner */}
@@ -335,61 +383,120 @@ export default function PublicQuestionsView({ initialQuestions }: PublicQuestion
         </div>
       </div>
 
+      {/* Filter Tabs */}
+      <div className="flex items-center justify-between gap-4 border-b border-neutral-200 dark:border-neutral-700 pb-2">
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => setActiveFilter("all")}
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeFilter === "all"
+                ? "bg-indigo-600 text-white shadow-sm"
+                : "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700"
+            }`}
+          >
+            <Globe className="h-4 w-4" />
+            <span>All Community Questions ({questions.length})</span>
+          </button>
+
+          {session && (
+            <button
+              type="button"
+              onClick={() => setActiveFilter("mine")}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                activeFilter === "mine"
+                  ? "bg-indigo-600 text-white shadow-sm"
+                  : "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700"
+              }`}
+            >
+              <FileText className="h-4 w-4" />
+              <span>My Questions</span>
+            </button>
+          )}
+        </div>
+      </div>
+
       {/* Questions Feed */}
       <div className="space-y-4">
-        {questions.length === 0 ? (
+        {displayedQuestions.length === 0 ? (
           <div className="p-12 text-center bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl">
             <HelpCircle className="h-10 w-10 text-neutral-300 dark:text-neutral-600 mx-auto mb-3" />
-            <h3 className="font-bold text-neutral-700 dark:text-neutral-300">No questions posted yet</h3>
-            <p className="text-xs text-neutral-400 mt-1">Be the first to ask a technical question on StackSphere!</p>
+            <h3 className="font-bold text-neutral-700 dark:text-neutral-300">
+              {activeFilter === "mine" ? "You haven't asked any questions yet" : "No questions posted yet"}
+            </h3>
+            <p className="text-xs text-neutral-400 mt-1">
+              {activeFilter === "mine" ? "Click 'Ask Question' above to submit your first question!" : "Be the first to ask a technical question on StackSphere!"}
+            </p>
           </div>
         ) : (
-          questions.map((q) => (
-            <div
-              key={q._id}
-              className="p-5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl space-y-3 hover:border-indigo-400 transition-all shadow-xs"
-            >
-              <div className="flex items-center justify-between text-xs text-neutral-500">
-                <span className="font-semibold text-neutral-700 dark:text-neutral-300">{q.authorName}</span>
-                <span>{q.createdAt}</span>
-              </div>
-
-              <h3
-                onClick={() => handleOpenQuestionDetails(q)}
-                className="font-extrabold text-base text-neutral-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer transition-colors"
+          displayedQuestions.map((q) => {
+            const isMyQuestion = currentUserId && String(q.authorId) === String(currentUserId);
+            return (
+              <div
+                key={q._id}
+                className="p-5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl space-y-3 hover:border-indigo-400 transition-all shadow-xs"
               >
-                {q.title}
-              </h3>
-
-              <p className="text-xs text-neutral-600 dark:text-neutral-400 line-clamp-3">
-                {q.content}
-              </p>
-
-              <div className="flex items-center justify-between pt-3 border-t border-neutral-100 dark:border-neutral-700/60 text-xs">
-                <div className="flex gap-1.5 flex-wrap">
-                  {q.tags.slice(0, 3).map((tag) => (
-                    <span key={tag} className="px-2 py-0.5 bg-neutral-100 dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 rounded-md font-mono text-[10px]">
-                      #{tag}
-                    </span>
-                  ))}
+                <div className="flex items-center justify-between text-xs text-neutral-500">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-neutral-700 dark:text-neutral-300">{q.authorName}</span>
+                    {isMyQuestion && (
+                      <span className="px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 rounded-full font-bold text-[10px]">
+                        Author (You)
+                      </span>
+                    )}
+                  </div>
+                  <span>{q.createdAt}</span>
                 </div>
 
-                <div className="flex items-center gap-4 text-neutral-500">
-                  <span className="flex items-center gap-1">
-                    <MessageSquare className="h-3.5 w-3.5" />
-                    {q.answersCount} {t("answers")}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => handleOpenQuestionDetails(q)}
-                    className="font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
-                  >
-                    View Details & Answers →
-                  </button>
+                <h3
+                  onClick={() => handleOpenQuestionDetails(q)}
+                  className="font-extrabold text-base text-neutral-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer transition-colors"
+                >
+                  {q.title}
+                </h3>
+
+                <p className="text-xs text-neutral-600 dark:text-neutral-400 line-clamp-3">
+                  {q.content}
+                </p>
+
+                <div className="flex items-center justify-between pt-3 border-t border-neutral-100 dark:border-neutral-700/60 text-xs">
+                  <div className="flex gap-1.5 flex-wrap">
+                    {q.tags.slice(0, 3).map((tag) => (
+                      <span key={tag} className="px-2 py-0.5 bg-neutral-100 dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 rounded-md font-mono text-[10px]">
+                        #{tag}
+                      </span>
+                    ))}
+                  </div>
+
+                  <div className="flex items-center gap-4 text-neutral-500">
+                    <span className="flex items-center gap-1">
+                      <MessageSquare className="h-3.5 w-3.5" />
+                      {q.answersCount} {t("answers")}
+                    </span>
+
+                    {isMyQuestion && (
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteQuestion(q._id)}
+                        className="text-rose-600 hover:text-rose-700 font-semibold flex items-center gap-1 cursor-pointer"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        <span>Delete</span>
+                      </button>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => handleOpenQuestionDetails(q)}
+                      className="font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+                    >
+                      View Details & Answers →
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 
@@ -526,9 +633,8 @@ export default function PublicQuestionsView({ initialQuestions }: PublicQuestion
                 </div>
               ) : (
                 answers.map((ans) => {
-                  const authorIdStr = ans.author?._id || ans.author;
-                  const currentUserIdStr = (session?.user as any)?.id;
-                  const isOwnAnswer = currentUserIdStr && authorIdStr === currentUserIdStr;
+                  const authorIdStr = ans.author?._id ? String(ans.author._id) : String(ans.author || "");
+                  const isOwnAnswer = currentUserId && String(authorIdStr) === String(currentUserId);
                   const score = (ans.upvotes?.length || 0) - (ans.downvotes?.length || 0);
 
                   return (
