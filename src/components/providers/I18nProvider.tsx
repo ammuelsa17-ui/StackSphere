@@ -230,7 +230,9 @@ const translations: Record<Language, Record<string, string>> = {
     socialTierOverTenTitle: "11+ Friends",
     socialTierOverTenDesc: "Unlimited daily posts",
     postingBlockedError: "Posting is blocked until you add at least 1 friend.",
-    dailyPostLimitReached: "Daily post limit reached based on your friend count."
+    dailyPostLimitReached: "Daily post limit reached based on your friend count.",
+    emailRecoveryTab: "Email Recovery",
+    phoneRecoveryTab: "Mobile Phone Recovery"
   },
   es: {
     socialSpace: "Espacio Social",
@@ -446,7 +448,9 @@ const translations: Record<Language, Record<string, string>> = {
     socialTierOverTenTitle: "Más de 10 Amigos",
     socialTierOverTenDesc: "Publicaciones diarias ilimitadas",
     postingBlockedError: "La publicación está bloqueada hasta que agregues al menos 1 amigo.",
-    dailyPostLimitReached: "Se alcanzó el límite diario de publicaciones según tus amigos."
+    dailyPostLimitReached: "Se alcanzó el límite diario de publicaciones según tus amigos.",
+    emailRecoveryTab: "Recuperación por Correo",
+    phoneRecoveryTab: "Recuperación por Teléfono"
   },
   hi: {
     socialSpace: "सोशल स्पेस",
@@ -662,7 +666,9 @@ const translations: Record<Language, Record<string, string>> = {
     socialTierOverTenTitle: "11+ मित्र",
     socialTierOverTenDesc: "असीमित दैनिक पोस्ट",
     postingBlockedError: "कम से कम 1 मित्र जोड़ने तक पोस्टिंग ब्लॉक है।",
-    dailyPostLimitReached: "आपके मित्रों की संख्या के आधार पर दैनिक पोस्ट सीमा समाप्त।"
+    dailyPostLimitReached: "आपके मित्रों की संख्या के आधार पर दैनिक पोस्ट सीमा समाप्त।",
+    emailRecoveryTab: "ईमेल रिकवरी",
+    phoneRecoveryTab: "फोन रिकवरी"
   },
   pt: {
     socialSpace: "Espaço Social",
@@ -878,7 +884,9 @@ const translations: Record<Language, Record<string, string>> = {
     socialTierOverTenTitle: "Mais de 10 Amigos",
     socialTierOverTenDesc: "Publicações diárias ilimitadas",
     postingBlockedError: "Publicação bloqueada até adicionar pelo menos 1 amigo.",
-    dailyPostLimitReached: "Limite diário atingido com base no número de amigos."
+    dailyPostLimitReached: "Limite diário atingido com base no número de amigos.",
+    emailRecoveryTab: "Recuperação por E-mail",
+    phoneRecoveryTab: "Recuperação por Telefone"
   },
   zh: {
     socialSpace: "社交空间",
@@ -1094,7 +1102,9 @@ const translations: Record<Language, Record<string, string>> = {
     socialTierOverTenTitle: "11+ 个好友",
     socialTierOverTenDesc: "每日无限量发布动态",
     postingBlockedError: "在添加至少 1 个好友之前禁止发帖。",
-    dailyPostLimitReached: "已达到基于好友数量的每日发帖上限。"
+    dailyPostLimitReached: "已达到基于好友数量的每日发帖上限。",
+    emailRecoveryTab: "邮箱找回",
+    phoneRecoveryTab: "手机号找回"
   },
   fr: {
     socialSpace: "Espace Social",
@@ -1310,7 +1320,9 @@ const translations: Record<Language, Record<string, string>> = {
     socialTierOverTenTitle: "11+ Amis",
     socialTierOverTenDesc: "Publications quotidiennes illimitées",
     postingBlockedError: "Publication bloquée jusqu'à l'ajout d'au moins 1 ami.",
-    dailyPostLimitReached: "Limite quotidienne de publications atteinte."
+    dailyPostLimitReached: "Limite quotidienne de publications atteinte.",
+    emailRecoveryTab: "Récupération par E-mail",
+    phoneRecoveryTab: "Récupération par Téléphone"
   }
 };
 

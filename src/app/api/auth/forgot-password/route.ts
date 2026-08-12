@@ -108,17 +108,11 @@ export async function POST(req: Request) {
       );
     }
 
-    // Rate-limit: allow only 1 request per calendar day (IST)
+    // Rate-limit: allow only 1 request per 24h
     const now = new Date();
-    const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
-    const istTime = new Date(utcTime + (3600000 * 5.5));
-    const startOfIstTodayUtc = new Date(
-      Date.UTC(istTime.getFullYear(), istTime.getMonth(), istTime.getDate()) - (3600000 * 5.5)
-    );
-
     if (
       user.lastForgotPasswordRequestedAt &&
-      new Date(user.lastForgotPasswordRequestedAt) >= startOfIstTodayUtc
+      now.getTime() - new Date(user.lastForgotPasswordRequestedAt).getTime() < 24 * 60 * 60 * 1000
     ) {
       return NextResponse.json(
         {
