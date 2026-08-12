@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { LogIn } from "lucide-react";
+import { LogIn, Eye, EyeOff } from "lucide-react";
 import { useTranslation } from "@/components/providers/I18nProvider";
 
 import { useSearchParams } from "next/navigation";
@@ -14,6 +14,7 @@ export default function LoginForm() {
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [otpCode, setOtpCode] = useState("");
   const [showOtpInput, setShowOtpInput] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -133,16 +134,31 @@ export default function LoginForm() {
               {t("forgotPasswordLink")}
             </Link>
           </div>
-          <input
-            required
-            disabled={showOtpInput}
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
-            className="bg-neutral-50 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-xl p-3 text-sm text-neutral-800 dark:text-neutral-100 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 disabled:opacity-60"
-          />
+          <div className="relative">
+            <input
+              required
+              disabled={showOtpInput}
+              type={showPassword ? "text" : "password"}
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              className="w-full bg-neutral-50 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-xl p-3 pr-10 text-sm text-neutral-800 dark:text-neutral-100 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 disabled:opacity-60"
+            />
+            <button
+              type="button"
+              disabled={showOtpInput}
+              onClick={() => setShowPassword(!showPassword)}
+              aria-label={showPassword ? t("hidePassword") : t("showPassword")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors disabled:opacity-50 cursor-pointer"
+            >
+              {showPassword ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
+            </button>
+          </div>
         </div>
 
         {showOtpInput && (
@@ -169,24 +185,28 @@ export default function LoginForm() {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full h-11 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm rounded-xl disabled:opacity-50 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
+          className="w-full h-11 bg-indigo-600 hover:bg-indigo-500 text-white font-sans font-bold text-sm rounded-xl transition-all duration-200 shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-2"
         >
-          <LogIn className="h-4 w-4" />
-          <span>{isLoading ? t("loading") : showOtpInput ? t("verifyOtpButton") : t("signInButton")}</span>
+          {isLoading ? (
+            <span>{t("loading")}</span>
+          ) : (
+            <>
+              <LogIn className="h-4 w-4" />
+              <span>{t("signInButton")}</span>
+            </>
+          )}
         </button>
-      </form>
 
-      <div className="mt-6 text-center border-t border-neutral-150 dark:border-neutral-700 pt-6">
-        <p className="text-sm text-neutral-600 dark:text-neutral-400">
-          {t("noAccount")}{" "}
+        <div className="text-center text-xs text-neutral-500 dark:text-neutral-400 pt-2">
+          <span>{t("noAccount")} </span>
           <Link
             href="/register"
-            className="font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+            className="font-bold text-indigo-600 dark:text-indigo-450 hover:underline"
           >
             {t("signUpNow")}
           </Link>
-        </p>
-      </div>
+        </div>
+      </form>
     </div>
   );
 }

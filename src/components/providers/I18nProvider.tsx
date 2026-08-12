@@ -232,7 +232,9 @@ const translations: Record<Language, Record<string, string>> = {
     postingBlockedError: "Posting is blocked until you add at least 1 friend.",
     dailyPostLimitReached: "Daily post limit reached based on your friend count.",
     emailRecoveryTab: "Email Recovery",
-    phoneRecoveryTab: "Mobile Phone Recovery"
+    phoneRecoveryTab: "Mobile Phone Recovery",
+    showPassword: "Show password",
+    hidePassword: "Hide password"
   },
   es: {
     socialSpace: "Espacio Social",
@@ -450,7 +452,9 @@ const translations: Record<Language, Record<string, string>> = {
     postingBlockedError: "La publicación está bloqueada hasta que agregues al menos 1 amigo.",
     dailyPostLimitReached: "Se alcanzó el límite diario de publicaciones según tus amigos.",
     emailRecoveryTab: "Recuperación por Correo",
-    phoneRecoveryTab: "Recuperación por Teléfono"
+    phoneRecoveryTab: "Recuperación por Teléfono",
+    showPassword: "Mostrar contraseña",
+    hidePassword: "Ocultar contraseña"
   },
   hi: {
     socialSpace: "सोशल स्पेस",
@@ -668,7 +672,9 @@ const translations: Record<Language, Record<string, string>> = {
     postingBlockedError: "कम से कम 1 मित्र जोड़ने तक पोस्टिंग ब्लॉक है।",
     dailyPostLimitReached: "आपके मित्रों की संख्या के आधार पर दैनिक पोस्ट सीमा समाप्त।",
     emailRecoveryTab: "ईमेल रिकवरी",
-    phoneRecoveryTab: "फोन रिकवरी"
+    phoneRecoveryTab: "फोन रिकवरी",
+    showPassword: "पासवर्ड दिखाएं",
+    hidePassword: "पासवर्ड छिपाएं"
   },
   pt: {
     socialSpace: "Espaço Social",
@@ -886,7 +892,9 @@ const translations: Record<Language, Record<string, string>> = {
     postingBlockedError: "Publicação bloqueada até adicionar pelo menos 1 amigo.",
     dailyPostLimitReached: "Limite diário atingido com base no número de amigos.",
     emailRecoveryTab: "Recuperação por E-mail",
-    phoneRecoveryTab: "Recuperação por Telefone"
+    phoneRecoveryTab: "Recuperação por Telefone",
+    showPassword: "Mostrar senha",
+    hidePassword: "Ocultar senha"
   },
   zh: {
     socialSpace: "社交空间",
@@ -1104,7 +1112,9 @@ const translations: Record<Language, Record<string, string>> = {
     postingBlockedError: "在添加至少 1 个好友之前禁止发帖。",
     dailyPostLimitReached: "已达到基于好友数量的每日发帖上限。",
     emailRecoveryTab: "邮箱找回",
-    phoneRecoveryTab: "手机号找回"
+    phoneRecoveryTab: "手机号找回",
+    showPassword: "显示密码",
+    hidePassword: "隐藏密码"
   },
   fr: {
     socialSpace: "Espace Social",
@@ -1322,7 +1332,9 @@ const translations: Record<Language, Record<string, string>> = {
     postingBlockedError: "Publication bloquée jusqu'à l'ajout d'au moins 1 ami.",
     dailyPostLimitReached: "Limite quotidienne de publications atteinte.",
     emailRecoveryTab: "Récupération par E-mail",
-    phoneRecoveryTab: "Récupération par Téléphone"
+    phoneRecoveryTab: "Récupération par Téléphone",
+    showPassword: "Afficher le mot de passe",
+    hidePassword: "Masquer le mot de passe"
   }
 };
 
