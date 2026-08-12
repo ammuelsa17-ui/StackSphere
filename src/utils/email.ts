@@ -21,18 +21,18 @@ export async function sendEmail(options: SendEmailOptions) {
     nodemailerInstance = null;
   }
 
-  const host = process.env.SMTP_HOST || process.env.EMAIL_HOST;
+  const host = process.env.SMTP_HOST || process.env.EMAIL_HOST || "smtp.gmail.com";
   const port = parseInt(process.env.SMTP_PORT || process.env.EMAIL_PORT || "587", 10);
   const user = process.env.SMTP_USER || process.env.EMAIL_USER;
-  const pass = process.env.SMTP_PASS || process.env.EMAIL_PASSWORD;
-  const from = process.env.SMTP_FROM || process.env.EMAIL_FROM || "StackSphere <noreply@stacksphere.com>";
+  const pass = process.env.SMTP_PASS || process.env.EMAIL_PASS || process.env.EMAIL_PASSWORD;
+  const from = process.env.SMTP_FROM || process.env.EMAIL_FROM || `StackSphere <${user || "noreply@stacksphere.com"}>`;
 
   const isProduction = process.env.NODE_ENV === "production";
 
   // Production Mode Enforcement
   if (isProduction && (!host || !user || !pass)) {
     throw new Error(
-      "Email Delivery Failed: SMTP environment variables (SMTP_HOST, SMTP_USER, SMTP_PASS) are not configured in production mode."
+      "Email Delivery Failed: SMTP environment variables (SMTP_USER, EMAIL_USER, SMTP_PASS, EMAIL_PASS) are not configured in production mode."
     );
   }
 
