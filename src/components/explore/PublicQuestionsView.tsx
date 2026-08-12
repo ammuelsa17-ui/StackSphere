@@ -587,42 +587,57 @@ export default function PublicQuestionsView({ initialQuestions }: PublicQuestion
               )}
             </div>
 
-            {/* Submit Answer Form */}
-            <form onSubmit={handleAnswerSubmit} className="space-y-3 pt-4 border-t border-neutral-100 dark:border-neutral-700">
-              <h4 className="font-bold text-xs uppercase tracking-wider text-neutral-500">
-                Your Answer (+5 Reward Points)
-              </h4>
+            {/* Submit Answer Form / Guest Login CTA */}
+            {session?.user ? (
+              <form onSubmit={handleAnswerSubmit} className="space-y-3 pt-4 border-t border-neutral-100 dark:border-neutral-700">
+                <h4 className="font-bold text-xs uppercase tracking-wider text-neutral-500">
+                  Your Answer (+5 Reward Points)
+                </h4>
 
-              {answerError && (
-                <div className="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 rounded-xl text-xs font-semibold">
-                  {answerError}
+                {answerError && (
+                  <div className="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 rounded-xl text-xs font-semibold">
+                    {answerError}
+                  </div>
+                )}
+
+                <textarea
+                  required
+                  rows={3}
+                  value={newAnswerContent}
+                  onChange={(e) => setNewAnswerContent(e.target.value)}
+                  placeholder="Write your technical answer here..."
+                  className="w-full p-3 bg-neutral-50 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-xl text-xs text-neutral-900 dark:text-white focus:outline-none focus:border-indigo-500"
+                />
+
+                <div className="flex justify-end">
+                  <button
+                    type="submit"
+                    disabled={isSubmittingAnswer}
+                    className="px-5 py-2.5 bg-indigo-600 text-white font-bold text-xs rounded-xl hover:bg-indigo-500 flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  >
+                    {isSubmittingAnswer ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4" />
+                    )}
+                    <span>Submit Answer</span>
+                  </button>
                 </div>
-              )}
-
-              <textarea
-                required
-                rows={3}
-                value={newAnswerContent}
-                onChange={(e) => setNewAnswerContent(e.target.value)}
-                placeholder="Write your technical answer here..."
-                className="w-full p-3 bg-neutral-50 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-xl text-xs text-neutral-900 dark:text-white focus:outline-none focus:border-indigo-500"
-              />
-
-              <div className="flex justify-end">
-                <button
-                  type="submit"
-                  disabled={isSubmittingAnswer}
-                  className="px-5 py-2.5 bg-indigo-600 text-white font-bold text-xs rounded-xl hover:bg-indigo-500 flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              </form>
+            ) : (
+              <div className="p-4 bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-900/60 rounded-xl text-center space-y-2 pt-4 border-t border-neutral-100 dark:border-neutral-700">
+                <p className="text-xs text-indigo-700 dark:text-indigo-300 font-medium">
+                  Please log in to answer this question and earn +5 reward points!
+                </p>
+                <Link
+                  href="/login"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition-all shadow-sm"
                 >
-                  {isSubmittingAnswer ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Send className="h-4 w-4" />
-                  )}
-                  <span>Submit Answer</span>
-                </button>
+                  <Lock className="h-3.5 w-3.5" />
+                  <span>Login to answer this question</span>
+                </Link>
               </div>
-            </form>
+            )}
           </div>
         </div>
       )}
