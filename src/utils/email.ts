@@ -21,11 +21,11 @@ export async function sendEmail(options: SendEmailOptions) {
     nodemailerInstance = null;
   }
 
-  const host = process.env.SMTP_HOST || process.env.EMAIL_HOST || "smtp.gmail.com";
-  const port = parseInt(process.env.SMTP_PORT || process.env.EMAIL_PORT || "587", 10);
-  const user = process.env.SMTP_USER || process.env.EMAIL_USER;
-  const pass = process.env.SMTP_PASS || process.env.EMAIL_PASS || process.env.EMAIL_PASSWORD;
-  const from = process.env.SMTP_FROM || process.env.EMAIL_FROM || `StackSphere <${user || "noreply@stacksphere.com"}>`;
+  const host = process.env.EMAIL_HOST || process.env.SMTP_HOST || "smtp.gmail.com";
+  const port = parseInt(process.env.EMAIL_PORT || process.env.SMTP_PORT || "587", 10);
+  const user = process.env.EMAIL_USER || process.env.SMTP_USER;
+  const pass = process.env.EMAIL_PASS || process.env.SMTP_PASS || process.env.EMAIL_PASSWORD;
+  const from = process.env.EMAIL_FROM || process.env.SMTP_FROM || `StackSphere <${user || "noreply@stacksphere.com"}>`;
 
   const isProduction = process.env.NODE_ENV === "production";
 
