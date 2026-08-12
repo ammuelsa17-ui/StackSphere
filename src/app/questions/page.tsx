@@ -7,11 +7,11 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export const metadata = {
-  title: "Public Q&A Community - StackSphere",
-  description: "Browse public developer questions, answer technical challenges, and explore the StackSphere developer community.",
+  title: "Q&A Community Forum - StackSphere",
+  description: "Browse developer questions, ask technical queries, and submit answers on StackSphere.",
 };
 
-export default async function PublicQuestionsPage() {
+export default async function QuestionsPage() {
   let questions: any[] = [];
 
   try {
@@ -33,11 +33,11 @@ export default async function PublicQuestionsPage() {
       authorId: q.author?._id ? q.author._id.toString() : "",
     }));
   } catch (err) {
-    console.error("Public questions fetch error:", err);
+    console.error("Questions fetch error:", err);
   }
 
   return (
-    <Suspense fallback={<div className="p-8 text-center text-sm font-semibold text-neutral-500">Loading Q&A Community...</div>}>
+    <Suspense fallback={<div className="p-8 text-center text-sm font-semibold text-neutral-500">Loading Q&A Forum...</div>}>
       <PublicQuestionsView initialQuestions={questions} />
     </Suspense>
   );
