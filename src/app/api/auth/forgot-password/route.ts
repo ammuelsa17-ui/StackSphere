@@ -1,33 +1,30 @@
-export const dynamic = "force-dynamic";
-
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 import connectToDatabase from "@/lib/mongodb";
 import User from "@/models/User";
 import OTPChallenge from "@/models/OTPChallenge";
-import { sanitizeString, validateEmail, normalizePhone } from "@/utils/validation";
 import { sendEmail } from "@/utils/email";
 import { sendTwilioVerifyOtp } from "@/utils/sms";
-import { hashOtp } from "@/utils/hmac";
 import { checkOtpRateLimits } from "@/utils/rateLimit";
+import { sanitizeString, validateEmail, normalizePhone } from "@/utils/validation";
+import { hashOtp } from "@/utils/hmac";
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const { email, phoneNumber, phone } = body;
+    const { email, phoneNumber } = await req.json();
 
     const emailClean = sanitizeString(email);
-    const phoneClean = sanitizeString(phoneNumber || phone);
+    const phoneClean = sanitizeString(phoneNumber);
 
-    const emailProvided = emailClean !== "";
-    const phoneProvided = phoneClean !== "";
+    const emailProvided = validateEmail(emailClean);
+    const phoneProvided = Boolean(phoneClean && phoneClean.length >= 8);
 
     if (!emailProvided && !phoneProvided) {
       return NextResponse.json(
         {
           success: false,
-          error: "Either email address or phone number is required.",
-          message: "Either email address or phone number is required.",
+          error: "Please provide a valid registered email address or phone number.",
+          message: "Please provide a valid registered email address or phone number.",
         },
         { status: 400 }
       );
@@ -36,32 +33,13 @@ export async function POST(req: Request) {
     await connectToDatabase();
 
     let user;
+
     if (emailProvided) {
-      if (!validateEmail(emailClean)) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: "Please provide a valid email address.",
-            message: "Please provide a valid email address.",
-          },
-          { status: 400 }
-        );
-      }
       user = await User.findOne({ email: emailClean.toLowerCase() }).select(
         "+resetPasswordToken +resetPasswordExpires +lastForgotPasswordRequestedAt"
       );
     } else {
-      const normalizedPhone = normalizePhone(phoneClean);
-      if (!normalizedPhone) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: "Please enter a valid phone number.",
-            message: "Please enter a valid phone number.",
-          },
-          { status: 400 }
-        );
-      }
+      const normalizedPhone = normalizePhone(phoneClean) || phoneClean;
       user = await User.findOne({
         $or: [
           { phoneNumber: normalizedPhone },
@@ -72,20 +50,8 @@ export async function POST(req: Request) {
       );
     }
 
-    // 2. User Not Found handling
+    // Generic safe response to prevent user enumeration
     if (!user) {
-      if (!emailProvided) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: "We couldn't start phone recovery for this account. Check the number or use email recovery.",
-            message: "We couldn't start phone recovery for this account. Check the number or use email recovery.",
-          },
-          { status: 400 }
-        );
-      }
-
-      // Account enumeration mitigation for email
       return NextResponse.json(
         {
           success: true,
@@ -130,11 +96,6 @@ export async function POST(req: Request) {
 
     const channel = emailProvided ? "email" : "sms";
 
-    user.resetPasswordToken = token;
-    user.resetPasswordExpires = expiry;
-    user.lastForgotPasswordRequestedAt = now;
-    await user.save();
-
     if (channel === "email") {
       // Generate 6-digit verification code for Email recovery
       const rawCode = Math.floor(100000 + Math.random() * 900000).toString();
@@ -156,6 +117,7 @@ export async function POST(req: Request) {
         { upsert: true, returnDocument: 'after' }
       );
 
+      // Attempt SMTP Email Dispatch BEFORE recording daily usage
       await sendEmail({
         to: user.email,
         subject: "StackSphere Password Reset Recovery Code",
@@ -170,6 +132,18 @@ export async function POST(req: Request) {
           </div>
         `,
       });
+
+      // Atomic update to avoid Mongoose full-document validation errors on legacy accounts lacking phoneNumber
+      await User.updateOne(
+        { _id: user._id },
+        {
+          $set: {
+            resetPasswordToken: token,
+            resetPasswordExpires: expiry,
+            lastForgotPasswordRequestedAt: now,
+          },
+        }
+      );
 
       return NextResponse.json({
         success: true,
@@ -197,6 +171,18 @@ export async function POST(req: Request) {
           { status: 400 }
         );
       }
+
+      // Atomic update to avoid Mongoose full-document validation errors on legacy accounts lacking phoneNumber
+      await User.updateOne(
+        { _id: user._id },
+        {
+          $set: {
+            resetPasswordToken: token,
+            resetPasswordExpires: expiry,
+            lastForgotPasswordRequestedAt: now,
+          },
+        }
+      );
 
       return NextResponse.json({
         success: true,

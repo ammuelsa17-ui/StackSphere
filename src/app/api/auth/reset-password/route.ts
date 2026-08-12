@@ -45,11 +45,17 @@ export async function POST(req: Request) {
     // Encrypt/hash the new password using bcryptjs
     const hashedPassword = await bcryptjs.hash(password, 10);
 
-    // Save changes and clear recovery fields
-    user.password = hashedPassword;
-    user.resetPasswordToken = "";
-    user.resetPasswordExpires = null;
-    await user.save();
+    // Save changes using atomic update to avoid Mongoose full-document validation on legacy accounts lacking phoneNumber
+    await User.updateOne(
+      { _id: user._id },
+      {
+        $set: {
+          password: hashedPassword,
+          resetPasswordToken: "",
+          resetPasswordExpires: null,
+        },
+      }
+    );
 
     return NextResponse.json({
       success: true,
