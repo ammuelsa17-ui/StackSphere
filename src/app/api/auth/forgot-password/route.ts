@@ -7,7 +7,7 @@ import User from "@/models/User";
 import OTPChallenge from "@/models/OTPChallenge";
 import { sanitizeString, validateEmail, normalizePhone } from "@/utils/validation";
 import { sendEmail } from "@/utils/email";
-import { sendSms } from "@/utils/sms";
+import { sendTwilioVerifyOtp } from "@/utils/sms";
 import { hashOtp } from "@/utils/hmac";
 import { checkOtpRateLimits } from "@/utils/rateLimit";
 
@@ -90,7 +90,6 @@ export async function POST(req: Request) {
         {
           success: true,
           message: "If an account matching the details exists, a verification code has been dispatched.",
-          verificationCode: "123456", // Test payload compatibility
         },
         { status: 200 }
       );
@@ -129,29 +128,7 @@ export async function POST(req: Request) {
     const token = crypto.randomBytes(32).toString("hex");
     const expiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
-    // Generate 6-digit verification code and HMAC-SHA256 hash
-    const rawCode = Math.floor(100000 + Math.random() * 900000).toString();
-    const codeHash = hashOtp(rawCode);
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5-minute expiry
-    const resendAvailableAt = new Date(Date.now() + 60 * 1000);
-
     const channel = emailProvided ? "email" : "sms";
-    const destination = emailProvided ? user.email : user.phoneNumber;
-
-    // Upsert into dedicated OTPChallenge model
-    await OTPChallenge.findOneAndUpdate(
-      { userId: user._id, purpose: "forgot-password" },
-      {
-        channel,
-        destination,
-        codeHash,
-        expiresAt,
-        resendAvailableAt,
-        attempts: 0,
-        usedAt: null,
-      },
-      { upsert: true, returnDocument: 'after' }
-    );
 
     user.resetPasswordToken = token;
     user.resetPasswordExpires = expiry;
@@ -159,6 +136,26 @@ export async function POST(req: Request) {
     await user.save();
 
     if (channel === "email") {
+      // Generate 6-digit verification code for Email recovery
+      const rawCode = Math.floor(100000 + Math.random() * 900000).toString();
+      const codeHash = hashOtp(rawCode);
+      const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5-minute expiry
+      const resendAvailableAt = new Date(Date.now() + 60 * 1000);
+
+      await OTPChallenge.findOneAndUpdate(
+        { userId: user._id, purpose: "forgot-password" },
+        {
+          channel: "email",
+          destination: user.email,
+          codeHash,
+          expiresAt,
+          resendAvailableAt,
+          attempts: 0,
+          usedAt: null,
+        },
+        { upsert: true, returnDocument: 'after' }
+      );
+
       await sendEmail({
         to: user.email,
         subject: "StackSphere Password Reset Recovery Code",
@@ -173,21 +170,22 @@ export async function POST(req: Request) {
           </div>
         `,
       });
-    } else {
-      const smsRes = await sendSms({
-        to: destination,
-        message: `Your StackSphere password reset code is: ${rawCode}. Valid for 5 minutes.`,
-      });
 
-      if (smsRes && smsRes.success === false) {
-        const isMissingCreds = smsRes.errorCode === "MISSING_CREDENTIALS";
-        const isTrialRecipientErr = smsRes.errorMessage && (smsRes.errorMessage.includes("recipient") || smsRes.errorMessage.includes("verified"));
-        
+      return NextResponse.json({
+        success: true,
+        message: "Verification code has been successfully dispatched to your email.",
+        method: "email",
+        token,
+      });
+    } else {
+      // Dispatch SMS OTP via Twilio Verify API v2 Service
+      const targetPhone = normalizePhone(phoneClean) || phoneClean;
+      const verifyRes = await sendTwilioVerifyOtp(targetPhone);
+
+      if (!verifyRes.success) {
         let userMsg = "We couldn't send the verification code via SMS right now. Please try email recovery or try again later.";
-        if (isMissingCreds) {
-          userMsg = "SMS service is temporarily unavailable. Please use email recovery or contact support.";
-        } else if (isTrialRecipientErr) {
-          userMsg = "We couldn't send the SMS code. On Twilio trial accounts, the recipient number must be added as a verified caller ID in your Twilio Console.";
+        if (verifyRes.errorCode === "MISSING_VERIFY_SERVICE") {
+          userMsg = "TWILIO VERIFY CONFIGURATION MISSING: TWILIO_VERIFY_SERVICE_SID environment variable is missing on Vercel environment.";
         }
 
         return NextResponse.json(
@@ -195,29 +193,26 @@ export async function POST(req: Request) {
             success: false,
             error: userMsg,
             message: userMsg,
-            twilioErrorCode: smsRes.errorCode || 572002,
           },
           { status: 400 }
         );
       }
-    }
 
-    return NextResponse.json({
-      success: true,
-      message: "Verification code has been successfully dispatched.",
-      method: channel,
-      verificationCode: rawCode, // Retain payload for automated test compatibility
-      token,
-    });
+      return NextResponse.json({
+        success: true,
+        message: "Verification code sent via Twilio Verify SMS.",
+        method: "sms",
+        token,
+      });
+    }
   } catch (error: any) {
-    console.error("Forgot password route error:", error);
+    console.error("Forgot password route error occurred.");
     const msg = error?.message || "An unexpected error occurred while processing recovery request.";
     return NextResponse.json(
       {
         success: false,
         error: msg,
         message: msg,
-        category: error?.category || error?.name || "UnknownError",
       },
       { status: 500 }
     );

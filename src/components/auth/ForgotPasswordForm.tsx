@@ -49,14 +49,14 @@ export default function ForgotPasswordForm() {
     }
   }, [resendTimer]);
 
-  // Client-side password generator with only uppercase and lowercase letters (Day 51)
+  // Client-side password generator with only uppercase and lowercase letters using crypto-safe randomness
   const handleGeneratePassword = () => {
     const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    const array = new Uint32Array(12);
+    window.crypto.getRandomValues(array);
     let randomPassword = "";
-    // Generate 12 random letters
     for (let i = 0; i < 12; i++) {
-      const index = Math.floor(Math.random() * letters.length);
-      randomPassword += letters.charAt(index);
+      randomPassword += letters.charAt(array[i] % letters.length);
     }
     setPassword(randomPassword);
     setConfirmPassword(randomPassword);

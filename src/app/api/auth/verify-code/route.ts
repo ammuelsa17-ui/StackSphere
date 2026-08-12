@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import connectToDatabase from "@/lib/mongodb";
 import User from "@/models/User";
 import OTPChallenge from "@/models/OTPChallenge";
-import { sanitizeString } from "@/utils/validation";
+import { sanitizeString, validateEmail, normalizePhone } from "@/utils/validation";
 import { verifyOtpHash } from "@/utils/hmac";
+import { checkTwilioVerifyOtp } from "@/utils/sms";
 
 export async function POST(req: Request) {
   try {
@@ -28,13 +29,20 @@ export async function POST(req: Request) {
 
     await connectToDatabase();
 
-    // Query user by email or phone number
-    const user = await User.findOne({
-      $or: [
-        { email: identityClean.toLowerCase() },
-        { phoneNumber: identityClean },
-      ],
-    }).select("+resetPasswordToken");
+    const isEmail = validateEmail(identityClean);
+    let user;
+
+    if (isEmail) {
+      user = await User.findOne({ email: identityClean.toLowerCase() }).select("+resetPasswordToken");
+    } else {
+      const normalizedPhone = normalizePhone(identityClean) || identityClean;
+      user = await User.findOne({
+        $or: [
+          { phoneNumber: normalizedPhone },
+          { phoneNumber: identityClean },
+        ],
+      }).select("+resetPasswordToken");
+    }
 
     if (!user) {
       return NextResponse.json(
@@ -43,37 +51,48 @@ export async function POST(req: Request) {
       );
     }
 
-    // Retrieve active forgot-password OTP challenge
-    const challenge = await OTPChallenge.findOne({
-      userId: user._id,
-      purpose: "forgot-password",
-    });
+    if (!isEmail) {
+      // Verification via Twilio Verify API v2 service for SMS OTP
+      const normalizedPhone = normalizePhone(identityClean) || identityClean;
+      const verifyCheck = await checkTwilioVerifyOtp(normalizedPhone, codeClean);
 
-    if (!challenge || challenge.usedAt !== null || new Date(challenge.expiresAt) < new Date()) {
-      return NextResponse.json(
-        { error: "Invalid or expired verification code." },
-        { status: 400 }
-      );
-    }
-
-    // Verify candidate code hash using timing-safe comparison
-    const codeMatches = verifyOtpHash(codeClean, challenge.codeHash) || challenge.codeHash === codeClean;
-
-    if (!codeMatches) {
-      challenge.attempts = (challenge.attempts || 0) + 1;
-      if (challenge.attempts >= 3) {
-        challenge.usedAt = new Date();
+      if (!verifyCheck.approved) {
+        return NextResponse.json(
+          { error: "Invalid or expired verification code." },
+          { status: 400 }
+        );
       }
-      await challenge.save();
-      return NextResponse.json(
-        { error: "Invalid or expired verification code." },
-        { status: 400 }
-      );
-    }
+    } else {
+      // Verification via OTPChallenge database record for Email OTP
+      const challenge = await OTPChallenge.findOne({
+        userId: user._id,
+        purpose: "forgot-password",
+      });
 
-    // Single-use invalidation upon success
-    challenge.usedAt = new Date();
-    await challenge.save();
+      if (!challenge || challenge.usedAt !== null || new Date(challenge.expiresAt) < new Date()) {
+        return NextResponse.json(
+          { error: "Invalid or expired verification code." },
+          { status: 400 }
+        );
+      }
+
+      const codeMatches = verifyOtpHash(codeClean, challenge.codeHash) || challenge.codeHash === codeClean;
+
+      if (!codeMatches) {
+        challenge.attempts = (challenge.attempts || 0) + 1;
+        if (challenge.attempts >= 3) {
+          challenge.usedAt = new Date();
+        }
+        await challenge.save();
+        return NextResponse.json(
+          { error: "Invalid or expired verification code." },
+          { status: 400 }
+        );
+      }
+
+      challenge.usedAt = new Date();
+      await challenge.save();
+    }
 
     return NextResponse.json({
       success: true,
@@ -81,7 +100,7 @@ export async function POST(req: Request) {
       resetToken: user.resetPasswordToken,
     });
   } catch (error: any) {
-    console.error("Verify code route error:", error);
+    console.error("Verify code route error occurred.");
     return NextResponse.json(
       { error: "An unexpected error occurred during verification." },
       { status: 500 }
