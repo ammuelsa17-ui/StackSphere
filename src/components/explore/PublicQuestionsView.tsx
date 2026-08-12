@@ -182,14 +182,19 @@ export default function PublicQuestionsView({ initialQuestions }: PublicQuestion
 
   const handleOpenQuestionDetails = async (q: PublicQuestion) => {
     try {
-      const res = await fetch(`/api/questions/${q._id}`);
-      const data = await res.json();
-      if (data.question) {
-        setSelectedQuestion(data.question);
-        setAnswers(data.question.answers || []);
+      const [qRes, ansRes] = await Promise.all([
+        fetch(`/api/questions/${q._id}`),
+        fetch(`/api/questions/${q._id}/answers`),
+      ]);
+      const qData = await qRes.json();
+      const ansData = await ansRes.json();
+
+      if (qData.question) {
+        setSelectedQuestion(qData.question);
+        setAnswers(ansData.answers || qData.question.answers || []);
       } else {
         setSelectedQuestion(q);
-        setAnswers([]);
+        setAnswers(ansData.answers || []);
       }
     } catch (err) {
       setSelectedQuestion(q);

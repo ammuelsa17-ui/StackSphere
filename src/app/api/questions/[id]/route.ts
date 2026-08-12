@@ -13,12 +13,26 @@ export async function GET(
     const { id } = await params;
     await connectToDatabase();
 
-    const question = await Question.findById(id).populate("author", "name email avatarUrl points");
+    const question = await Question.findById(id).populate("author", "name email avatarUrl points").lean();
     if (!question) {
       return NextResponse.json({ error: "Question not found." }, { status: 404 });
     }
 
-    return NextResponse.json({ success: true, question }, { status: 200 });
+    const answers = await Answer.find({ questionId: id })
+      .populate("author", "name email avatarUrl points")
+      .sort({ createdAt: 1 })
+      .lean();
+
+    return NextResponse.json(
+      {
+        success: true,
+        question: {
+          ...question,
+          answers,
+        },
+      },
+      { status: 200 }
+    );
   } catch (error: any) {
     return NextResponse.json({ error: error.message || "Failed to retrieve question details." }, { status: 500 });
   }
