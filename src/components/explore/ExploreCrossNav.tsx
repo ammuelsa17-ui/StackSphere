@@ -157,10 +157,10 @@ export default function ExploreCrossNav({ currentPath }: ExploreCrossNavProps) {
           <Link
             key={link.href}
             href={link.href}
-            className={`p-4 rounded-2xl border transition-all duration-200 flex flex-col justify-between space-y-3 group ${
+            className={`p-4 rounded-2xl border transition-all duration-200 flex flex-col justify-between space-y-3 group hover:-translate-y-1 ${
               link.primary
                 ? "bg-indigo-600 hover:bg-indigo-700 border-indigo-500 text-white shadow-md hover:shadow-lg"
-                : "bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-850 border-neutral-200 dark:border-neutral-700 shadow-xs"
+                : "bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 hover:border-indigo-400 dark:hover:border-indigo-500 shadow-xs text-neutral-900 dark:text-white"
             }`}
           >
             <div className="space-y-2">
