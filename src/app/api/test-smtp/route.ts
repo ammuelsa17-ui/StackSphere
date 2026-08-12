@@ -8,8 +8,8 @@ export async function GET() {
     const host = process.env.EMAIL_HOST || process.env.SMTP_HOST || "smtp.gmail.com";
     const port = parseInt(process.env.EMAIL_PORT || process.env.SMTP_PORT || "587", 10);
 
-    const user = rawUser.trim();
-    const pass = rawPass.trim().replace(/\s+/g, "");
+    const user = rawUser.trim().replace(/^["']|["']$/g, "");
+    const pass = rawPass.trim().replace(/^["']|["']$/g, "").replace(/\s+/g, "");
 
     const isGmailConfig = host.includes("gmail") || user.endsWith("@gmail.com");
 

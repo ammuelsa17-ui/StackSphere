@@ -26,8 +26,8 @@ export async function sendEmail(options: SendEmailOptions) {
   const rawUser = process.env.EMAIL_USER || process.env.SMTP_USER || "";
   const rawPass = process.env.EMAIL_PASS || process.env.SMTP_PASS || process.env.EMAIL_PASSWORD || "";
 
-  const user = rawUser.trim();
-  const pass = rawPass.trim().replace(/\s+/g, "");
+  const user = rawUser.trim().replace(/^["']|["']$/g, "");
+  const pass = rawPass.trim().replace(/^["']|["']$/g, "").replace(/\s+/g, "");
   const from = process.env.EMAIL_FROM || process.env.SMTP_FROM || `StackSphere <${user || "noreply@stacksphere.com"}>`;
 
   const isProduction = process.env.NODE_ENV === "production";
