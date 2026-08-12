@@ -33,9 +33,9 @@ export async function sendEmail(options: SendEmailOptions) {
   const isProduction = process.env.NODE_ENV === "production";
 
   // Production Mode Enforcement
-  if (isProduction && (!host || !user || !pass)) {
+  if (isProduction && (!user || !pass)) {
     throw new Error(
-      "Email Delivery Failed: SMTP environment variables (SMTP_USER, EMAIL_USER, SMTP_PASS, EMAIL_PASS) are not configured in production mode."
+      "Email Delivery Failed: SMTP environment variables (EMAIL_USER, EMAIL_PASS) are not configured in production mode."
     );
   }
 
@@ -48,14 +48,23 @@ export async function sendEmail(options: SendEmailOptions) {
   }
 
   // Real SMTP Mail Dispatch
-  if (nodemailerInstance && host && user && pass) {
+  if (nodemailerInstance && user && pass) {
     try {
-      const transporter = nodemailerInstance.createTransport({
-        host,
-        port,
-        secure: port === 465,
-        auth: { user, pass },
-      });
+      const isGmailConfig = host.includes("gmail") || user.endsWith("@gmail.com");
+
+      const transportOptions = isGmailConfig
+        ? {
+            service: "gmail",
+            auth: { user, pass },
+          }
+        : {
+            host,
+            port,
+            secure: port === 465,
+            auth: { user, pass },
+          };
+
+      const transporter = nodemailerInstance.createTransport(transportOptions);
 
       await transporter.sendMail({
         from,
@@ -88,7 +97,7 @@ interface SendReceiptOptions {
   planName: string;
   amount: number;
   currency: string;
-  invoicePath: string; // e.g. public/invoices/invoice-*.pdf
+  invoicePath: string;
 }
 
 export async function sendReceiptEmail(options: SendReceiptOptions) {
@@ -101,45 +110,31 @@ export async function sendReceiptEmail(options: SendReceiptOptions) {
       <p>Hello <strong>${name}</strong>,</p>
       <p>Thank you for upgrading your StackSphere membership! Your transaction has been processed successfully.</p>
       
-      <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
-        <tr style="background-color: #f9fafb;">
-          <th style="padding: 10px; border: 1px solid #e5e7eb; text-align: left;">Item</th>
-          <th style="padding: 10px; border: 1px solid #e5e7eb; text-align: right;">Amount</th>
-        </tr>
-        <tr>
-          <td style="padding: 10px; border: 1px solid #e5e7eb;">${planName} Plan Subscription (Monthly)</td>
-          <td style="padding: 10px; border: 1px solid #e5e7eb; text-align: right;">$${amount.toFixed(2)} ${currency.toUpperCase()}</td>
-        </tr>
-        <tr style="font-weight: bold;">
-          <td style="padding: 10px; border: 1px solid #e5e7eb; text-align: right;">Total Paid:</td>
-          <td style="padding: 10px; border: 1px solid #e5e7eb; text-align: right; color: #4f46e5;">$${amount.toFixed(2)} ${currency.toUpperCase()}</td>
-        </tr>
-      </table>
+      <div style="background-color: #f9fafb; border-radius: 8px; padding: 16px; margin: 20px 0;">
+        <h3 style="margin-top: 0; color: #111827;">Plan Details</h3>
+        <p style="margin: 4px 0;"><strong>Plan:</strong> ${planName}</p>
+        <p style="margin: 4px 0;"><strong>Amount Paid:</strong> ₹${amount} ${currency.toUpperCase()}</p>
+        <p style="margin: 4px 0;"><strong>Status:</strong> Completed ✅</p>
+      </div>
 
-      <p>Your subscription privileges are now active. We have attached your PDF invoice receipt to this email.</p>
-      <p>Best regards,<br/><strong>The StackSphere Team</strong></p>
+      <p>Your official PDF invoice is attached to this email for your accounting records.</p>
+      
+      <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
+      <p style="font-size: 12px; color: #6b7280; text-align: center;">
+        © 2026 StackSphere Inc. All rights reserved.
+      </p>
     </div>
   `;
-
-  const pathModule = require("path");
-  const fsModule = require("fs");
-  let attachmentPath = invoicePath;
-  if (!fsModule.existsSync(attachmentPath)) {
-    const cleanRelative = invoicePath.replace(/^\//, "");
-    attachmentPath = pathModule.join(process.cwd(), "public", cleanRelative);
-  }
-
-  const attachments = [
-    {
-      filename: pathModule.basename(attachmentPath),
-      path: attachmentPath,
-    },
-  ];
 
   return sendEmail({
     to: email,
     subject: emailSubject,
     html: emailHtml,
-    attachments,
+    attachments: [
+      {
+        filename: `invoice-${planName.toLowerCase()}.pdf`,
+        path: invoicePath,
+      },
+    ],
   });
 }

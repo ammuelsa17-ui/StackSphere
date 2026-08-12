@@ -11,6 +11,8 @@ export async function GET() {
     const user = rawUser.trim();
     const pass = rawPass.trim().replace(/\s+/g, "");
 
+    const isGmailConfig = host.includes("gmail") || user.endsWith("@gmail.com");
+
     const diagnostics = {
       hasUser: Boolean(user),
       hasPass: Boolean(pass),
@@ -18,6 +20,7 @@ export async function GET() {
       passEnvKeyUsed: process.env.EMAIL_PASS ? "EMAIL_PASS" : process.env.SMTP_PASS ? "SMTP_PASS" : process.env.EMAIL_PASSWORD ? "EMAIL_PASSWORD" : "NONE",
       host,
       port,
+      isGmailConfig,
       userDomain: user.includes("@") ? user.split("@")[1] : "invalid",
       passLength: pass.length,
     };
@@ -30,13 +33,20 @@ export async function GET() {
       }, { status: 400 });
     }
 
-    const transporter = nodemailer.createTransport({
-      host,
-      port,
-      secure: port === 465,
-      auth: { user, pass },
-      connectTimeout: 10000,
-    } as any);
+    const transportOptions = isGmailConfig
+      ? {
+          service: "gmail",
+          auth: { user, pass },
+        }
+      : {
+          host,
+          port,
+          secure: port === 465,
+          auth: { user, pass },
+          connectTimeout: 10000,
+        };
+
+    const transporter = nodemailer.createTransport(transportOptions as any);
 
     try {
       await transporter.verify();
