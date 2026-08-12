@@ -23,8 +23,11 @@ export async function sendEmail(options: SendEmailOptions) {
 
   const host = process.env.EMAIL_HOST || process.env.SMTP_HOST || "smtp.gmail.com";
   const port = parseInt(process.env.EMAIL_PORT || process.env.SMTP_PORT || "587", 10);
-  const user = process.env.EMAIL_USER || process.env.SMTP_USER;
-  const pass = process.env.EMAIL_PASS || process.env.SMTP_PASS || process.env.EMAIL_PASSWORD;
+  const rawUser = process.env.EMAIL_USER || process.env.SMTP_USER || "";
+  const rawPass = process.env.EMAIL_PASS || process.env.SMTP_PASS || process.env.EMAIL_PASSWORD || "";
+
+  const user = rawUser.trim();
+  const pass = rawPass.trim().replace(/\s+/g, "");
   const from = process.env.EMAIL_FROM || process.env.SMTP_FROM || `StackSphere <${user || "noreply@stacksphere.com"}>`;
 
   const isProduction = process.env.NODE_ENV === "production";
