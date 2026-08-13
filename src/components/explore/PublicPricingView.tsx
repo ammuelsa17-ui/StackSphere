@@ -7,17 +7,15 @@ import ExploreCrossNav from "./ExploreCrossNav";
 import { useTranslation } from "@/components/providers/I18nProvider";
 import { SUBSCRIPTION_PLANS } from "@/lib/subscriptionPlans";
 
+import { isPaymentWindowOpen } from "@/utils/timeGate";
+
 export default function PublicPricingView() {
   const { t } = useTranslation();
   const [showAuthGateModal, setShowAuthGateModal] = useState(false);
   const [selectedPlanName, setSelectedPlanName] = useState("Bronze");
 
-  // Calculate live 10:00 AM - 11:00 AM IST Time Gate status
-  const now = new Date();
-  const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
-  const istTime = new Date(utcTime + (3600000 * 5.5));
-  const istHour = istTime.getHours();
-  const isTimeGateOpen = istHour === 10;
+  // Time Gate check (Shared helper)
+  const isTimeGateOpen = isPaymentWindowOpen();
 
   const triggerSubscribeModal = (planId: string) => {
     setSelectedPlanName(planId);

@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Check, Sparkles, Zap, HelpCircle, AlertCircle } from "lucide-react";
 import CheckoutModal from "./CheckoutModal";
 import { useTranslation } from "@/components/providers/I18nProvider";
+import { isPaymentWindowOpen } from "@/utils/timeGate";
 
 interface PlanConfig {
   name: string;
@@ -36,12 +37,8 @@ export default function SubscriptionPlanGrid({
   const [bypassGate, setBypassGate] = useState(false);
   const [showGuestAuthModal, setShowGuestAuthModal] = useState(false);
 
-  // Time Gate check (10:00 AM - 11:00 AM IST)
-  const now = new Date();
-  const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
-  const istTime = new Date(utcTime + (3600000 * 5.5));
-  const istHour = istTime.getHours();
-  const isTimeGateBlocked = istHour !== 10 && !bypassGate;
+  // Time Gate check (Shared helper)
+  const isTimeGateBlocked = !isPaymentWindowOpen(bypassGate);
 
   const handleOpenCheckout = (plan: PlanConfig) => {
     if (plan.name.toLowerCase() === currentPlan.toLowerCase() || plan.name === "Free") {
