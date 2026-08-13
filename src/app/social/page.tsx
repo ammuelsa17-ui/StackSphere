@@ -7,103 +7,70 @@ import User from "@/models/User";
 import Post from "@/models/Post";
 import SocialFeed from "@/components/social/SocialFeed";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const metadata = {
   title: "Social Hub - StackSphere",
   description: "Connect with developers, share ideas, and stay updated with the latest in technology.",
 };
 
 export default async function SocialPage() {
-  // Retrieve the server session using authOptions
   const session = await getServerSession(authOptions);
 
-  // Redirect to login page if unauthorized
   if (!session || !session.user) {
     redirect("/login");
   }
 
-  // Connect to MongoDB
   await connectToDatabase();
 
-  // Find user data to pass current user details to client-side state
   const dbUser = await User.findById((session.user as any).id);
 
   if (!dbUser) {
     redirect("/login");
   }
 
-  // Fetch posts from database, sorting by creation date descending
   const dbPosts = await Post.find()
-    .populate("author", "name image avatarUrl subscription")
+    .populate("author", "name email image avatarUrl subscription")
     .sort({ createdAt: -1 })
     .lean();
 
-  // Map database posts into a clean serializable structure
   const initialPosts = dbPosts.map((post: any) => ({
     id: post._id.toString(),
+    author: {
+      id: post.author._id.toString(),
+      name: post.author.name || "Anonymous",
+      email: post.author.email || "",
+      avatarUrl: post.author.avatarUrl || post.author.image || "",
+      subscription: {
+        plan: post.author.subscription?.plan || post.author.subscriptionPlan || "Free",
+      },
+    },
     content: post.content,
     mediaUrl: post.mediaUrl || "",
     mediaType: post.mediaType || "none",
-    author: {
-      name: post.author?.name || "Deleted User",
-      email: post.author?.email || "",
-      avatarUrl: post.author?.avatarUrl || post.author?.image || "",
-      subscription: {
-        plan: post.author?.subscription?.plan || "Free",
-      },
-    },
-    likes: (post.likes || []).map((likeId: any) => likeId.toString()),
-    commentsCount: post.commentsCount || 0,
+    likes: post.likes ? post.likes.map((l: any) => l.toString()) : [],
     sharesCount: post.sharesCount || 0,
-    createdAt: post.createdAt ? post.createdAt.toISOString() : new Date().toISOString(),
+    commentsCount: post.comments ? post.comments.length : 0,
+    createdAt: post.createdAt.toISOString(),
   }));
 
-  // Extract a clean serializable user object for client component props
-  const friendCount = dbUser.friends?.length || 0;
-
-  // Calculate start of current UTC calendar day
-  const startOfToday = new Date();
-  startOfToday.setUTCHours(0, 0, 0, 0);
-
-  // Count user's posts created today
-  const postsCountToday = await Post.countDocuments({
-    author: dbUser._id,
-    createdAt: { $gte: startOfToday },
-  });
-
-  // Calculate daily limit
-  let dailyLimit = 2;
-  if (friendCount === 0) dailyLimit = 0;
-  else if (friendCount === 1) dailyLimit = 1;
-  else if (friendCount > 10) dailyLimit = Infinity;
-
-  const remainingPosts = dailyLimit === Infinity ? Infinity : Math.max(0, dailyLimit - postsCountToday);
+  const userPlan = dbUser.subscription?.plan || dbUser.subscriptionPlan || "Free";
 
   const currentUser = {
-    id: dbUser._id.toString(),
-    name: dbUser.name,
-    email: dbUser.email,
-    image: dbUser.avatarUrl || dbUser.image || "",
-    plan: dbUser.subscription?.plan || "Free",
-    friendCount,
-    postsCountToday,
-    dailyLimit,
-    remainingPosts,
+    id: (session.user as any).id,
+    name: dbUser.name || session.user.name || "User",
+    email: dbUser.email || session.user.email || "",
+    image: dbUser.avatarUrl || session.user.image || "",
+    plan: userPlan,
   };
 
   return (
-    <div className="space-y-6">
-      {/* Page Header Banner */}
-      <div className="flex flex-col gap-1 pb-4 border-b border-neutral-200 dark:border-neutral-800">
-        <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
-          Social Space
-        </h1>
-        <p className="text-xs text-neutral-400 dark:text-neutral-500">
-          Connect with other developers, share insights, ask questions, and follow popular tech tags.
-        </p>
-      </div>
-
-      {/* Main Feed Container */}
-      <SocialFeed currentUser={currentUser} initialPosts={initialPosts} />
+    <div className="max-w-4xl mx-auto py-6 px-4">
+      <SocialFeed
+        currentUser={currentUser}
+        initialPosts={initialPosts}
+      />
     </div>
   );
 }
