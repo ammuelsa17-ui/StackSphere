@@ -40,11 +40,17 @@ export async function POST(req: Request) {
 
     // 3. Parse and sanitize payload
     const body = await req.json().catch(() => ({}));
-    const rawPlanName = body.planName || "bronze";
-    const planName = sanitizeString(rawPlanName).toLowerCase();
+    const rawPlanName = body.planName || "Bronze";
+    const cleanPlanName = sanitizeString(rawPlanName);
+    const formattedPlanKey =
+      cleanPlanName.charAt(0).toUpperCase() + cleanPlanName.slice(1).toLowerCase();
 
-    // 4. Validate requested plan
-    const planConfig = SUBSCRIPTION_PLANS[planName] || SUBSCRIPTION_PLANS["bronze"];
+    // 4. Validate requested plan against SUBSCRIPTION_PLANS ("Bronze", "Silver", "Gold")
+    const planConfig =
+      SUBSCRIPTION_PLANS[formattedPlanKey] ||
+      SUBSCRIPTION_PLANS[cleanPlanName] ||
+      SUBSCRIPTION_PLANS["Bronze"];
+
     if (!planConfig || planConfig.name === "Free") {
       return NextResponse.json(
         { error: "Invalid plan selected for checkout. Please choose Bronze, Silver, or Gold." },

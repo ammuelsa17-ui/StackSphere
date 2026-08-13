@@ -88,7 +88,7 @@ export async function fulfillSubscription(
     paymentId = arg1.paymentId;
   } else {
     userId = arg1;
-    planName = arg2 || "bronze";
+    planName = arg2 || "Bronze";
     transactionId = arg3;
     paymentId = arg4;
   }
@@ -98,12 +98,22 @@ export async function fulfillSubscription(
   const user = await User.findById(userId);
   if (!user) throw new Error("User profile not found for fulfillment.");
 
-  const targetPlanKey = planName.toLowerCase();
-  const planConfig = SUBSCRIPTION_PLANS[targetPlanKey] || SUBSCRIPTION_PLANS["bronze"];
+  const cleanPlanName = (planName || "Bronze").trim();
+  const formattedPlanKey =
+    cleanPlanName.charAt(0).toUpperCase() + cleanPlanName.slice(1).toLowerCase();
+
+  const planConfig =
+    SUBSCRIPTION_PLANS[formattedPlanKey] ||
+    SUBSCRIPTION_PLANS[cleanPlanName] ||
+    SUBSCRIPTION_PLANS["Bronze"];
 
   user.subscriptionPlan = planConfig.name;
   user.dailyQuestionLimit = planConfig.dailyQuestionLimit;
   user.subscriptionExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+  if (user.subscription) {
+    user.subscription.plan = planConfig.name;
+    user.subscription.paymentStatus = "active";
+  }
   await user.save();
 
   if (transactionId) {
