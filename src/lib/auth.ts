@@ -165,6 +165,7 @@ export const authOptions: NextAuthOptions = {
           id: user._id.toString(),
           email: user.email,
           name: user.name,
+          phoneNumber: user.phoneNumber || "",
           // Attach request metadata so it is available in the signIn callback
           ipAddress,
           userAgent,
@@ -198,21 +199,23 @@ export const authOptions: NextAuthOptions = {
       }
       return true;
     },
-    // Encodes the authenticated user ID/email/name into the JWT token
+    // Encodes the authenticated user ID/email/name/phoneNumber into the JWT token
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
         token.email = user.email;
         token.name = user.name;
+        token.phoneNumber = (user as any).phoneNumber;
       }
       return token;
     },
-    // Exposes token details (user ID/email/name) to the client-side session context
+    // Exposes token details (user ID/email/name/phoneNumber) to the client-side session context
     async session({ session, token }) {
       if (token && session.user) {
         (session.user as any).id = token.id;
         (session.user as any).email = token.email;
         (session.user as any).name = token.name;
+        (session.user as any).phoneNumber = token.phoneNumber;
       }
       return session;
     },

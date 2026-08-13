@@ -10,17 +10,33 @@ import { hashOtp } from "@/utils/hmac";
 import { checkOtpRateLimits } from "@/utils/rateLimit";
 import { normalizePhone } from "@/utils/validation";
 
+function maskEmail(email: string): string {
+  if (!email || !email.includes("@")) return email || "";
+  const [name, domain] = email.split("@");
+  if (name.length <= 2) return `${name.charAt(0)}***@${domain}`;
+  return `${name.charAt(0)}***${name.slice(-1)}@${domain}`;
+}
+
+function maskPhone(phone: string): string {
+  if (!phone) return "";
+  const cleaned = phone.replace(/\s+/g, "");
+  if (cleaned.length <= 5) return cleaned;
+  const prefix = cleaned.slice(0, 3);
+  const suffix = cleaned.slice(-4);
+  return `${prefix} ******${suffix}`;
+}
+
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session || !session.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized access. Please log in." }, { status: 401 });
     }
 
     const { targetLanguage } = await req.json();
     const validLanguages = ["en", "es", "hi", "pt", "zh", "fr"];
     if (!targetLanguage || !validLanguages.includes(targetLanguage)) {
-      return NextResponse.json({ error: "Invalid target language selection" }, { status: 400 });
+      return NextResponse.json({ error: "Invalid target language selection." }, { status: 400 });
     }
 
     await connectToDatabase();
@@ -28,7 +44,7 @@ export async function POST(req: Request) {
     const user = await User.findById(userId);
 
     if (!user) {
-      return NextResponse.json({ error: "User profile not found" }, { status: 404 });
+      return NextResponse.json({ error: "User profile not found." }, { status: 404 });
     }
 
     // Account-based hourly rate limit check
@@ -53,7 +69,29 @@ export async function POST(req: Request) {
     // Determine verification channel based on target language rule
     // French -> Email OTP; English, Spanish, Hindi, Portuguese, Chinese -> Mobile SMS OTP
     const channel = targetLanguage === "fr" ? "email" : "sms";
-    const destination = channel === "email" ? user.email : (normalizePhone(user.phoneNumber) || user.phoneNumber || "+15551234567");
+
+    let destination = "";
+    if (channel === "email") {
+      destination = (user.email || "").trim();
+      if (!destination) {
+        return NextResponse.json(
+          { error: "No registered email address is available for this account." },
+          { status: 400 }
+        );
+      }
+    } else {
+      const registeredPhone = (user.phoneNumber || (user as any).phone || "").trim();
+      destination = normalizePhone(registeredPhone) || registeredPhone;
+
+      if (!destination) {
+        return NextResponse.json(
+          { error: "No registered mobile number is available for this account. Please update your phone number in Profile settings." },
+          { status: 400 }
+        );
+      }
+    }
+
+    const maskedDestination = channel === "email" ? maskEmail(destination) : maskPhone(destination);
 
     // Generate 6-digit OTP code and HMAC-SHA256 hash
     const rawCode = Math.floor(100000 + Math.random() * 900000).toString();
@@ -73,12 +111,12 @@ export async function POST(req: Request) {
         attempts: 0,
         usedAt: null,
       },
-      { upsert: true, returnDocument: 'after' }
+      { upsert: true, returnDocument: "after" }
     );
 
     if (channel === "email") {
       await sendEmail({
-        to: user.email,
+        to: destination,
         subject: "StackSphere Language Change Verification Code",
         html: `
           <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 500px;">
@@ -92,7 +130,7 @@ export async function POST(req: Request) {
         `,
       });
       if (process.env.NODE_ENV !== "production") {
-        console.log(`[MOCK EMAIL LANGUAGE OTP] Sent code "${rawCode}" to email "${user.email}" for target language "${targetLanguage}"`);
+        console.log(`[MOCK EMAIL LANGUAGE OTP] Sent code "${rawCode}" to email "${destination}" for target language "${targetLanguage}"`);
       }
     } else {
       await sendSms({
@@ -109,6 +147,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       success: true,
       channel,
+      destination: maskedDestination,
       resendCooldown: 60,
       message: `Verification code sent via ${channel === "email" ? "email" : "SMS"}.`,
     });

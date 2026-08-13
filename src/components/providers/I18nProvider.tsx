@@ -1347,6 +1347,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   
   const [resendTimer, setResendTimer] = useState(0);
   const [otpError, setOtpError] = useState<string | null>(null);
+  const [otpDestination, setOtpDestination] = useState<string>("");
 
   const pathname = usePathname();
 
@@ -1396,6 +1397,9 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
       if (!res.ok) {
         setOtpError(data.error || "Failed to request verification code.");
         return false;
+      }
+      if (data.destination) {
+        setOtpDestination(data.destination);
       }
       setResendTimer(data.resendCooldown || 60);
       return true;
@@ -1510,12 +1514,12 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
                   {targetLanguage === "fr" ? (
                     <>
                       <Mail className="h-4 w-4 text-indigo-650" />
-                      <span>Sending OTP code to email: <strong>{session?.user?.email || "developer@stacksphere.com"}</strong></span>
+                      <span>Sending OTP code to email: <strong>{otpDestination || (session?.user?.email ? `${session.user.email.charAt(0)}***@${session.user.email.split("@")[1] || ""}` : "")}</strong></span>
                     </>
                   ) : (
                     <>
                       <Phone className="h-4 w-4 text-indigo-650" />
-                      <span>Sending OTP code via SMS to: <strong>{(session?.user as any)?.phoneNumber || "+15551234567"}</strong></span>
+                      <span>Sending OTP code via SMS to: <strong>{otpDestination || ((session?.user as any)?.phoneNumber ? `${(session?.user as any).phoneNumber.slice(0, 3)} ******${(session?.user as any).phoneNumber.slice(-4)}` : "")}</strong></span>
                     </>
                   )}
                 </div>
