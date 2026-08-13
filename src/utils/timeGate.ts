@@ -1,21 +1,13 @@
 /**
  * Centralized Shared Time Gate Helper
- * Enforces the 10:00 AM - 11:00 AM IST Payment Window policy across frontend UI & backend APIs.
+ * Strictly enforces the 10:00 AM - 11:00 AM IST Payment Window policy across frontend UI & backend APIs.
  * 
- * TEMPORARY TEST SESSION: Currently returns true for live end-to-end deadline testing.
- * RESTORATION METHOD: Revert to Intl.DateTimeFormat Asia/Kolkata hour === 10 for final submission.
+ * Uses native Intl.DateTimeFormat with Asia/Kolkata timezone to ensure 100% precision
+ * on any server worldwide.
  */
 export function isPaymentWindowOpen(bypassTimeGate: boolean = false): boolean {
   if (bypassTimeGate) return true;
 
-  // TEMPORARY TEST MODE: Opened for live manual deadline testing session
-  return true;
-}
-
-/**
- * Strict Production Time Gate Evaluator using native Intl.DateTimeFormat Asia/Kolkata
- */
-export function isStrictProductionPaymentWindowOpen(): boolean {
   try {
     const istHourStr = new Intl.DateTimeFormat("en-US", {
       timeZone: "Asia/Kolkata",
@@ -30,4 +22,8 @@ export function isStrictProductionPaymentWindowOpen(): boolean {
     const istTime = new Date(utcTime + 3600000 * 5.5);
     return istTime.getHours() === 10;
   }
+}
+
+export function isStrictProductionPaymentWindowOpen(): boolean {
+  return isPaymentWindowOpen(false);
 }
