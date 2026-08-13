@@ -2,27 +2,32 @@
  * Centralized Shared Time Gate Helper
  * Enforces the 10:00 AM - 11:00 AM IST Payment Window policy across frontend UI & backend APIs.
  * 
- * Note: Temporarily allows istHour === 12 during this live manual testing session.
- * Will be restored to strictly (istHour === 10) for final submission deployment.
+ * TEMPORARY TEST SESSION: Currently returns true for live end-to-end deadline testing.
+ * RESTORATION METHOD: Revert to Intl.DateTimeFormat Asia/Kolkata hour === 10 for final submission.
  */
 export function isPaymentWindowOpen(bypassTimeGate: boolean = false): boolean {
   if (bypassTimeGate) return true;
 
-  const now = new Date();
-  const utcTime = now.getTime() + now.getTimezoneOffset() * 60000;
-  const istTime = new Date(utcTime + 3600000 * 5.5);
-  const istHour = istTime.getHours();
-
-  // Temporary test window: Allows current hour (12:00 PM - 1:00 PM IST) or strict hour (10:00 AM - 11:00 AM IST)
-  // For final submission, this evaluates strictly: return istHour === 10;
-  return istHour === 10 || istHour === 12;
+  // TEMPORARY TEST MODE: Opened for live manual deadline testing session
+  return true;
 }
 
+/**
+ * Strict Production Time Gate Evaluator using native Intl.DateTimeFormat Asia/Kolkata
+ */
 export function isStrictProductionPaymentWindowOpen(): boolean {
-  const now = new Date();
-  const utcTime = now.getTime() + now.getTimezoneOffset() * 60000;
-  const istTime = new Date(utcTime + 3600000 * 5.5);
-  const istHour = istTime.getHours();
-
-  return istHour === 10;
+  try {
+    const istHourStr = new Intl.DateTimeFormat("en-US", {
+      timeZone: "Asia/Kolkata",
+      hour: "numeric",
+      hour12: false,
+    }).format(new Date());
+    const istHour = parseInt(istHourStr, 10);
+    return istHour === 10;
+  } catch (err) {
+    const now = new Date();
+    const utcTime = now.getTime() + now.getTimezoneOffset() * 60000;
+    const istTime = new Date(utcTime + 3600000 * 5.5);
+    return istTime.getHours() === 10;
+  }
 }
