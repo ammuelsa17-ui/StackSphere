@@ -104,11 +104,12 @@ export default function CheckoutModal({
             setIsSuccess(true);
             setIsLoading(false);
 
-            if (onSuccess) {
-              setTimeout(() => {
+            setTimeout(() => {
+              if (onSuccess) {
                 onSuccess();
-              }, 1200);
-            }
+              }
+              window.location.reload();
+            }, 1000);
           } catch (verifyErr: any) {
             setError(verifyErr.message || "Payment verification failed.");
             setIsLoading(false);
