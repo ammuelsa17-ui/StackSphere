@@ -10,7 +10,7 @@ import { sanitizeString } from "@/utils/validation";
 
 export async function POST(req: Request) {
   try {
-    // 1. Enforce payment gateway time restriction: Payments allowed only 10:00 AM - 11:00 AM IST
+    // 1. Enforce payment gateway time restriction: Payments allowed during 10:00-11:00 AM IST (Temporarily opened 11:00-12:00 PM for live deadline testing)
     const bypassTimeGate = req.headers.get("x-bypass-time-gate") === "true";
     if (!bypassTimeGate) {
       const now = new Date();
@@ -18,7 +18,8 @@ export async function POST(req: Request) {
       const istTime = new Date(utcTime + 3600000 * 5.5);
       const istHour = istTime.getHours();
 
-      if (istHour !== 10) {
+      // Temporarily allowing istHour === 11 for live manual testing session before final submission window restoration
+      if (istHour !== 10 && istHour !== 11) {
         return NextResponse.json(
           { error: "Payments are only accepted between 10:00 AM and 11:00 AM IST." },
           { status: 403 }
