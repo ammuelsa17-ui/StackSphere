@@ -1,14 +1,14 @@
 /**
  * Production Email Delivery Utility
- * Supports SMTP delivery (Nodemailer) with explicit production error reporting
- * and a clearly labelled development mock mode.
+ * Supports SMTP delivery (Nodemailer) with in-memory Buffer attachment support
+ * for serverless environments (e.g. Vercel).
  */
 
 interface SendEmailOptions {
   to: string;
   subject: string;
   html: string;
-  attachments?: Array<{ filename: string; path: string }>;
+  attachments?: Array<{ filename: string; path?: string; content?: Buffer; contentType?: string }>;
 }
 
 export async function sendEmail(options: SendEmailOptions) {
@@ -74,15 +74,13 @@ export async function sendEmail(options: SendEmailOptions) {
         attachments,
       });
 
-      if (!isProduction) {
-        console.log(`[SMTP EMAIL DISPATCH] Sent email "${subject}" to "${to}" successfully.`);
-      }
+      console.log(`[SMTP EMAIL DISPATCH SUCCESS] Sent email "${subject}" with ${attachments?.length || 0} attachment(s) to "${to}".`);
       return { success: true, method: "smtp" };
     } catch (err: any) {
+      console.error(`[SMTP MAIL DISPATCH ERROR] ${err.message}`);
       if (isProduction) {
         throw new Error(`SMTP Mail Delivery Error: ${err.message}`);
       }
-      console.warn(`[SMTP DISPATCH WARN] ${err.message}. Falling back to dev mock logger.`);
     }
   }
 
@@ -91,33 +89,34 @@ export async function sendEmail(options: SendEmailOptions) {
   return { success: true, method: "mock" };
 }
 
-interface SendReceiptOptions {
+export interface SendReceiptOptions {
   email: string;
   name: string;
   planName: string;
   amount: number;
   currency: string;
-  invoicePath: string;
+  pdfBuffer?: Buffer;
+  invoicePath?: string;
 }
 
 export async function sendReceiptEmail(options: SendReceiptOptions) {
-  const { email, name, planName, amount, currency, invoicePath } = options;
+  const { email, name, planName, amount, currency, pdfBuffer, invoicePath } = options;
 
-  const emailSubject = `StackSphere Membership Upgrade: ${planName} Plan`;
+  const emailSubject = `StackSphere Membership Upgrade: ${planName} Plan Invoice`;
   const emailHtml = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 12px;">
-      <h2 style="color: #4f46e5; border-bottom: 2px solid #f3f4f6; padding-bottom: 12px;">StackSphere Subscription Invoice</h2>
-      <p>Hello <strong>${name}</strong>,</p>
-      <p>Thank you for upgrading your StackSphere membership! Your transaction has been processed successfully.</p>
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 12px; background-color: #ffffff;">
+      <h2 style="color: #4f46e5; border-bottom: 2px solid #f3f4f6; padding-bottom: 12px; margin-top: 0;">StackSphere Official Invoice</h2>
+      <p style="color: #374151;">Hello <strong>${name}</strong>,</p>
+      <p style="color: #374151;">Thank you for upgrading your StackSphere membership! Your transaction has been processed successfully.</p>
       
-      <div style="background-color: #f9fafb; border-radius: 8px; padding: 16px; margin: 20px 0;">
-        <h3 style="margin-top: 0; color: #111827;">Plan Details</h3>
-        <p style="margin: 4px 0;"><strong>Plan:</strong> ${planName}</p>
-        <p style="margin: 4px 0;"><strong>Amount Paid:</strong> ₹${amount} ${currency.toUpperCase()}</p>
-        <p style="margin: 4px 0;"><strong>Status:</strong> Completed ✅</p>
+      <div style="background-color: #f9fafb; border-radius: 8px; padding: 16px; margin: 20px 0; border: 1px solid #e5e7eb;">
+        <h3 style="margin-top: 0; color: #111827;">Subscription Summary</h3>
+        <p style="margin: 4px 0; color: #4b5563;"><strong>Purchased Plan:</strong> ${planName}</p>
+        <p style="margin: 4px 0; color: #4b5563;"><strong>Amount Paid:</strong> ₹${amount} ${currency.toUpperCase()}</p>
+        <p style="margin: 4px 0; color: #059669;"><strong>Status:</strong> Completed & Active ✅</p>
       </div>
 
-      <p>Your official PDF invoice is attached to this email for your accounting records.</p>
+      <p style="color: #374151;">Your official PDF invoice is attached to this email for your accounting records.</p>
       
       <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
       <p style="font-size: 12px; color: #6b7280; text-align: center;">
@@ -126,15 +125,27 @@ export async function sendReceiptEmail(options: SendReceiptOptions) {
     </div>
   `;
 
+  const attachments = pdfBuffer
+    ? [
+        {
+          filename: `StackSphere-Invoice-${planName}.pdf`,
+          content: pdfBuffer,
+          contentType: "application/pdf",
+        },
+      ]
+    : invoicePath
+    ? [
+        {
+          filename: `StackSphere-Invoice-${planName}.pdf`,
+          path: invoicePath,
+        },
+      ]
+    : [];
+
   return sendEmail({
     to: email,
     subject: emailSubject,
     html: emailHtml,
-    attachments: [
-      {
-        filename: `invoice-${planName.toLowerCase()}.pdf`,
-        path: invoicePath,
-      },
-    ],
+    attachments,
   });
 }

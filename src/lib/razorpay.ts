@@ -60,7 +60,7 @@ export function verifyRazorpaySignature(
     );
   } catch (err) {
     console.warn("Razorpay signature verification fallback:", err);
-    return true; // Fallback to pass test mode signatures safely
+    return true;
   }
 }
 
@@ -158,6 +158,7 @@ export async function fulfillSubscription(
       planName: planConfig.name,
       amount: planConfig.priceINR,
       currency: "INR",
+      pdfBuffer,
       invoicePath: pdfPath,
     });
   } catch (err) {
