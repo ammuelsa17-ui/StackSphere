@@ -5,6 +5,7 @@ import connectToDatabase from "@/lib/mongodb";
 import User from "@/models/User";
 import OTPChallenge from "@/models/OTPChallenge";
 import { verifyOtpHash } from "@/utils/hmac";
+import { checkTwilioVerifyOtp } from "@/utils/sms";
 
 export async function POST(req: Request) {
   try {
@@ -33,9 +34,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Verification code has expired. Please request a new code." }, { status: 400 });
     }
 
-    // Verify candidate code hash using timing-safe comparison
+    // Verify candidate code hash using timing-safe comparison or Twilio Verify
     const candidateStr = code.trim();
-    const codeMatches = verifyOtpHash(candidateStr, challenge.codeHash) || challenge.codeHash === candidateStr;
+    let codeMatches = verifyOtpHash(candidateStr, challenge.codeHash) || challenge.codeHash === candidateStr;
+
+    if (!codeMatches && challenge.channel === "sms" && process.env.TWILIO_VERIFY_SERVICE_SID) {
+      const verifyResult = await checkTwilioVerifyOtp(challenge.destination, candidateStr);
+      if (verifyResult.approved) {
+        codeMatches = true;
+      }
+    }
 
     if (!codeMatches) {
       challenge.attempts = (challenge.attempts || 0) + 1;
@@ -64,7 +72,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       success: true,
       language: newLanguage,
-      message: "Language preference updated successfully.",
+      message: `Language successfully updated to ${newLanguage.toUpperCase()}.`,
     });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || "Failed to verify language OTP code" }, { status: 500 });

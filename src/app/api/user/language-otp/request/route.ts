@@ -5,7 +5,7 @@ import connectToDatabase from "@/lib/mongodb";
 import User from "@/models/User";
 import OTPChallenge from "@/models/OTPChallenge";
 import { sendEmail } from "@/utils/email";
-import { sendSms } from "@/utils/sms";
+import { sendSms, sendTwilioVerifyOtp } from "@/utils/sms";
 import { hashOtp } from "@/utils/hmac";
 import { checkOtpRateLimits } from "@/utils/rateLimit";
 import { normalizePhone } from "@/utils/validation";
@@ -129,18 +129,14 @@ export async function POST(req: Request) {
           </div>
         `,
       });
-      if (process.env.NODE_ENV !== "production") {
-        console.log(`[MOCK EMAIL LANGUAGE OTP] Sent code "${rawCode}" to email "${destination}" for target language "${targetLanguage}"`);
-      }
     } else {
-      await sendSms({
-        to: destination,
-        message: `Your StackSphere language verification code is: ${rawCode}. Valid for 5 minutes.`,
-      });
-      if (process.env.NODE_ENV !== "production") {
-        console.log(
-          `[MOCK SMS LANGUAGE OTP] Sent code "${rawCode}" via SMS to phone "${destination}" for target language "${targetLanguage}"`
-        );
+      if (process.env.TWILIO_VERIFY_SERVICE_SID) {
+        await sendTwilioVerifyOtp(destination);
+      } else {
+        await sendSms({
+          to: destination,
+          message: `Your StackSphere language verification code is: ${rawCode}. Valid for 5 minutes.`,
+        });
       }
     }
 
