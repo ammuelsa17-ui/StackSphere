@@ -66,38 +66,26 @@ export async function POST(req: Request) {
     const amountPaise = planConfig.priceINR * 100;
     const receipt = `rcpt_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
 
-    // 7. Create Razorpay order (or fallback test order if keys unconfigured)
+    // 7. Create genuine Razorpay Test Mode Order via official Node SDK
     let order: any = null;
     try {
       const razorpay = getRazorpayClient();
-      if (razorpay && process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
-        order = await razorpay.orders.create({
-          amount: amountPaise,
-          currency: "INR",
-          receipt,
-          notes: {
-            userId,
-            planName,
-            userEmail: dbUser.email,
-          },
-        });
-      } else {
-        // Test Mode Fallback Order
-        order = {
-          id: `order_test_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-          amount: amountPaise,
-          currency: "INR",
-          status: "created",
-        };
-      }
-    } catch (razorpayErr: any) {
-      console.warn("[Razorpay Order Creation Fallback Triggered]:", razorpayErr.message);
-      order = {
-        id: `order_test_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      order = await razorpay.orders.create({
         amount: amountPaise,
         currency: "INR",
-        status: "created",
-      };
+        receipt,
+        notes: {
+          userId,
+          planName: planConfig.name,
+          userEmail: dbUser.email,
+        },
+      });
+    } catch (razorpayErr: any) {
+      console.error("[Razorpay Orders API Error]:", razorpayErr.message);
+      return NextResponse.json(
+        { error: `Payment gateway order creation failed: ${razorpayErr.message}` },
+        { status: 502 }
+      );
     }
 
     // 8. Store order in Transaction model as pending
@@ -113,7 +101,7 @@ export async function POST(req: Request) {
     await transaction.save();
 
     const keyId =
-      process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID || "rzp_test_StackSphereDemo";
+      process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID || "";
 
     return NextResponse.json({
       success: true,

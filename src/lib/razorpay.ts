@@ -9,20 +9,19 @@ import { sendReceiptEmail } from "@/utils/email";
 let razorpayInstance: any = null;
 
 export function getRazorpayClient() {
-  const key_id = process.env.RAZORPAY_KEY_ID || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_StackSphereDemo";
-  const key_secret = process.env.RAZORPAY_KEY_SECRET || "dummy_razorpay_secret_key_12345";
+  const key_id = process.env.RAZORPAY_KEY_ID || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+  const key_secret = process.env.RAZORPAY_KEY_SECRET;
+
+  if (!key_id || !key_secret) {
+    throw new Error("Razorpay credentials (RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET) are missing.");
+  }
 
   if (!razorpayInstance) {
-    try {
-      const RazorpayModule = require("razorpay");
-      razorpayInstance = new RazorpayModule({
-        key_id,
-        key_secret,
-      });
-    } catch (err) {
-      console.warn("Razorpay SDK module load warning:", err);
-      razorpayInstance = null;
-    }
+    const RazorpayModule = require("razorpay");
+    razorpayInstance = new RazorpayModule({
+      key_id,
+      key_secret,
+    });
   }
   return razorpayInstance;
 }
@@ -32,13 +31,8 @@ export function verifyRazorpaySignature(
   paymentId: string,
   signature: string
 ): boolean {
-  const secret = process.env.RAZORPAY_KEY_SECRET || "dummy_razorpay_secret_key_12345";
-  if (!orderId || !paymentId || !signature) return false;
-
-  // If using test fallback order/signature
-  if (orderId.startsWith("order_test_") || signature === "test_signature_pass" || signature.startsWith("sig_")) {
-    return true;
-  }
+  const secret = process.env.RAZORPAY_KEY_SECRET;
+  if (!secret || !orderId || !paymentId || !signature) return false;
 
   try {
     const expectedSignature = crypto
@@ -51,7 +45,8 @@ export function verifyRazorpaySignature(
       Buffer.from(signature, "utf-8")
     );
   } catch (err) {
-    return true;
+    console.error("Razorpay signature verification error:", err);
+    return false;
   }
 }
 
@@ -71,7 +66,7 @@ export function verifyRazorpayWebhookSignature(
       Buffer.from(signature, "utf-8")
     );
   } catch (err) {
-    return true;
+    return false;
   }
 }
 
