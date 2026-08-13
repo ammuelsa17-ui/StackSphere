@@ -10,7 +10,7 @@ export type Language = "en" | "es" | "hi" | "pt" | "zh" | "fr";
 interface I18nContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: (key: string) => string;
+  t: (key: string, params?: Record<string, string | number>) => string;
 }
 
 const I18nContext = createContext<I18nContextType | undefined>(undefined);
@@ -234,7 +234,29 @@ const translations: Record<Language, Record<string, string>> = {
     emailRecoveryTab: "Email Recovery",
     phoneRecoveryTab: "Mobile Phone Recovery",
     showPassword: "Show password",
-    hidePassword: "Hide password"
+    hidePassword: "Hide password",
+    welcomeBackUser: "Welcome back, {name}!",
+    dashboardOverviewText: "Here is your StackSphere community overview. Ask questions, share posts, and collect reward points!",
+    dailyQuestionAllowancePlan: "Daily Question Allowance ({plan} Plan)",
+    dailyQuestionLimitReached: "⚠️ Daily question limit reached ({used} / {limit} used)",
+    questionsTodayCountText: "Questions Today: {used} / {limit} used ({remaining} remaining)",
+    unlimitedQuestions: "Unlimited",
+    remainingSuffix: "{remaining} remaining →",
+    upgradePlanBtn: "Upgrade Plan",
+    questionsTodayLabel: "Questions Today",
+    viewReputation: "View Reputation",
+    membershipPlanLabel: "Membership Plan",
+    manageMembership: "Manage Membership",
+    securityAuditTitle: "Security Audit",
+    viewLoginHistory: "View Login History",
+    auditLogs: "Audit Logs",
+    accountInformation: "Account Information",
+    emailAddressLabel: "Email Address",
+    phoneRegisteredLabel: "Registered Phone",
+    quickShortcuts: "Quick Shortcuts",
+    memberSinceText: "Member since {date}",
+    rewardPointsLabel: "Reward Points",
+    pointsCountText: "{count} Points"
   },
   es: {
     socialSpace: "Espacio Social",
@@ -454,7 +476,29 @@ const translations: Record<Language, Record<string, string>> = {
     emailRecoveryTab: "Recuperación por Correo",
     phoneRecoveryTab: "Recuperación por Teléfono",
     showPassword: "Mostrar contraseña",
-    hidePassword: "Ocultar contraseña"
+    hidePassword: "Ocultar contraseña",
+    welcomeBackUser: "¡Bienvenido de nuevo, {name}!",
+    dashboardOverviewText: "Aquí tienes el resumen de tu comunidad StackSphere. ¡Haz preguntas, comparte publicaciones y acumula puntos de recompensa!",
+    dailyQuestionAllowancePlan: "Cuota diaria de preguntas (Plan {plan})",
+    dailyQuestionLimitReached: "⚠️ Límite diario de preguntas alcanzado ({used} / {limit} usados)",
+    questionsTodayCountText: "Preguntas hoy: {used} / {limit} usados ({remaining} restantes)",
+    unlimitedQuestions: "Ilimitado",
+    remainingSuffix: "{remaining} restantes →",
+    upgradePlanBtn: "Mejorar plan",
+    questionsTodayLabel: "Preguntas hoy",
+    viewReputation: "Ver reputación",
+    membershipPlanLabel: "Plan de membresía",
+    manageMembership: "Gestionar membresía",
+    securityAuditTitle: "Auditoría de seguridad",
+    viewLoginHistory: "Ver historial de inicio de sesión",
+    auditLogs: "Registros de auditoría",
+    accountInformation: "Información de la cuenta",
+    emailAddressLabel: "Correo electrónico",
+    phoneRegisteredLabel: "Teléfono registrado",
+    quickShortcuts: "Accesos directos",
+    memberSinceText: "Miembro desde {date}",
+    rewardPointsLabel: "Puntos de recompensa",
+    pointsCountText: "{count} Puntos"
   },
   hi: {
     socialSpace: "सोशल स्पेस",
@@ -674,7 +718,29 @@ const translations: Record<Language, Record<string, string>> = {
     emailRecoveryTab: "ईमेल रिकवरी",
     phoneRecoveryTab: "फोन रिकवरी",
     showPassword: "पासवर्ड दिखाएं",
-    hidePassword: "पासवर्ड छिपाएं"
+    hidePassword: "पासवर्ड छिपाएं",
+    welcomeBackUser: "वापसी पर स्वागत है, {name}!",
+    dashboardOverviewText: "यहाँ आपका StackSphere समुदाय अवलोकन है। प्रश्न पूछें, पोस्ट साझा करें और इनाम अंक एकत्र करें!",
+    dailyQuestionAllowancePlan: "दैनिक प्रश्न सीमा ({plan} प्लान)",
+    dailyQuestionLimitReached: "⚠️ दैनिक प्रश्न सीमा समाप्त ({used} / {limit} प्रयुक्त)",
+    questionsTodayCountText: "आज के प्रश्न: {used} / {limit} प्रयुक्त ({remaining} शेष)",
+    unlimitedQuestions: "असीमित",
+    remainingSuffix: "{remaining} शेष →",
+    upgradePlanBtn: "अपग्रेड प्लान",
+    questionsTodayLabel: "आज के प्रश्न",
+    viewReputation: "प्रतिष्ठा देखें",
+    membershipPlanLabel: "सदस्यता प्लान",
+    manageMembership: "सदस्यता प्रबंधित करें",
+    securityAuditTitle: "सुरक्षा ऑडिट",
+    viewLoginHistory: "लॉगिन इतिहास देखें",
+    auditLogs: "ऑडिट लॉग्स",
+    accountInformation: "खाता जानकारी",
+    emailAddressLabel: "ईमेल पता",
+    phoneRegisteredLabel: "पंजीकृत फोन",
+    quickShortcuts: "त्वरित शॉर्टकट",
+    memberSinceText: "{date} से सदस्य",
+    rewardPointsLabel: "इनाम अंक",
+    pointsCountText: "{count} अंक"
   },
   pt: {
     socialSpace: "Espaço Social",
@@ -894,7 +960,29 @@ const translations: Record<Language, Record<string, string>> = {
     emailRecoveryTab: "Recuperação por E-mail",
     phoneRecoveryTab: "Recuperação por Telefone",
     showPassword: "Mostrar senha",
-    hidePassword: "Ocultar senha"
+    hidePassword: "Ocultar senha",
+    welcomeBackUser: "Bem-vindo de volta, {name}!",
+    dashboardOverviewText: "Aqui está o resumo da sua comunidade StackSphere. Faça perguntas, compartilhe publicações e acumule pontos de recompensa!",
+    dailyQuestionAllowancePlan: "Cota diária de perguntas (Plano {plan})",
+    dailyQuestionLimitReached: "⚠️ Limite diário de perguntas atingido ({used} / {limit} usados)",
+    questionsTodayCountText: "Perguntas hoje: {used} / {limit} usados ({remaining} restantes)",
+    unlimitedQuestions: "Ilimitado",
+    remainingSuffix: "{remaining} restantes →",
+    upgradePlanBtn: "Atualizar plano",
+    questionsTodayLabel: "Perguntas hoje",
+    viewReputation: "Ver reputação",
+    membershipPlanLabel: "Plano de assinatura",
+    manageMembership: "Gerenciar assinatura",
+    securityAuditTitle: "Auditoria de segurança",
+    viewLoginHistory: "Ver histórico de login",
+    auditLogs: "Registros de auditoria",
+    accountInformation: "Informações da conta",
+    emailAddressLabel: "Endereço de e-mail",
+    phoneRegisteredLabel: "Telefone registrado",
+    quickShortcuts: "Atalhos rápidos",
+    memberSinceText: "Membro desde {date}",
+    rewardPointsLabel: "Pontos de recompensa",
+    pointsCountText: "{count} Pontos"
   },
   zh: {
     socialSpace: "社交空间",
@@ -1114,7 +1202,29 @@ const translations: Record<Language, Record<string, string>> = {
     emailRecoveryTab: "邮箱找回",
     phoneRecoveryTab: "手机号找回",
     showPassword: "显示密码",
-    hidePassword: "隐藏密码"
+    hidePassword: "隐藏密码",
+    welcomeBackUser: "欢迎回来，{name}！",
+    dashboardOverviewText: "这是您的 StackSphere 社区概览。提出问题、分享动态并积累奖励积分！",
+    dailyQuestionAllowancePlan: "每日提问配额（{plan} 计划）",
+    dailyQuestionLimitReached: "⚠️ 已达到每日提问上限（已使用 {used} / {limit}）",
+    questionsTodayCountText: "今日提问：已使用 {used} / {limit}（还剩 {remaining}）",
+    unlimitedQuestions: "无限制",
+    remainingSuffix: "还剩 {remaining} →",
+    upgradePlanBtn: "升级计划",
+    questionsTodayLabel: "今日提问",
+    viewReputation: "查看声望",
+    membershipPlanLabel: "会员计划",
+    manageMembership: "管理会员",
+    securityAuditTitle: "安全审计",
+    viewLoginHistory: "查看登录历史",
+    auditLogs: "审计日志",
+    accountInformation: "账户信息",
+    emailAddressLabel: "电子邮件地址",
+    phoneRegisteredLabel: "注册手机号",
+    quickShortcuts: "快捷方式",
+    memberSinceText: "加入时间：{date}",
+    rewardPointsLabel: "奖励积分",
+    pointsCountText: "{count} 积分"
   },
   fr: {
     socialSpace: "Espace Social",
@@ -1334,7 +1444,29 @@ const translations: Record<Language, Record<string, string>> = {
     emailRecoveryTab: "Récupération par E-mail",
     phoneRecoveryTab: "Récupération par Téléphone",
     showPassword: "Afficher le mot de passe",
-    hidePassword: "Masquer le mot de passe"
+    hidePassword: "Masquer le mot de passe",
+    welcomeBackUser: "Bon retour, {name} !",
+    dashboardOverviewText: "Voici l'aperçu de votre communauté StackSphere. Posez des questions, partagez des publications et accumulez des points de récompense !",
+    dailyQuestionAllowancePlan: "Quota quotidien de questions (Plan {plan})",
+    dailyQuestionLimitReached: "⚠️ Limite quotidienne de questions atteinte ({used} / {limit} utilisés)",
+    questionsTodayCountText: "Questions aujourd'hui : {used} / {limit} utilisés ({remaining} restants)",
+    unlimitedQuestions: "Illimité",
+    remainingSuffix: "{remaining} restants →",
+    upgradePlanBtn: "Changer de plan",
+    questionsTodayLabel: "Questions aujourd'hui",
+    viewReputation: "Voir la réputation",
+    membershipPlanLabel: "Plan d'abonnement",
+    manageMembership: "Gérer l'abonnement",
+    securityAuditTitle: "Audit de sécurité",
+    viewLoginHistory: "Voir l'historique de connexion",
+    auditLogs: "Journaux d'audit",
+    accountInformation: "Informations du compte",
+    emailAddressLabel: "Adresse e-mail",
+    phoneRegisteredLabel: "Téléphone enregistré",
+    quickShortcuts: "Raccourcis rapides",
+    memberSinceText: "Membre depuis {date}",
+    rewardPointsLabel: "Points de récompense",
+    pointsCountText: "{count} Points"
   }
 };
 
@@ -1470,10 +1602,12 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     setUserEnteredOtp("");
   };
 
-  const t = (key: string): string => {
-    const val = translations[language]?.[key];
-    if (!val) {
-      return translations["en"]?.[key] || key;
+  const t = (key: string, params?: Record<string, string | number>): string => {
+    let val = translations[language]?.[key] || translations["en"]?.[key] || key;
+    if (params) {
+      for (const [paramKey, paramVal] of Object.entries(params)) {
+        val = val.replace(new RegExp(`\\{${paramKey}\\}`, "g"), String(paramVal));
+      }
     }
     return val;
   };
@@ -1586,3 +1720,5 @@ export function useTranslation() {
   }
   return context;
 }
+
+export const useI18n = useTranslation;
